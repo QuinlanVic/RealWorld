@@ -4420,6 +4420,7 @@ var $elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	}
 };
 var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -4430,6 +4431,9 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var $elm$html$Html$footer = _VirtualDom_node('footer');
+var $elm$html$Html$form = _VirtualDom_node('form');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
@@ -4437,22 +4441,27 @@ var $elm$html$Html$Attributes$href = function (url) {
 		'href',
 		_VirtualDom_noJavaScriptUri(url));
 };
+var $elm$html$Html$i = _VirtualDom_node('i');
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $elm$html$Html$p = _VirtualDom_node('p');
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Auth$main = A2(
 	$elm$html$Html$div,
-	_List_fromArray(
-		[
-			$elm$html$Html$Attributes$class('auth-page')
-		]),
+	_List_Nil,
 	_List_fromArray(
 		[
 			A2(
-			$elm$html$Html$div,
+			$elm$html$Html$nav,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('container page')
+					$elm$html$Html$Attributes$class('navbar navbar-light')
 				]),
 			_List_fromArray(
 				[
@@ -4460,33 +4469,34 @@ var $author$project$Auth$main = A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('row')
+							$elm$html$Html$Attributes$class('container')
 						]),
 					_List_fromArray(
 						[
 							A2(
-							$elm$html$Html$div,
+							$elm$html$Html$a,
 							_List_fromArray(
 								[
-									$elm$html$Html$Attributes$class('col-md-6 col-md-offset-3 col-xs-12')
+									$elm$html$Html$Attributes$class('navbar-brand'),
+									$elm$html$Html$Attributes$href('index.html')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('conduit')
+								])),
+							A2(
+							$elm$html$Html$ul,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('nav navbar-nav pull-xs-right')
 								]),
 							_List_fromArray(
 								[
 									A2(
-									$elm$html$Html$h1,
+									$elm$html$Html$li,
 									_List_fromArray(
 										[
-											$elm$html$Html$Attributes$class('text-xs-center')
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Sign up')
-										])),
-									A2(
-									$elm$html$Html$p,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('text-xs-center')
+											$elm$html$Html$Attributes$class('nav-item')
 										]),
 									_List_fromArray(
 										[
@@ -4494,14 +4504,246 @@ var $author$project$Auth$main = A2(
 											$elm$html$Html$a,
 											_List_fromArray(
 												[
-													$elm$html$Html$Attributes$href('#')
+													$elm$html$Html$Attributes$class('nav-link'),
+													$elm$html$Html$Attributes$href('editor.html')
 												]),
 											_List_fromArray(
 												[
-													$elm$html$Html$text('Have an account?')
+													A2(
+													$elm$html$Html$i,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('ion-compose')
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('New Post')
+														]))
+												]))
+										])),
+									A2(
+									$elm$html$Html$li,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('nav-item')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$a,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('nav-link'),
+													$elm$html$Html$Attributes$href('Auth.elm')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Sign up')
+												]))
+										])),
+									A2(
+									$elm$html$Html$li,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('nav-item')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$a,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('nav-link'),
+													$elm$html$Html$Attributes$href('settings.html')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Settings')
 												]))
 										]))
 								]))
+						]))
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('auth-page')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('container page')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('col-md-6 col-md-offset-3 col-xs-12')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$h1,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('text-xs-center')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Sign up')
+												])),
+											A2(
+											$elm$html$Html$p,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('text-xs-center')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$a,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$href('#')
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Have an account?')
+														]))
+												])),
+											A2(
+											$elm$html$Html$form,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$fieldset,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																	$elm$html$Html$Attributes$type_('text'),
+																	$elm$html$Html$Attributes$placeholder('Your Name')
+																]),
+															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$fieldset,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																	$elm$html$Html$Attributes$type_('text'),
+																	$elm$html$Html$Attributes$placeholder('Email')
+																]),
+															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$fieldset,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																	$elm$html$Html$Attributes$type_('password'),
+																	$elm$html$Html$Attributes$placeholder('Password')
+																]),
+															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$button,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('btn btn-lg btn-primary pull-xs-right')
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Sign up')
+														]))
+												]))
+										]))
+								]))
+						]))
+				])),
+			A2(
+			$elm$html$Html$footer,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('container')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href('/'),
+									$elm$html$Html$Attributes$class('logo-font')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('conduit')
+								]))
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('attribution')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('An interactive learning project from'),
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href('https:..thinkster.io')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Thinkster')
+								])),
+							$elm$html$Html$text('Code & design licensed under MIT.')
 						]))
 				]))
 		]));
