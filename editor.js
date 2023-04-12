@@ -4434,7 +4434,6 @@ var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$footer = _VirtualDom_node('footer');
 var $elm$html$Html$form = _VirtualDom_node('form');
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -4445,14 +4444,20 @@ var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
-var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$Attributes$rows = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'rows',
+		$elm$core$String$fromInt(n));
+};
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Auth$main = A2(
+var $author$project$Editor$main = A2(
 	$elm$html$Html$div,
 	_List_Nil,
 	_List_fromArray(
@@ -4568,7 +4573,7 @@ var $author$project$Auth$main = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('auth-page')
+					$elm$html$Html$Attributes$class('settings-page')
 				]),
 			_List_fromArray(
 				[
@@ -4592,39 +4597,10 @@ var $author$project$Auth$main = A2(
 									$elm$html$Html$div,
 									_List_fromArray(
 										[
-											$elm$html$Html$Attributes$class('col-md-6 col-md-offset-3 col-xs-12')
+											$elm$html$Html$Attributes$class('col-md-10 col-md-offset-1 col-xs-12')
 										]),
 									_List_fromArray(
 										[
-											A2(
-											$elm$html$Html$h1,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('text-xs-center')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Sign up')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('text-xs-center')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('#')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('Have an account?')
-														]))
-												])),
 											A2(
 											$elm$html$Html$form,
 											_List_Nil,
@@ -4644,7 +4620,25 @@ var $author$project$Auth$main = A2(
 																[
 																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
 																	$elm$html$Html$Attributes$type_('text'),
-																	$elm$html$Html$Attributes$placeholder('Your Name')
+																	$elm$html$Html$Attributes$placeholder('Post Title')
+																]),
+															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$fieldset,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$textarea,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$class('form-control'),
+																	$elm$html$Html$Attributes$rows(8),
+																	$elm$html$Html$Attributes$placeholder('Write your post (in markdown)')
 																]),
 															_List_Nil)
 														])),
@@ -4660,29 +4654,71 @@ var $author$project$Auth$main = A2(
 															$elm$html$Html$input,
 															_List_fromArray(
 																[
-																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																	$elm$html$Html$Attributes$class('form-control'),
 																	$elm$html$Html$Attributes$type_('text'),
-																	$elm$html$Html$Attributes$placeholder('Email')
+																	$elm$html$Html$Attributes$placeholder('Enter tags')
 																]),
-															_List_Nil)
-														])),
-													A2(
-													$elm$html$Html$fieldset,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('form-group')
-														]),
-													_List_fromArray(
-														[
+															_List_Nil),
 															A2(
-															$elm$html$Html$input,
+															$elm$html$Html$div,
 															_List_fromArray(
 																[
-																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																	$elm$html$Html$Attributes$type_('password'),
-																	$elm$html$Html$Attributes$placeholder('Password')
+																	$elm$html$Html$Attributes$class('tag-list')
 																]),
-															_List_Nil)
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$span,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$class('label label-pill label-default')
+																		]),
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$i,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$Attributes$class('ion-close-round')
+																				]),
+																			_List_Nil),
+																			$elm$html$Html$text('programming')
+																		])),
+																	A2(
+																	$elm$html$Html$span,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$class('label label-pill label-default')
+																		]),
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$i,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$Attributes$class('ion-close-round')
+																				]),
+																			_List_Nil),
+																			$elm$html$Html$text('javascript')
+																		])),
+																	A2(
+																	$elm$html$Html$span,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$class('label label-pill label-default')
+																		]),
+																	_List_fromArray(
+																		[
+																			A2(
+																			$elm$html$Html$i,
+																			_List_fromArray(
+																				[
+																					$elm$html$Html$Attributes$class('ion-close-round')
+																				]),
+																			_List_Nil),
+																			$elm$html$Html$text('webdev')
+																		]))
+																]))
 														])),
 													A2(
 													$elm$html$Html$button,
@@ -4692,7 +4728,7 @@ var $author$project$Auth$main = A2(
 														]),
 													_List_fromArray(
 														[
-															$elm$html$Html$text('Sign up')
+															$elm$html$Html$text('Create Post')
 														]))
 												]))
 										]))
@@ -4747,4 +4783,4 @@ var $author$project$Auth$main = A2(
 						]))
 				]))
 		]));
-_Platform_export({'Auth':{'init':_VirtualDom_init($author$project$Auth$main)(0)(0)}});}(this));
+_Platform_export({'Editor':{'init':_VirtualDom_init($author$project$Editor$main)(0)(0)}});}(this));

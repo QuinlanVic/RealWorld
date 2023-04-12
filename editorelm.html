@@ -9,14 +9,13 @@
   </head>
   <body>
     <div id="main" class="main"></div>
-    <script src="settings.js"></script> <!--Load compiled settings.js file-->
+    <script src="editor.js"></script> <!--Load compiled editor.js file-->
     <script>
         (function() { //immediately-invoked-function-expression (IIFE) allows local var creation
-            var app = Elm.Settings.init({ //init function for every compiled module that returns an application object
+            var app = Elm.Editor.init({ //init function for every compiled module that returns an application object
                 node: document.getElementById('main') //display Elm in this node (deploy app.)
             });
         })();
     </script>
   </body>
 </html>
-

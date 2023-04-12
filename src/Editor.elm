@@ -1,12 +1,10 @@
-module Settings exposing (main)
+module Editor exposing (main)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, type_, placeholder)
-import Html.Attributes exposing (rows)
+import Html.Attributes exposing (class, type_, href, placeholder, rows)
 
 main : Html msg
-
 main = 
     div[]
     [ nav[class "navbar navbar-light"]
@@ -22,25 +20,21 @@ main =
     , div [class "settings-page"]
         [div [class "container page"] 
             [div [class "row"] 
-                [div [class "col-md-6 col-md-offset-3 col-xs-12"] 
-                    [ h1 [class "text-xs-center"] [text "Your Settings"]
-                    , form [] 
+                [div [class "col-md-10 col-md-offset-1 col-xs-12"] 
+                    [form [] 
                         [ fieldset [class "form-group"] 
-                            [input [class "form-control", type_ "text", placeholder "URL of profile picture"] [] --<!--<input type="file" id="file"> -->
-                            ]
+                            [input [class "form-control form-control-lg", type_ "text", placeholder "Post Title"] []]
                         , fieldset [class "form-group"] 
-                            [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name"] []
-                            ]
+                            [textarea [class "form-control", rows 8, placeholder "Write your post (in markdown)"] []]
                         , fieldset [class "form-group"] 
-                            [textarea [class "form-control form-control-lg", rows 8, placeholder "Short bio about you"] []
+                            [ input [class "form-control", type_ "text", placeholder "Enter tags"] []
+                            , div [class "tag-list"]
+                                [ span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text "programming"]
+                                , span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text "javascript"]
+                                , span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text "webdev"]
+                                ]
                             ]
-                        , fieldset [class "form-group"] 
-                            [input [class "form-control form-control-lg", type_ "text", placeholder "Email"] []
-                            ]
-                        , fieldset [class "form-group"]
-                            [input [class "form-control form-control-ig", type_ "password", placeholder "Password"] []
-                            ]
-                        , button [class "btn btn-lg btn-primary pull-xs-right"] [text "Update Settings"]
+                        , button [class "btn btn-lg btn-primary pull-xs-right"] [text "Create Post"]    
                         ]
                     ]
                 ]
@@ -56,5 +50,3 @@ main =
                 ]
         ]
     ]
-
-

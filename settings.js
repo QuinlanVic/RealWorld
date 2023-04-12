@@ -4511,7 +4511,7 @@ var $author$project$Settings$main = A2(
 											_List_fromArray(
 												[
 													$elm$html$Html$Attributes$class('nav-link'),
-													$elm$html$Html$Attributes$href('editor.html')
+													$elm$html$Html$Attributes$href('editorelm.html')
 												]),
 											_List_fromArray(
 												[
