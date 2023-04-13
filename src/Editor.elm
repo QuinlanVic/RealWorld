@@ -2,7 +2,7 @@ module Editor exposing (main)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, type_, href, placeholder, rows)
+import Html.Attributes exposing (class, href, placeholder, rows, type_)
 
 main : Html msg
 main = 

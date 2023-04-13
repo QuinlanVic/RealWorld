@@ -2,8 +2,7 @@ module Settings exposing (main)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, type_, placeholder)
-import Html.Attributes exposing (rows)
+import Html.Attributes exposing (class, href, placeholder, rows, type_)
 
 main : Html msg
 

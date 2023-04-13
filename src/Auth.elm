@@ -2,7 +2,7 @@ module Auth exposing (main)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, type_, placeholder)
+import Html.Attributes exposing (class, href, placeholder, type_)
 
 --Model--
 -- initialModel : {url : String, caption : String}
