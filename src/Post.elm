@@ -31,10 +31,12 @@ main =
                 , div [class "post-meta"] 
                     [ a [href "profile.html"] 
                         [img [src "http://i.imgur.com/Qr71crq.jpg"][]]
+                    , text (nbsp) --helps make spacing perfect even though it's not exactly included in the og html version
                     , div [class "info"] 
                         [ a [href "profile.html", class "author"] [text "Eric Simons"]
                         , span [class "date"] [text "January 20th"]
                         ]
+                    , text (nbsp) --helps make spacing perfect even though it's not exactly included in the og html version
                     , button [class "btn btn-sm btn-outline-secondary"] 
                         [ i [class "ion-plus-round"][]
                         , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
@@ -122,15 +124,16 @@ main =
                 [div [class "post-meta"] 
                     [ a [href "profile.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
                     , div [class "info"]
-                        [ a [href "profile.html", class "author"] [text "Eric Simons"]
+                        [ a [href "profile.html", class "author"] [text " Eric Simons"]
                         , span [class "date"] [text "January 20th"]
                         ]
                     , button [class "btn btn-sm btn-outline-secondary"]
                         [ i [class "ion-plus-round"] []
-                        , text (nbsp ++ nbsp ++ "  Follow Eric Simons " )
+                        , text (nbsp ++ nbsp)
+                        , text "  Follow Eric Simons "
                         , span [class "counter"] [text "(10)"]
                         ]
-                    , text (nbsp ++ Exts.Html.nbsp)
+                    , text (nbsp ++ nbsp)
                     , button [class "btn btn-sm btn-outline-primary"] 
                         [i [class "ion-heart"] []
                         , text (nbsp ++ nbsp ++ "  Favorite Post ")
