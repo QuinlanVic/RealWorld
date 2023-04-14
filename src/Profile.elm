@@ -2,7 +2,7 @@ module Profile exposing (..)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, placeholder, rows, src, type_)
+import Html.Attributes exposing (class, href, src)
 
 import Exts.Html exposing (nbsp)
 
@@ -30,9 +30,10 @@ main =
                         [ img [src "http://i.imgur.com/Qr71crq.jpg", class "user-img"] []
                         , h4 [] [text "Eric Simons"]
                         , p [] [text " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"]
+                        , text nbsp
                         , button [class "btn btn-sm btn-outline-secondary action-btn"] 
                             [i [class "ion-plus-round"] []
-                            , text (nbsp ++ nbsp ++ "Follow Eric Simons ")
+                            , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
                             , span [class "counter"] [text "(10)"]
                             ]
                         ]
@@ -53,6 +54,7 @@ main =
                     , div [class "post-preview"] 
                         [div [class "post-meta"] 
                             [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
+                            , text nbsp
                             , div [class "info"] 
                                 [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
                                 , span [class "date"] [text "January 20th"]
@@ -62,7 +64,7 @@ main =
                                 , text " 29"
                                 ]
                             ]
-                        , a [href "post-meta", class "preview-link"] --funciton to do these 2
+                        , a [href "post-meta", class "preview-link"]
                             [ h1 [] [text "How to build webapps that scale"]
                             , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. 
                                             Regardless, we're interested in the class names and the appearance of sections in the markup as opposed to the 
@@ -74,6 +76,7 @@ main =
                     , div [class "post-preview"] 
                         [div [class "post-meta"] 
                             [ a [href "profileelm.html"] [img [src "http://i.imgur.com/N4VcUeJ.jpg"] []]
+                            , text nbsp
                             , div [class "info"] 
                                     [ a [href "profileelm.html", class "author"] [text "Albert Pai"]
                                     , span [class "date"] [text "January 20th"]

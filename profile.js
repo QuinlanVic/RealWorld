@@ -4628,6 +4628,7 @@ var $author$project$Profile$main = A2(
 														[
 															$elm$html$Html$text(' Cofounder @GoThinkster, lived in Aol\'s HQ for a few months, kinda looks like Peeta from the Hunger Games')
 														])),
+													$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 													A2(
 													$elm$html$Html$button,
 													_List_fromArray(
@@ -4643,7 +4644,7 @@ var $author$project$Profile$main = A2(
 																	$elm$html$Html$Attributes$class('ion-plus-round')
 																]),
 															_List_Nil),
-															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + 'Follow Eric Simons ')),
+															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
 															A2(
 															$elm$html$Html$span,
 															_List_fromArray(
@@ -4773,6 +4774,7 @@ var $author$project$Profile$main = A2(
 																		]),
 																	_List_Nil)
 																])),
+															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 															A2(
 															$elm$html$Html$div,
 															_List_fromArray(
@@ -4885,6 +4887,7 @@ var $author$project$Profile$main = A2(
 																		]),
 																	_List_Nil)
 																])),
+															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 															A2(
 															$elm$html$Html$div,
 															_List_fromArray(
