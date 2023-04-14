@@ -15,7 +15,7 @@ main =
         [div [class "container"] 
             [ a [class "navbar-brand", href "index.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
-                [ li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][text (nbsp ++ "New Post")]]] --&nbsp; in Elm?
+                [ li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
                 , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
                 -- <!--           <li class="nav-item active">
@@ -37,13 +37,13 @@ main =
                         ]
                     , button [class "btn btn-sm btn-outline-secondary"] 
                         [ i [class "ion-plus-round"][]
-                        , text (Exts.Html.nbsp ++ "Follow Eric Simons")
+                        , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
                         , span [class "counter"] [text "(10)"]
-                        , text (Exts.Html.nbsp ++ Exts.Html.nbsp)
                         ]
+                    , text (nbsp ++ nbsp ++ nbsp ++ nbsp)
                     , button [class "btn btn-sm btn-outline-primary"]
                         [ i [class "ion-heart"] []
-                        , text (Exts.Html.nbsp ++ "Favorite Post")
+                        , text (nbsp ++ nbsp ++ "  Favorite Post ")
                         , span [class "counter"] [text "(29)"]] 
                     ]
                 ]
@@ -71,7 +71,7 @@ main =
                     , p[] [text """Without further ado, we'd like to welcome you to the future of
                            mobile app development, freed from the shackles of native languages & frameworks. 
                            Let's learn what the new mobile stack consists of and how it works."""] 
-                    , h2 [id "introducing-ionic"] [text "Introducing ionic."]
+                    , h2 [id "introducing-ionic"] [text "Introducing Ionic."]
                     , p [] [ text """Before, building hybrid apps was a chore -- not because it was hard to build web pages, but because it was hard to build full-fledged web applications. 
                                     With AngularJS, that has changed. As a result, Angular became the core innovation that made hybrid apps possible. The bright folks at Drifty were some of the 
                                     first to realize this and subsequently created the """
@@ -127,14 +127,13 @@ main =
                         ]
                     , button [class "btn btn-sm btn-outline-secondary"]
                         [ i [class "ion-plus-round"] []
-                        , text (nbsp ++ "Follow Eric Simons" )
+                        , text (nbsp ++ nbsp ++ "  Follow Eric Simons " )
                         , span [class "counter"] [text "(10)"]
                         ]
                     , text (nbsp ++ Exts.Html.nbsp)
                     , button [class "btn btn-sm btn-outline-primary"] 
                         [i [class "ion-heart"] []
-                        --&nbsp;?
-                        , text "Favorite Post"
+                        , text (nbsp ++ nbsp ++ "  Favorite Post ")
                         , span [class "counter"] [text "(29)"]
                         ]
                     ]
@@ -148,7 +147,7 @@ main =
                         , div [class "card-footer"] 
                             [ a [href "profile.html", class "comment-author"] 
                                 [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-                            --&nbsp;
+                            , text (nbsp ++ nbsp)
                             , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
                             , span [class "date-posted"] [text "Dec 29th"]
                             ]
@@ -160,7 +159,7 @@ main =
                         , div [class "card-footer"] 
                             [ a [href "profile.html", class "comment-author"] 
                                 [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-                            --&nbsp;
+                            , text (nbsp ++ nbsp)
                             , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
                             , span [class "date-posted"] [text "Dec 29th"]
                             , span [class "mod-options"] 
@@ -174,7 +173,7 @@ main =
                             [textarea [class "form-control", placeholder "Write a comment...", rows 3] []]
                         , div [class "card-footer"] 
                             [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
-                            , button [class "btn btn-sm btn-primary"] [text "Post Comment"]
+                            , button [class "btn btn-sm btn-primary"] [text " Post Comment"]
                             ]
                         ]
                     ]
@@ -185,9 +184,9 @@ main =
         [ div [class "container"]
             [ a [href "/", class "logo-font"] [text "conduit"]
             , span [class "attribution"] 
-                [ text "An interactive learning project from"
+                [ text "                                                An interactive learning project from "
                 , a [href "https:..thinkster.io"] [text "Thinkster"]
-                , text "Code & design licensed under MIT."
+                , text ". Code & design licensed under MIT."
                 ] 
             ]
         ]
