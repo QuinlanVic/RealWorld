@@ -4,6 +4,8 @@ import Html exposing (..)
 
 import Html.Attributes exposing (class, href, placeholder, rows, type_)
 
+import Exts.Html exposing (nbsp)
+
 main : Html msg
 main = 
     div[]
@@ -11,13 +13,16 @@ main =
         [div [class "container"] 
             [ a [class "navbar-brand", href "index.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
-                [ li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][text "New Post"]]] --&nbsp; in Elm?
+                [ li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
                 , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
+                -- <!--           <li class="nav-item active">
+                --<a class="nav-link" href="index.html">Home</a>
+                --</li> -->
                 ]
             ]
         ]
-    , div [class "settings-page"]
+    , div [class "editor-page"]
         [div [class "container page"] 
             [div [class "row"] 
                 [div [class "col-md-10 col-md-offset-1 col-xs-12"] 
@@ -29,9 +34,11 @@ main =
                         , fieldset [class "form-group"] 
                             [ input [class "form-control", type_ "text", placeholder "Enter tags"] []
                             , div [class "tag-list"]
-                                [ span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text "programming"]
-                                , span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text "javascript"]
-                                , span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text "webdev"]
+                                [ span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text (" programming")]
+                                , text nbsp
+                                , span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text (" javascript")]
+                                , text nbsp
+                                , span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text (" webdev")]
                                 ]
                             ]
                         , button [class "btn btn-lg btn-primary pull-xs-right"] [text "Create Post"]    
@@ -42,11 +49,13 @@ main =
         ]
     , footer []
         [ div [class "container"]
-            [ a [href "/", class "logo-font"] [text "conduit"]]
+            [ a [href "/", class "logo-font"] [text "conduit"]
+            , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
             , span [class "attribution"] 
-                [ text "An interactive learning project from"
+                [ text "An interactive learning project from "
                 , a [href "https:..thinkster.io"] [text "Thinkster"]
-                , text "Code & design licensed under MIT."
-                ]
+                , text ". Code & design licensed under MIT."
+                ] 
+            ]
         ]
     ]

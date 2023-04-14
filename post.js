@@ -5035,6 +5035,7 @@ var $author$project$Post$main = A2(
 														]),
 													_List_Nil)
 												])),
+											$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 											A2(
 											$elm$html$Html$div,
 											_List_fromArray(
@@ -5052,7 +5053,7 @@ var $author$project$Post$main = A2(
 														]),
 													_List_fromArray(
 														[
-															$elm$html$Html$text(' Eric Simons')
+															$elm$html$Html$text('Eric Simons')
 														])),
 													A2(
 													$elm$html$Html$span,
@@ -5065,6 +5066,7 @@ var $author$project$Post$main = A2(
 															$elm$html$Html$text('January 20th')
 														]))
 												])),
+											$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 											A2(
 											$elm$html$Html$button,
 											_List_fromArray(
@@ -5080,9 +5082,7 @@ var $author$project$Post$main = A2(
 															$elm$html$Html$Attributes$class('ion-plus-round')
 														]),
 													_List_Nil),
-													$elm$html$Html$text(
-													_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp)),
-													$elm$html$Html$text('  Follow Eric Simons '),
+													$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
 													A2(
 													$elm$html$Html$span,
 													_List_fromArray(
@@ -5095,7 +5095,9 @@ var $author$project$Post$main = A2(
 														]))
 												])),
 											$elm$html$Html$text(
-											_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp)),
+											_Utils_ap(
+												$krisajenkins$elm_exts$Exts$Html$nbsp,
+												_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
 											A2(
 											$elm$html$Html$button,
 											_List_fromArray(
@@ -5195,7 +5197,9 @@ var $author$project$Post$main = A2(
 																	_List_Nil)
 																])),
 															$elm$html$Html$text(
-															_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp)),
+															_Utils_ap(
+																$krisajenkins$elm_exts$Exts$Html$nbsp,
+																_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
 															A2(
 															$elm$html$Html$a,
 															_List_fromArray(
@@ -5207,6 +5211,7 @@ var $author$project$Post$main = A2(
 																[
 																	$elm$html$Html$text('Jacob Schmidt')
 																])),
+															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 															A2(
 															$elm$html$Html$span,
 															_List_fromArray(
@@ -5273,7 +5278,9 @@ var $author$project$Post$main = A2(
 																	_List_Nil)
 																])),
 															$elm$html$Html$text(
-															_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp)),
+															_Utils_ap(
+																$krisajenkins$elm_exts$Exts$Html$nbsp,
+																_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
 															A2(
 															$elm$html$Html$a,
 															_List_fromArray(
@@ -5285,6 +5292,7 @@ var $author$project$Post$main = A2(
 																[
 																	$elm$html$Html$text('Jacob Schmidt')
 																])),
+															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 															A2(
 															$elm$html$Html$span,
 															_List_fromArray(
@@ -5310,6 +5318,7 @@ var $author$project$Post$main = A2(
 																			$elm$html$Html$Attributes$class('ion-edit')
 																		]),
 																	_List_Nil),
+																	$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 																	A2(
 																	$elm$html$Html$i,
 																	_List_fromArray(
@@ -5402,6 +5411,7 @@ var $author$project$Post$main = A2(
 								[
 									$elm$html$Html$text('conduit')
 								])),
+							$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 							A2(
 							$elm$html$Html$span,
 							_List_fromArray(
@@ -5410,7 +5420,7 @@ var $author$project$Post$main = A2(
 								]),
 							_List_fromArray(
 								[
-									$elm$html$Html$text(' An interactive learning project from '),
+									$elm$html$Html$text('An interactive learning project from '),
 									A2(
 									$elm$html$Html$a,
 									_List_fromArray(

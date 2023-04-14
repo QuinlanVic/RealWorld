@@ -123,17 +123,18 @@ main =
             , div [class "post-actions"]
                 [div [class "post-meta"] 
                     [ a [href "profile.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
+                    , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
                     , div [class "info"]
-                        [ a [href "profile.html", class "author"] [text " Eric Simons"]
+                        [ a [href "profile.html", class "author"] [text "Eric Simons"]
                         , span [class "date"] [text "January 20th"]
                         ]
+                    , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
                     , button [class "btn btn-sm btn-outline-secondary"]
                         [ i [class "ion-plus-round"] []
-                        , text (nbsp ++ nbsp)
-                        , text "  Follow Eric Simons "
+                        , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
                         , span [class "counter"] [text "(10)"]
                         ]
-                    , text (nbsp ++ nbsp)
+                    , text (nbsp ++ nbsp ++ nbsp)
                     , button [class "btn btn-sm btn-outline-primary"] 
                         [i [class "ion-heart"] []
                         , text (nbsp ++ nbsp ++ "  Favorite Post ")
@@ -150,8 +151,9 @@ main =
                         , div [class "card-footer"] 
                             [ a [href "profile.html", class "comment-author"] 
                                 [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-                            , text (nbsp ++ nbsp)
+                            , text (nbsp ++ nbsp ++ nbsp)
                             , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
+                            , text nbsp
                             , span [class "date-posted"] [text "Dec 29th"]
                             ]
                         ]
@@ -162,11 +164,13 @@ main =
                         , div [class "card-footer"] 
                             [ a [href "profile.html", class "comment-author"] 
                                 [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-                            , text (nbsp ++ nbsp)
+                            , text (nbsp ++ nbsp ++ nbsp)
                             , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
+                            , text nbsp
                             , span [class "date-posted"] [text "Dec 29th"]
                             , span [class "mod-options"] 
                                 [ i [class "ion-edit"] []
+                                , text nbsp
                                 , i [class "ion-trash-a"] []
                                 ]
                             ]
@@ -186,8 +190,9 @@ main =
     , footer []
         [ div [class "container"]
             [ a [href "/", class "logo-font"] [text "conduit"]
+            , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
             , span [class "attribution"] 
-                [ text " An interactive learning project from "
+                [ text "An interactive learning project from "
                 , a [href "https:..thinkster.io"] [text "Thinkster"]
                 , text ". Code & design licensed under MIT."
                 ] 

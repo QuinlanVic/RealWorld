@@ -4445,6 +4445,7 @@ var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
+var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$html$Html$span = _VirtualDom_node('span');
@@ -4515,10 +4516,8 @@ var $author$project$Auth$main = A2(
 														[
 															$elm$html$Html$Attributes$class('ion-compose')
 														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('New Post')
-														]))
+													_List_Nil),
+													$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + 'New Post')
 												]))
 										])),
 									A2(
@@ -4722,28 +4721,29 @@ var $author$project$Auth$main = A2(
 							_List_fromArray(
 								[
 									$elm$html$Html$text('conduit')
-								]))
-						])),
-					A2(
-					$elm$html$Html$span,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('attribution')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('An interactive learning project from'),
+								])),
+							$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 							A2(
-							$elm$html$Html$a,
+							$elm$html$Html$span,
 							_List_fromArray(
 								[
-									$elm$html$Html$Attributes$href('https:..thinkster.io')
+									$elm$html$Html$Attributes$class('attribution')
 								]),
 							_List_fromArray(
 								[
-									$elm$html$Html$text('Thinkster')
-								])),
-							$elm$html$Html$text('Code & design licensed under MIT.')
+									$elm$html$Html$text('An interactive learning project from '),
+									A2(
+									$elm$html$Html$a,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$href('https:..thinkster.io')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Thinkster')
+										])),
+									$elm$html$Html$text('. Code & design licensed under MIT.')
+								]))
 						]))
 				]))
 		]));
