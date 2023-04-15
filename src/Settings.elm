@@ -12,7 +12,7 @@ main =
     div[]
     [ nav[class "navbar navbar-light"]
         [div [class "container"] 
-            [ a [class "navbar-brand", href "index.html"] [text "conduit"],
+            [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
                 [ li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
