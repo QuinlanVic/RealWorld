@@ -4485,7 +4485,7 @@ var $author$project$Settings$main = A2(
 							_List_fromArray(
 								[
 									$elm$html$Html$Attributes$class('navbar-brand'),
-									$elm$html$Html$Attributes$href('index.html')
+									$elm$html$Html$Attributes$href('indexelm.html')
 								]),
 							_List_fromArray(
 								[
