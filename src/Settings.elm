@@ -1,14 +1,28 @@
 module Settings exposing (main)
 
+import Browser
+
 import Html exposing (..)
 
 import Html.Attributes exposing (class, href, placeholder, rows, type_)
 
 import Exts.Html exposing (nbsp)
 
-main : Html msg
+--Model--
+-- initialModel : 
+--initialModel =
+--Update--
+-- update :
+-- update =
+--View--
+viewForm : String -> String -> Html msg
+viewForm textType textHolder =
+    fieldset [class "form-group"] 
+        [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
+        ]
 
-main = 
+view : Html msg
+view =
     div[]
     [ nav[class "navbar navbar-light"]
         [div [class "container"] 
@@ -32,18 +46,21 @@ main =
                         [ fieldset [class "form-group"] 
                             [input [class "form-control", type_ "text", placeholder "URL of profile picture"] [] --<!--<input type="file" id="file"> -->
                             ]
-                        , fieldset [class "form-group"] 
-                            [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name"] []
-                            ]
+                        , viewForm "text" "Your Name"
+                        -- , fieldset [class "form-group"] 
+                        --     [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name"] []
+                        --     ]
                         , fieldset [class "form-group"] 
                             [textarea [class "form-control form-control-lg", rows 8, placeholder "Short bio about you"] []
                             ]
-                        , fieldset [class "form-group"] 
-                            [input [class "form-control form-control-lg", type_ "text", placeholder "Email"] []
-                            ]
-                        , fieldset [class "form-group"]
-                            [input [class "form-control form-control-lg", type_ "password", placeholder "Password"] []
-                            ]
+                        , viewForm "text" "Email"
+                        -- , fieldset [class "form-group"] 
+                        --     [input [class "form-control form-control-lg", type_ "text", placeholder "Email"] []
+                        --     ]
+                        , viewForm "password" "Password"
+                        -- , fieldset [class "form-group"]
+                        --     [input [class "form-control form-control-lg", type_ "password", placeholder "Password"] []
+                        --     ]
                         , button [class "btn btn-lg btn-primary pull-xs-right"] [text "Update Settings"]
                         ]
                     ]
@@ -62,5 +79,10 @@ main =
             ]
         ]
     ]
+
+main : Html msg
+
+main = 
+    view 
 
 

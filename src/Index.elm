@@ -1,10 +1,26 @@
 module Index exposing (main)
 
+import Browser
+
 import Html exposing (..)
 
 import Html.Attributes exposing (class, href, src)
 
 import Exts.Html exposing (nbsp)
+
+--Model--
+
+--Update--
+
+--View--
+-- viewTag : List String -> Html msg
+-- viewTag tagList =
+--     div [class "tag-list"]
+--         (List.map viewTags tagList)
+--         [ a [href "#", class "label label-pill label-default"] [text " programming"]
+--         , text nbsp --spaces inbetween the labels
+--         ]
+
 
 main : Html msg
 main =
@@ -91,6 +107,7 @@ main =
                 , div [class "col-md-3"] 
                     [div [class "sidebar"] 
                         [ p [] [text "Popular Tags"]
+                        -- , viewTag [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
                         , div [class "tag-list"] 
                             [ a [href "#", class "label label-pill label-default"] [text " programming"]
                             , text nbsp --spaces inbetween the labels
