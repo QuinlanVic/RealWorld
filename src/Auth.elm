@@ -12,7 +12,11 @@ import Exts.Html exposing (nbsp)
 --Update--
 
 --View--
-
+viewForm : String -> String -> Html msg
+viewForm textType textHolder =
+    fieldset [class "form-group"] 
+        [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
+        ]
 main : Html msg
 main =
     div[]
@@ -36,9 +40,12 @@ main =
                     [h1 [class "text-xs-center"] [text "Sign up"],
                     p [class "text-xs-center"] [a [href "#"] [text "Have an account?"]]        
                     , form []
-                    [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name"] []] --another funciton for this
-                    , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email"] []]
-                    , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password"] []]
+                    [ viewForm "text" "Your Name"
+                    , viewForm "text" "Email"
+                    , viewForm "password" "Password"
+                    -- [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name"] []] --another function for this
+                    -- , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email"] []]
+                    -- , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password"] []]
                     , button [class "btn btn-lg btn-primary pull-xs-right"] [text "Sign up"]
                     ]
                     ]

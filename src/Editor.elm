@@ -34,7 +34,7 @@ main =
                         , fieldset [class "form-group"] 
                             [ input [class "form-control", type_ "text", placeholder "Enter tags"] []
                             , div [class "tag-list"]
-                                [ span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text (" programming")]
+                                [ span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text (" programming")] --function
                                 , text nbsp
                                 , span [class "label label-pill label-default"] [i [class "ion-close-round"] [], text (" javascript")]
                                 , text nbsp

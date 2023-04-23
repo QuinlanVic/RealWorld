@@ -7,16 +7,27 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, src)
 
 import Exts.Html exposing (nbsp)
+import Json.Decode exposing (int)
 
 --Model--
+initialModel : {authorpage : String, authorimage : String, authorname : String, articletitle : String, articlepreview : String, date : String, numlikes : number} 
+initialModel =
+    { authorpage = ""
+    , authorimage = ""
+    , authorname = ""
+    , articletitle = ""
+    , articlepreview = ""
+    , date = ""
+    , numlikes = 0
+    }
 
 --Update--
 
 --View--
--- viewTag : List String -> Html msg
--- viewTag tagList =
+-- viewTags : List String -> Html msg
+-- viewTags tagList =
 --     div [class "tag-list"]
---         (List.map viewTags tagList)
+--         (List.map (\_ x -> text " " ++ x) tagList)
 --         [ a [href "#", class "label label-pill label-default"] [text " programming"]
 --         , text nbsp --spaces inbetween the labels
 --         ]
@@ -49,7 +60,7 @@ main =
         , div [class "container page"] 
             [div [class "row"]
                 [ div [class "col-md-9"] 
-                    [div [class "feed-toggle"] 
+                    [ div [class "feed-toggle"] 
                         [ul [class "nav nav-pills outline-active"] 
                             [ li [class "nav-item"] 
                                 [a [class "nav-link disabled", href "#"] 
@@ -107,7 +118,7 @@ main =
                 , div [class "col-md-3"] 
                     [div [class "sidebar"] 
                         [ p [] [text "Popular Tags"]
-                        -- , viewTag [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
+                        -- , viewTags [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
                         , div [class "tag-list"] 
                             [ a [href "#", class "label label-pill label-default"] [text " programming"]
                             , text nbsp --spaces inbetween the labels
