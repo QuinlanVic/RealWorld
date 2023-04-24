@@ -6,8 +6,14 @@ import Html.Attributes exposing (class, href, id, placeholder, rows, src, target
 
 import Exts.Html exposing (nbsp)
 
-
 --extra Exts.Html installed with "elm package install krisajenkins/elm-exts" for using nbsp
+
+-- Model --
+
+-- Update --
+
+-- View --
+
 main : Html msg
 main =
     div[]

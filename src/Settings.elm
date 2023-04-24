@@ -11,9 +11,11 @@ import Exts.Html exposing (nbsp)
 --Model--
 -- initialModel : 
 --initialModel =
+
 --Update--
 -- update :
 -- update =
+
 --View--
 viewForm : String -> String -> Html msg
 viewForm textType textHolder =
