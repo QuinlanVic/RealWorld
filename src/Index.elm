@@ -8,17 +8,20 @@ import Html.Attributes exposing (class, href, src)
 
 import Exts.Html exposing (nbsp)
 import Json.Decode exposing (int)
+import Response exposing (mapModel)
 
 --Model--
-initialModel : {authorpage : String, authorimage : String, authorname : String, articletitle : String, articlepreview : String, date : String, numlikes : number} 
+initialModel : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String} 
 initialModel =
-    { authorpage = ""
-    , authorimage = ""
-    , authorname = ""
-    , articletitle = ""
-    , articlepreview = ""
-    , date = ""
-    , numlikes = 0
+    { authorpage = "profileelm.html"
+    , authorimage = "http://i.imgur.com/Qr71crq.jpg"
+    , authorname = "Eric Simons"
+    , date = "January 20th"
+    , articletitle = "How to build webapps that scale"
+    , articlepreview = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
+                        the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
+    , numlikes = " 29"
     }
 
 --Update--
@@ -31,6 +34,27 @@ initialModel =
 --         [ a [href "#", class "label label-pill label-default"] [text " programming"]
 --         , text nbsp --spaces inbetween the labels
 --         ]
+view : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String} -> Html msg
+view model =
+    div [class "post-preview"] 
+        [ div [class "post-meta"] 
+            [ a [href model.authorpage] [img [src model.authorimage] []]
+            , text nbsp
+            , div [class "info"] 
+                [ a [href model.authorpage, class "author"] [text model.authorname]
+                , span [class "date"] [text model.date] 
+                ]
+            , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
+                [i [class "ion-heart"] []
+                , text model.numlikes
+                ]
+            ]
+        , a [href "postelm.html", class "preview-link"] 
+            [ h1 [] [text model.articletitle]
+            , p [] [text model.articlepreview]
+            , span [] [text "Read more..."]
+            ]
+        ]
 
 
 main : Html msg
@@ -72,27 +96,28 @@ main =
                                 ]
                             ]
                         ]
-                    , div [class "post-preview"] 
-                        [ div [class "post-meta"] 
-                            [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
-                            , text nbsp
-                            , div [class "info"] 
-                                [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
-                                , span [class "date"] [text "January 20th"] 
-                                ]
-                            , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
-                                [i [class "ion-heart"] []
-                                , text " 29"
-                                ]
-                            ]
-                        , a [href "postelm.html", class "preview-link"] 
-                            [ h1 [] [text "How to build webapps that scale"]
-                            , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
-                                    and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
-                                    the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""]
-                            , span [] [text "Read more..."]
-                            ]
-                        ]
+                    , view initialModel 
+                    -- , div [class "post-preview"] 
+                    --     [ div [class "post-meta"] 
+                    --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
+                    --         , text nbsp
+                    --         , div [class "info"] 
+                    --             [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
+                    --             , span [class "date"] [text "January 20th"] 
+                    --             ]
+                    --         , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
+                    --             [i [class "ion-heart"] []
+                    --             , text " 29"
+                    --             ]
+                    --         ]
+                    --     , a [href "postelm.html", class "preview-link"] 
+                    --         [ h1 [] [text "How to build webapps that scale"]
+                    --         , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+                    --                 and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
+                    --                 the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""]
+                    --         , span [] [text "Read more..."]
+                    --         ]
+                    --     ]
                     , div [class "post-preview"] 
                         [ div [class "post-meta"] 
                             [ a [href "profileelm.html"] [img [src "http://i.imgur.com/N4VcUeJ.jpg"] []]
