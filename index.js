@@ -4441,6 +4441,7 @@ var $elm$html$Html$Attributes$href = function (url) {
 };
 var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$img = _VirtualDom_node('img');
+var $author$project$Index$initialModel = {articlepreview: 'In my demo, the holy grail layout is nested inside a document, so there\'s no body or main tags like shown above. Regardless, we\'re interested in the class names \r\n                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and \r\n                        the trivial order in which they appear in the markup. Let\'s break this down to paint a clear picture of what\'s happening...', articletitle: 'How to build webapps that scale', authorimage: 'http://i.imgur.com/Qr71crq.jpg', authorname: 'Eric Simons', authorpage: 'profileelm.html', date: 'January 20th', liked: false, numlikes: ' 29'};
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
@@ -4455,6 +4456,160 @@ var $elm$html$Html$Attributes$src = function (url) {
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$Index$Like = {$: 'Like'};
+var $author$project$Index$Unlike = {$: 'Unlike'};
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Index$viewPostPreview = function (model) {
+	var msg = model.liked ? $author$project$Index$Unlike : $author$project$Index$Like;
+	var buttonClass = model.liked ? 'fa-heart' : 'fa-heart-o';
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('post-preview')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('post-meta')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$a,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$href(model.authorpage)
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$img,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$src(model.authorimage)
+									]),
+								_List_Nil)
+							])),
+						$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('info')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href(model.authorpage),
+										$elm$html$Html$Attributes$class('author')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(model.authorname)
+									])),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('date')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(model.date)
+									]))
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$i,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('ion-heart'),
+										$elm$html$Html$Attributes$class(buttonClass),
+										$elm$html$Html$Events$onClick(msg)
+									]),
+								_List_Nil),
+								$elm$html$Html$text(model.numlikes)
+							]))
+					])),
+				A2(
+				$elm$html$Html$a,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$href('postelm.html'),
+						$elm$html$Html$Attributes$class('preview-link')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(model.articletitle)
+							])),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(model.articlepreview)
+							])),
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Read more...')
+							]))
+					]))
+			]));
+};
+var $author$project$Index$view = function (model) {
+	return $author$project$Index$viewPostPreview(model);
+};
+var $author$project$Index$viewTag = function (tag) {
+	return A2(
+		$elm$html$Html$a,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$href('#'),
+				$elm$html$Html$Attributes$class('label label-pill label-default')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(tag)
+			]));
+};
 var $author$project$Index$main = A2(
 	$elm$html$Html$div,
 	_List_Nil,
@@ -4690,119 +4845,7 @@ var $author$project$Index$main = A2(
 																]))
 														]))
 												])),
-											A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('post-preview')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('post-meta')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('profileelm.html')
-																]),
-															_List_fromArray(
-																[
-																	A2(
-																	$elm$html$Html$img,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg')
-																		]),
-																	_List_Nil)
-																])),
-															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$div,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('info')
-																]),
-															_List_fromArray(
-																[
-																	A2(
-																	$elm$html$Html$a,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$href('profileelm.html'),
-																			$elm$html$Html$Attributes$class('author')
-																		]),
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$text('Eric Simons')
-																		])),
-																	A2(
-																	$elm$html$Html$span,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$class('date')
-																		]),
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$text('January 20th')
-																		]))
-																])),
-															A2(
-															$elm$html$Html$button,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right')
-																]),
-															_List_fromArray(
-																[
-																	A2(
-																	$elm$html$Html$i,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$class('ion-heart')
-																		]),
-																	_List_Nil),
-																	$elm$html$Html$text(' 29')
-																]))
-														])),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('postelm.html'),
-															$elm$html$Html$Attributes$class('preview-link')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$h1,
-															_List_Nil,
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('How to build webapps that scale')
-																])),
-															A2(
-															$elm$html$Html$p,
-															_List_Nil,
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('In my demo, the holy grail layout is nested inside a document, so there\'s no body or main tags like shown above. Regardless, we\'re interested in the class names \r\n                                    and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and \r\n                                    the trivial order in which they appear in the markup. Let\'s break this down to paint a clear picture of what\'s happening...')
-																])),
-															A2(
-															$elm$html$Html$span,
-															_List_Nil,
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Read more...')
-																]))
-														]))
-												])),
+											$author$project$Index$view($author$project$Index$initialModel),
 											A2(
 											$elm$html$Html$div,
 											_List_fromArray(
@@ -4948,89 +4991,19 @@ var $author$project$Index$main = A2(
 														]),
 													_List_fromArray(
 														[
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('#'),
-																	$elm$html$Html$Attributes$class('label label-pill label-default')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(' programming')
-																])),
+															$author$project$Index$viewTag(' programming'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('#'),
-																	$elm$html$Html$Attributes$class('label label-pill label-default')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(' javascript')
-																])),
+															$author$project$Index$viewTag(' javascript'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('#'),
-																	$elm$html$Html$Attributes$class('label label-pill label-default')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(' angularjs')
-																])),
+															$author$project$Index$viewTag(' angularjs'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('#'),
-																	$elm$html$Html$Attributes$class('label label-pill label-default')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(' react')
-																])),
+															$author$project$Index$viewTag(' react'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('#'),
-																	$elm$html$Html$Attributes$class('label label-pill label-default')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(' mean')
-																])),
+															$author$project$Index$viewTag(' mean'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('#'),
-																	$elm$html$Html$Attributes$class('label label-pill label-default')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(' node')
-																])),
+															$author$project$Index$viewTag(' node'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('#'),
-																	$elm$html$Html$Attributes$class('label label-pill label-default')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(' rails')
-																]))
+															$author$project$Index$viewTag(' rails')
 														]))
 												]))
 										]))

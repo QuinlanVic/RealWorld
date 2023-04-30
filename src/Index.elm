@@ -9,9 +9,11 @@ import Html.Attributes exposing (class, href, src)
 import Exts.Html exposing (nbsp)
 import Json.Decode exposing (int)
 import Response exposing (mapModel)
+import Html.Events exposing (onClick)
+
 
 --Model--
-initialModel : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String} 
+initialModel : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool} 
 initialModel =
     { authorpage = "profileelm.html"
     , authorimage = "http://i.imgur.com/Qr71crq.jpg"
@@ -22,43 +24,64 @@ initialModel =
                         and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
                         the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
     , numlikes = " 29"
+    , liked = False
     }
 
 --Update--
-
+update : Msg -> {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool} -> {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool}
+update msg model =
+    case msg of
+        Like -> {model | liked = True}
+        Unlike -> {model | liked = False}
 --View--
+viewTag : String -> Html msg
+viewTag tag =
+    a [href "#", class "label label-pill label-default"] [text tag] 
+    
 -- viewTags : List String -> Html msg
 -- viewTags tagList =
 --     div [class "tag-list"]
---         (List.map (\_ x -> text " " ++ x) tagList)
+--         case tag of tagList
 --         [ a [href "#", class "label label-pill label-default"] [text " programming"]
 --         , text nbsp --spaces inbetween the labels
 --         ]
-view : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String} -> Html msg
-view model =
+
+viewPostPreview : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool} -> Html Msg 
+viewPostPreview model =
+    let 
+        buttonClass =
+            if model.liked then 
+                "fa-heart"
+            else 
+                "fa-heart-o"
+        msg =
+            if model.liked then 
+                Unlike
+            else 
+                Like
+    in
     div [class "post-preview"] 
         [ div [class "post-meta"] 
-            [ a [href model.authorpage] [img [src model.authorimage] []]
-            , text nbsp
-            , div [class "info"] 
-                [ a [href model.authorpage, class "author"] [text model.authorname]
-                , span [class "date"] [text model.date] 
+                [ a [href model.authorpage] [img [src model.authorimage] []]
+                , text nbsp
+                , div [class "info"] 
+                    [ a [href model.authorpage, class "author"] [text model.authorname]
+                    , span [class "date"] [text model.date] 
+                    ]
+                , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
+                    [i [class "ion-heart", class buttonClass, onClick msg] []
+                    , text model.numlikes
+                    ]
                 ]
-            , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
-                [i [class "ion-heart"] []
-                , text model.numlikes
+            , a [href "postelm.html", class "preview-link"] 
+                [ h1 [] [text model.articletitle]
+                , p [] [text model.articlepreview]
+                , span [] [text "Read more..."]
                 ]
-            ]
-        , a [href "postelm.html", class "preview-link"] 
-            [ h1 [] [text model.articletitle]
-            , p [] [text model.articlepreview]
-            , span [] [text "Read more..."]
-            ]
         ]
 
-
-main : Html msg
-main =
+view : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool} -> Html Msg
+view model =
     div[]
     [ nav[class "navbar navbar-light"]
         [div [class "container"] 
@@ -96,7 +119,7 @@ main =
                                 ]
                             ]
                         ]
-                    , view initialModel 
+                    , viewPostPreview model 
                     -- , div [class "post-preview"] 
                     --     [ div [class "post-meta"] 
                     --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
@@ -145,19 +168,26 @@ main =
                         [ p [] [text "Popular Tags"]
                         -- , viewTags [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
                         , div [class "tag-list"] 
-                            [ a [href "#", class "label label-pill label-default"] [text " programming"]
+                            [ viewTag " programming"
+                            --   a [href "#", class "label label-pill label-default"] [text " programming"]
                             , text nbsp --spaces inbetween the labels
-                            , a [href "#", class "label label-pill label-default"] [text " javascript"]
+                            , viewTag " javascript"
+                            -- , a [href "#", class "label label-pill label-default"] [text " javascript"]
                             , text nbsp
-                            , a [href "#", class "label label-pill label-default"] [text " angularjs"]
+                            , viewTag " angularjs"
+                            -- , a [href "#", class "label label-pill label-default"] [text " angularjs"]
                             , text nbsp
-                            , a [href "#", class "label label-pill label-default"] [text " react"]
+                            , viewTag " react"
+                            -- , a [href "#", class "label label-pill label-default"] [text " react"]
                             , text nbsp
-                            , a [href "#", class "label label-pill label-default"] [text " mean"]
+                            , viewTag " mean"
+                            -- , a [href "#", class "label label-pill label-default"] [text " mean"]
                             , text nbsp
-                            , a [href "#", class "label label-pill label-default"] [text " node"]
+                            , viewTag " node"
+                            -- , a [href "#", class "label label-pill label-default"] [text " node"]
                             , text nbsp
-                            , a [href "#", class "label label-pill label-default"] [text " rails"]
+                            , viewTag " rails"
+                            -- , a [href "#", class "label label-pill label-default"] [text " rails"]
                             ]
                         ]
                     ]
@@ -176,3 +206,17 @@ main =
             ]
         ]
     ]
+    
+
+type Msg =
+    Like 
+    | Unlike 
+
+main : Program () {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String,  liked : Bool } Msg
+main = 
+    Browser.sandbox
+            { init = initialModel
+            , view = view
+            , update = update 
+            }
+    
