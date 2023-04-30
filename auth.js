@@ -4431,7 +4431,6 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$footer = _VirtualDom_node('footer');
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
@@ -4442,17 +4441,39 @@ var $elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var $elm$html$Html$i = _VirtualDom_node('i');
-var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
 var $elm$html$Html$p = _VirtualDom_node('p');
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $author$project$Auth$viewForm = F2(
+	function (textType, textHolder) {
+		return A2(
+			$elm$html$Html$fieldset,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('form-group')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$input,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('form-control form-control-lg'),
+							$elm$html$Html$Attributes$type_(textType),
+							$elm$html$Html$Attributes$placeholder(textHolder)
+						]),
+					_List_Nil)
+				]));
+	});
 var $author$project$Auth$main = A2(
 	$elm$html$Html$div,
 	_List_Nil,
@@ -4629,60 +4650,9 @@ var $author$project$Auth$main = A2(
 											_List_Nil,
 											_List_fromArray(
 												[
-													A2(
-													$elm$html$Html$fieldset,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('form-group')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$input,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																	$elm$html$Html$Attributes$type_('text'),
-																	$elm$html$Html$Attributes$placeholder('Your Name')
-																]),
-															_List_Nil)
-														])),
-													A2(
-													$elm$html$Html$fieldset,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('form-group')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$input,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																	$elm$html$Html$Attributes$type_('text'),
-																	$elm$html$Html$Attributes$placeholder('Email')
-																]),
-															_List_Nil)
-														])),
-													A2(
-													$elm$html$Html$fieldset,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('form-group')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$input,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																	$elm$html$Html$Attributes$type_('password'),
-																	$elm$html$Html$Attributes$placeholder('Password')
-																]),
-															_List_Nil)
-														])),
+													A2($author$project$Auth$viewForm, 'text', 'Your Name'),
+													A2($author$project$Auth$viewForm, 'text', 'Email'),
+													A2($author$project$Auth$viewForm, 'password', 'Password'),
 													A2(
 													$elm$html$Html$button,
 													_List_fromArray(

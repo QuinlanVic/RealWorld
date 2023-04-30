@@ -4846,6 +4846,7 @@ var $author$project$Index$main = A2(
 														]))
 												])),
 											$author$project$Index$view($author$project$Index$initialModel),
+											$author$project$Index$view($author$project$Index$initialModel),
 											A2(
 											$elm$html$Html$div,
 											_List_fromArray(
@@ -4992,17 +4993,29 @@ var $author$project$Index$main = A2(
 													_List_fromArray(
 														[
 															$author$project$Index$viewTag(' programming'),
+															$author$project$Index$viewTag(' programming'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+															$author$project$Index$viewTag(' javascript'),
 															$author$project$Index$viewTag(' javascript'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 															$author$project$Index$viewTag(' angularjs'),
+															$author$project$Index$viewTag(' angularjs'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+															$author$project$Index$viewTag(' react'),
 															$author$project$Index$viewTag(' react'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 															$author$project$Index$viewTag(' mean'),
+															$author$project$Index$viewTag(' mean'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 															$author$project$Index$viewTag(' node'),
+															$author$project$Index$viewTag(' node'),
 															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+															$author$project$Index$viewTag(' rails')
+														]))
+												]))
+										]))
+								]))
+						]))
 															$author$project$Index$viewTag(' rails')
 														]))
 												]))
