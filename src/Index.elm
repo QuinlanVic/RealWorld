@@ -13,7 +13,9 @@ import Html.Events exposing (onClick)
 
 
 --Model--
-initialModel : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool} 
+type alias Model =
+    {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool}
+initialModel : Model 
 initialModel =
     { authorpage = "profileelm.html"
     , authorimage = "http://i.imgur.com/Qr71crq.jpg"
@@ -28,11 +30,12 @@ initialModel =
     }
 
 --Update--
-update : Msg -> {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool} -> {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool}
+update : Msg -> Model -> Model
 update msg model =
     case msg of
-        Like -> {model | liked = True}
-        Unlike -> {model | liked = False}
+        ToggleLike -> {model | liked = not model.liked}
+        -- Like -> {model | liked = True}
+        -- Unlike -> {model | liked = False}
 --View--
 viewTag : String -> Html msg
 viewTag tag =
@@ -46,20 +49,22 @@ viewTag tag =
 --         , text nbsp --spaces inbetween the labels
 --         ]
 
-viewPostPreview : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool} -> Html Msg 
-viewPostPreview model =
+viewLoveButton : Model -> Html Msg 
+viewLoveButton model =
     let 
         buttonClass =
             if model.liked then 
                 "fa-heart"
             else 
                 "fa-heart-o"
-        msg =
-            if model.liked then 
-                Unlike
-            else 
-                Like
     in
+    button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
+           [i [class "ion-heart", class buttonClass, onClick ToggleLike] []
+           , text model.numlikes
+           ]
+
+viewPostPreview : Model -> Html Msg 
+viewPostPreview model =
     div [class "post-preview"] 
         [ div [class "post-meta"] 
                 [ a [href model.authorpage] [img [src model.authorimage] []]
@@ -68,10 +73,7 @@ viewPostPreview model =
                     [ a [href model.authorpage, class "author"] [text model.authorname]
                     , span [class "date"] [text model.date] 
                     ]
-                , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
-                    [i [class "ion-heart", class buttonClass, onClick msg] []
-                    , text model.numlikes
-                    ]
+                , viewLoveButton model
                 ]
             , a [href "postelm.html", class "preview-link"] 
                 [ h1 [] [text model.articletitle]
@@ -80,7 +82,7 @@ viewPostPreview model =
                 ]
         ]
 
-view : {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool} -> Html Msg
+view : Model -> Html Msg
 view model =
     div[]
     [ nav[class "navbar navbar-light"]
@@ -209,10 +211,9 @@ view model =
     
 
 type Msg =
-    Like 
-    | Unlike 
+    ToggleLike 
 
-main : Program () {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String,  liked : Bool } Msg
+main : Program () Model Msg
 main = 
     Browser.sandbox
             { init = initialModel

@@ -5181,17 +5181,12 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			view: impl.view
 		});
 };
+var $elm$core$Basics$not = _Basics_not;
 var $author$project$Index$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'Like') {
-			return _Utils_update(
-				model,
-				{liked: true});
-		} else {
-			return _Utils_update(
-				model,
-				{liked: false});
-		}
+		return _Utils_update(
+			model,
+			{liked: !model.liked});
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$button = _VirtualDom_node('button');
@@ -5229,8 +5224,7 @@ var $elm$html$Html$Attributes$src = function (url) {
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Index$Like = {$: 'Like'};
-var $author$project$Index$Unlike = {$: 'Unlike'};
+var $author$project$Index$ToggleLike = {$: 'ToggleLike'};
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5248,9 +5242,29 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Index$viewPostPreview = function (model) {
-	var msg = model.liked ? $author$project$Index$Unlike : $author$project$Index$Like;
+var $author$project$Index$viewLoveButton = function (model) {
 	var buttonClass = model.liked ? 'fa-heart' : 'fa-heart-o';
+	return A2(
+		$elm$html$Html$button,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$i,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('ion-heart'),
+						$elm$html$Html$Attributes$class(buttonClass),
+						$elm$html$Html$Events$onClick($author$project$Index$ToggleLike)
+					]),
+				_List_Nil),
+				$elm$html$Html$text(model.numlikes)
+			]));
+};
+var $author$project$Index$viewPostPreview = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -5314,25 +5328,7 @@ var $author$project$Index$viewPostPreview = function (model) {
 										$elm$html$Html$text(model.date)
 									]))
 							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$i,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('ion-heart'),
-										$elm$html$Html$Attributes$class(buttonClass),
-										$elm$html$Html$Events$onClick(msg)
-									]),
-								_List_Nil),
-								$elm$html$Html$text(model.numlikes)
-							]))
+						$author$project$Index$viewLoveButton(model)
 					])),
 				A2(
 				$elm$html$Html$a,
