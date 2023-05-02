@@ -2,19 +2,94 @@ module Post exposing (..)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, id, placeholder, rows, src, target)
+import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, target, value)
 
 import Exts.Html exposing (nbsp)
+
+import Html.Events exposing (onClick, onInput, onSubmit)
 
 --extra Exts.Html installed with "elm package install krisajenkins/elm-exts" for using nbsp
 
 -- Model --
+type Msg =
+    ToggleLike 
+    | UpdateComment String
+    | SaveComment 
 
+type alias Model =
+    { heading : String
+    , authorpage : String
+    , authorimage : String
+    , authorname : String
+    , date : String 
+    , article : String 
+    , comments : List String
+    , newComment : String
+    }
+
+initialModel : Model 
+initialModel =
+    { heading = "How to build webapps that scale"
+    , authorpage = "profile.html"
+    , authorimage = "http://i.imgur.com/Qr71crq.jpg"
+    , authorname = "Eric Simons"
+    , date = "January 20th" 
+    , article = "String" 
+    , comments = ["With supporting text below as a natural lead-in to additional content.", "With supporting text below as a natural lead-in to additional content."]
+    , newComment = ""
+    }
 -- Update --
+-- update : Msg -> Model -> Model 
+-- update model =
 
 -- View --
+-- view : Model -> Html Msg
+-- view model =
 
-main : Html msg
+viewComment : String -> Html Msg
+viewComment comment = --display a comment 
+    div [class "card"]  
+        [div [class "card-block"] 
+            [p [class "card-text"] [text comment]
+            ]
+        , div [class "card-footer"] 
+            [ a [href "profile.html", class "comment-author"] 
+                [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
+            , text (nbsp ++ nbsp ++ nbsp)
+            , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
+            , text nbsp
+            , span [class "date-posted"] [text "Dec 29th"]
+            , span [class "mod-options"] 
+                [ i [class "ion-edit"] []
+                , text nbsp
+                , i [class "ion-trash-a"] []
+                ]
+            ]
+        ]
+
+viewCommentList : List String -> Html Msg
+viewCommentList comments = --display a list of comments (if there are)
+    case comments of
+        [] -> text ""
+        _ ->
+            div [class "col-md-8 col-md-offset-2"] 
+                (List.map viewComment comments)
+
+viewComments : Model -> Html Msg
+viewComments model = --display all the comments and a place for adding a new comment 
+     div [class "row"]
+        [ viewCommentList model.comments
+        , form [class "card comment-form", onSubmit SaveComment] 
+            [ div [class "card-block"] 
+                [textarea [class "form-control", placeholder "Write a comment...", rows 3] []]
+            , div [class "card-footer"] 
+                [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
+                , button [class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment)] [text " Post Comment"]
+                ]
+            ]
+        ]
+
+main : Html Msg
 main =
     div[]
     [ nav[class "navbar navbar-light"]
