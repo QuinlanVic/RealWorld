@@ -4,7 +4,7 @@ import Browser
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, src)
+import Html.Attributes exposing (class, href, src, style)
 
 import Exts.Html exposing (nbsp)
 import Json.Decode exposing (int)
@@ -54,12 +54,17 @@ viewLoveButton model =
     let 
         buttonClass =
             if model.liked then 
-                "fa-heart"
+                style "background-color" "#d00"
             else 
-                "fa-heart-o"
+                style "" ""
+        heartClass =
+            if model.liked then
+                style "color" "#fff"
+            else 
+                style "" ""
     in
-    button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
-           [i [class "ion-heart", class buttonClass, onClick ToggleLike] []
+    button [class "btn btn-outline-primary btn-sm pull-xs-right", buttonClass, onClick ToggleLike] 
+           [i [class "ion-heart", heartClass] []
            , text model.numlikes
            ]
 

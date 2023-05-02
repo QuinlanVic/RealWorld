@@ -7,18 +7,37 @@ import Html.Attributes exposing (class, href, placeholder, type_)
 import Exts.Html exposing (nbsp)
 
 --Model--
--- initialModel : {url : String, caption : String}
+type alias User =
+    { name : String
+    , email : String
+    , password : String
+    , loggedIn : Bool 
+    }
+initialModel : User
+initialModel =
+    { name = ""
+    , email = ""
+    , password = ""
+    , loggedIn = False
+    }
 
 --Update--
-
+update : Msg -> User -> User 
+update message user =
+    case message of
+        SaveName name -> { user | name = name }
+        SaveEmail email -> { user | email = email }
+        SavePassword password -> {user | password = password }
+        Signup -> { user | loggedIn = True }
 --View--
 viewForm : String -> String -> Html msg
 viewForm textType textHolder =
     fieldset [class "form-group"] 
         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
         ]
-main : Html msg
-main =
+    
+view : User -> Html msg
+view user =
     div[]
     [ nav[class "navbar navbar-light"]
         [div [class "container"] 
@@ -65,3 +84,15 @@ main =
         ]
     ]
 --div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
+
+
+type Msg 
+    = SaveName String 
+    | SaveEmail String
+    | SavePassword String
+    | Signup 
+
+
+main : Html msg
+main =
+    view initialModel 

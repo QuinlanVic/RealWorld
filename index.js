@@ -5242,13 +5242,18 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Index$viewLoveButton = function (model) {
-	var buttonClass = model.liked ? 'fa-heart' : 'fa-heart-o';
+	var heartClass = model.liked ? A2($elm$html$Html$Attributes$style, 'color', '#fff') : A2($elm$html$Html$Attributes$style, '', '');
+	var buttonClass = model.liked ? A2($elm$html$Html$Attributes$style, 'background-color', '#d00') : A2($elm$html$Html$Attributes$style, '', '');
 	return A2(
 		$elm$html$Html$button,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right')
+				$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right'),
+				buttonClass,
+				$elm$html$Html$Events$onClick($author$project$Index$ToggleLike)
 			]),
 		_List_fromArray(
 			[
@@ -5257,8 +5262,7 @@ var $author$project$Index$viewLoveButton = function (model) {
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('ion-heart'),
-						$elm$html$Html$Attributes$class(buttonClass),
-						$elm$html$Html$Events$onClick($author$project$Index$ToggleLike)
+						heartClass
 					]),
 				_List_Nil),
 				$elm$html$Html$text(model.numlikes)

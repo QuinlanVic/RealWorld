@@ -1,4 +1,4 @@
-module Settings exposing (main)
+module Settings exposing (UserSettings, main)
 
 import Browser
 
@@ -7,14 +7,37 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, type_)
 
 import Exts.Html exposing (nbsp)
+import Exts.Html.Bootstrap.Glyphicons exposing (Glyphicon(..))
 
 --Model--
--- initialModel : 
---initialModel =
+type alias UserSettings =
+    { urlpic : String
+    , name : String
+    , bio : String
+    , email : String
+    , password : String
+    , updated : Bool
+    }
 
+initialModel : UserSettings
+initialModel =
+    { urlpic = ""
+    , name = ""
+    , bio = ""
+    , email = ""
+    , password = ""
+    , updated = False 
+    }    
 --Update--
--- update :
--- update =
+update : Msg -> UserSettings -> UserSettings  
+update message userset =
+    case message of
+        SavePic urlpic -> { userset | urlpic = urlpic }
+        SaveName name -> { userset | name = name }
+        SaveBio bio -> { userset | bio = bio }
+        SaveEmail email -> { userset | email = email }
+        SavePassword password -> {userset | password = password }
+        UpdateSettings -> { userset | updated = True }
 
 --View--
 viewForm : String -> String -> Html msg
@@ -23,8 +46,8 @@ viewForm textType textHolder =
         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
         ]
 
-view : Html msg
-view =
+view : UserSettings -> Html msg
+view user =
     div[]
     [ nav[class "navbar navbar-light"]
         [div [class "container"] 
@@ -82,9 +105,16 @@ view =
         ]
     ]
 
-main : Html msg
+type Msg 
+    = SavePic String 
+    | SaveName String 
+    | SaveBio String 
+    | SaveEmail String
+    | SavePassword String
+    | UpdateSettings  
 
+main : Html msg
 main = 
-    view 
+    view initialModel
 
 
