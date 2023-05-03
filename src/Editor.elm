@@ -5,18 +5,38 @@ import Exts.Html exposing (nbsp)
 import Html exposing (..)
 
 import Html.Attributes exposing (class, href, placeholder, rows, type_)
+import Post exposing (Msg)
+import Html.Events exposing (onClick, onInput)
 
-
+import Browser
 
 -- Model --
+type alias Post =
+    { title : String
+    , content : String
+    , tags : List String 
+    , created : Bool
+    }
 
+initialModel : Post 
+initialModel =
+    { title = ""
+    , content = ""
+    , tags = [""]
+    , created = False 
+    }
 -- Update --
+update : Msg -> Post -> Post 
+update message post =
+    case message of
+        SaveTitle title -> { post | title = title } --update record syntax
+        SaveContent content -> { post | content = content }
+        SaveTags tags -> {post | tags = tags }
+        CreatePost -> { post | created = True }
 
 -- View --
-
-
-main : Html msg
-main =
+view : Post -> Html Msg 
+view post =
     div []
         [ nav [ class "navbar navbar-light" ]
             [ div [ class "container" ]
@@ -39,11 +59,11 @@ main =
                     [ div [ class "col-md-10 col-md-offset-1 col-xs-12" ]
                         [ form []
                             [ fieldset [ class "form-group" ]
-                                [ input [ class "form-control form-control-lg", type_ "text", placeholder "Post Title" ] [] ]
+                                [ input [ class "form-control form-control-lg", type_ "text", placeholder "Post Title", onInput SaveTitle ] [] ]
                             , fieldset [ class "form-group" ]
-                                [ textarea [ class "form-control", rows 8, placeholder "Write your post (in markdown)" ] [] ]
+                                [ textarea [ class "form-control", rows 8, placeholder "Write your post (in markdown)", onInput SaveContent ] [] ]
                             , fieldset [ class "form-group" ]
-                                [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] []
+                                [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] [] --, onInput SaveTitle (have to do it for a list of strings)
                                 , div [ class "tag-list" ]
                                     [ span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " programming" ] --function
                                     , text nbsp
@@ -52,7 +72,7 @@ main =
                                     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " webdev" ]
                                     ]
                                 ]
-                            , button [ class "btn btn-lg btn-primary pull-xs-right" ] [ text "Create Post" ]
+                            , button [ class "btn btn-lg btn-primary pull-xs-right", onClick CreatePost ] [ text "Create Post" ]
                             ]
                         ]
                     ]
@@ -70,3 +90,16 @@ main =
                 ]
             ]
         ]
+type Msg 
+    = SaveTitle String 
+    | SaveContent String 
+    | SaveTags (List String)
+    | CreatePost
+
+main : Program () Post Msg 
+main =
+     Browser.sandbox
+        { init = initialModel
+        , view = view
+        , update = update 
+        }

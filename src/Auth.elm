@@ -6,6 +6,9 @@ import Html.Attributes exposing (class, href, placeholder, type_)
 
 import Exts.Html exposing (nbsp)
 
+import Html.Events exposing (onClick, onInput)
+import Browser
+
 --Model--
 type alias User =
     { name : String
@@ -23,20 +26,29 @@ initialModel =
 
 --Update--
 update : Msg -> User -> User 
-update message user =
+update message user = --what to do (update) with each message type
     case message of
-        SaveName name -> { user | name = name }
+        SaveName name -> { user | name = name } --update record syntax
         SaveEmail email -> { user | email = email }
         SavePassword password -> {user | password = password }
         Signup -> { user | loggedIn = True }
+        Error errormsg -> user 
 --View--
-viewForm : String -> String -> Html msg
+getType : String -> String -> Msg
+getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)
+    case messageType of
+        "Your Name" -> SaveName  
+        "Email" -> SaveEmail  
+        "Password" -> SavePassword
+        _ -> Error    
+
+viewForm : String -> String -> Html Msg
 viewForm textType textHolder =
     fieldset [class "form-group"] 
-        [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
+        [input [class "form-control form-control-lg", type_ textType, placeholder textHolder, onInput (getType textType)] []
         ]
     
-view : User -> Html msg
+view : User -> Html Msg
 view user =
     div[]
     [ nav[class "navbar navbar-light"]
@@ -62,10 +74,10 @@ view user =
                     [ viewForm "text" "Your Name"
                     , viewForm "text" "Email"
                     , viewForm "password" "Password"
-                    -- [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name"] []] --another function for this
-                    -- , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email"] []]
-                    -- , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password"] []]
-                    , button [class "btn btn-lg btn-primary pull-xs-right"] [text "Sign up"]
+                    -- [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []] --another function for this
+                    -- , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []]
+                    -- , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []]
+                    , button [class "btn btn-lg btn-primary pull-xs-right", onClick Signup] [text "Sign up"]
                     ]
                     ]
                 ]
@@ -85,14 +97,19 @@ view user =
     ]
 --div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
 
-
+--messages for defining what the update is to do upon interactivity
 type Msg 
     = SaveName String 
     | SaveEmail String
     | SavePassword String
     | Signup 
+    | Error String 
 
 
-main : Html msg
+main : Program () User Msg 
 main =
-    view initialModel 
+    Browser.sandbox
+        { init = initialModel
+        , view = view
+        , update = update 
+        }
