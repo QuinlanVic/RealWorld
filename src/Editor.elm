@@ -63,7 +63,7 @@ view post =
                             , fieldset [ class "form-group" ]
                                 [ textarea [ class "form-control", rows 8, placeholder "Write your post (in markdown)", onInput SaveContent ] [] ]
                             , fieldset [ class "form-group" ]
-                                [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] [] --, onInput SaveTitle (have to do it for a list of strings)
+                                [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] [] --, onInput SaveTags (have to do it for a list of strings (split into strings to be passed into list))
                                 , div [ class "tag-list" ]
                                     [ span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " programming" ] --function
                                     , text nbsp

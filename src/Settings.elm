@@ -8,6 +8,7 @@ import Html.Attributes exposing (class, href, placeholder, rows, type_)
 
 import Exts.Html exposing (nbsp)
 import Exts.Html.Bootstrap.Glyphicons exposing (Glyphicon(..))
+import Html.Events exposing (onClick, onInput)
 
 --Model--
 type alias UserSettings =
@@ -28,6 +29,7 @@ initialModel =
     , password = ""
     , updated = False 
     }    
+
 --Update--
 update : Msg -> UserSettings -> UserSettings  
 update message userset =
@@ -40,13 +42,20 @@ update message userset =
         UpdateSettings -> { userset | updated = True }
 
 --View--
-viewForm : String -> String -> Html msg
-viewForm textType textHolder =
-    fieldset [class "form-group"] 
-        [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
-        ]
+-- getType : String -> String -> Msg
+-- getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)
+--     case messageType of
+--         "Your Name" -> SaveName  
+--         "Email" -> SaveEmail  
+--         "Password" -> SavePassword
+--         _ -> Error   
+-- viewForm : String -> String -> Html Msg
+-- viewForm textType textHolder =
+--     fieldset [class "form-group"] 
+--         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
+--         ]
 
-view : UserSettings -> Html msg
+view : UserSettings -> Html Msg
 view user =
     div[]
     [ nav[class "navbar navbar-light"]
@@ -69,24 +78,24 @@ view user =
                     [ h1 [class "text-xs-center"] [text "Your Settings"]
                     , form [] 
                         [ fieldset [class "form-group"] 
-                            [input [class "form-control", type_ "text", placeholder "URL of profile picture"] [] --<!--<input type="file" id="file"> -->
+                            [input [class "form-control", type_ "text", placeholder "URL of profile picture", onInput SavePic] [] --<!--<input type="file" id="file"> -->
                             ]
-                        , viewForm "text" "Your Name"
-                        -- , fieldset [class "form-group"] 
-                        --     [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name"] []
-                        --     ]
+                        -- , viewForm "text" "Your Name"
                         , fieldset [class "form-group"] 
-                            [textarea [class "form-control form-control-lg", rows 8, placeholder "Short bio about you"] []
+                            [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []
                             ]
-                        , viewForm "text" "Email"
-                        -- , fieldset [class "form-group"] 
-                        --     [input [class "form-control form-control-lg", type_ "text", placeholder "Email"] []
-                        --     ]
-                        , viewForm "password" "Password"
-                        -- , fieldset [class "form-group"]
-                        --     [input [class "form-control form-control-lg", type_ "password", placeholder "Password"] []
-                        --     ]
-                        , button [class "btn btn-lg btn-primary pull-xs-right"] [text "Update Settings"]
+                        , fieldset [class "form-group"] 
+                            [textarea [class "form-control form-control-lg", rows 8, placeholder "Short bio about you", onInput SaveBio] []
+                            ]
+                        -- , viewForm "text" "Email"
+                        , fieldset [class "form-group"] 
+                            [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []
+                            ]
+                        -- , viewForm "password" "Password"
+                        , fieldset [class "form-group"]
+                            [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []
+                            ]
+                        , button [class "btn btn-lg btn-primary pull-xs-right", onClick UpdateSettings] [text "Update Settings"]
                         ]
                     ]
                 ]
@@ -113,8 +122,12 @@ type Msg
     | SavePassword String
     | UpdateSettings  
 
-main : Html msg
+main : Program () UserSettings Msg 
 main = 
-    view initialModel
+    Browser.sandbox
+    { init = initialModel
+    , view = view
+    , update = update 
+    }
 
 

@@ -5,9 +5,29 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, src)
 
 import Exts.Html exposing (nbsp)
+import Post exposing (initialModel)
 
-main : Html msg
-main =
+-- Model --
+type alias Model =
+    { authorimage : String 
+    , authorname : String
+    , authorbio : String
+    }
+    
+initialModel : Model 
+initialModel =
+    { authorimage = "" 
+    , authorname = ""
+    , authorbio = ""
+    }
+
+-- Update --
+-- update : Msg -> Model -> Model 
+-- update message model =
+
+-- View --
+view : Model -> Html msg 
+view model =
     div[]
     [ nav[class "navbar navbar-light"]
         [div [class "container"] 
@@ -111,3 +131,8 @@ main =
             ]
         ]
     ]
+-- type Msg =
+
+main : Html msg
+main =
+    view initialModel

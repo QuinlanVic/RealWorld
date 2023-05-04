@@ -80,6 +80,271 @@ function A9(fun, a, b, c, d, e, f, g, h, i) {
 console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.1/optimize for better performance and smaller assets.');
 
 
+// EQUALITY
+
+function _Utils_eq(x, y)
+{
+	for (
+		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
+		isEqual && (pair = stack.pop());
+		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
+		)
+	{}
+
+	return isEqual;
+}
+
+function _Utils_eqHelp(x, y, depth, stack)
+{
+	if (x === y)
+	{
+		return true;
+	}
+
+	if (typeof x !== 'object' || x === null || y === null)
+	{
+		typeof x === 'function' && _Debug_crash(5);
+		return false;
+	}
+
+	if (depth > 100)
+	{
+		stack.push(_Utils_Tuple2(x,y));
+		return true;
+	}
+
+	/**/
+	if (x.$ === 'Set_elm_builtin')
+	{
+		x = $elm$core$Set$toList(x);
+		y = $elm$core$Set$toList(y);
+	}
+	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
+	{
+		x = $elm$core$Dict$toList(x);
+		y = $elm$core$Dict$toList(y);
+	}
+	//*/
+
+	/**_UNUSED/
+	if (x.$ < 0)
+	{
+		x = $elm$core$Dict$toList(x);
+		y = $elm$core$Dict$toList(y);
+	}
+	//*/
+
+	for (var key in x)
+	{
+		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+var _Utils_equal = F2(_Utils_eq);
+var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
+
+
+
+// COMPARISONS
+
+// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
+// the particular integer values assigned to LT, EQ, and GT.
+
+function _Utils_cmp(x, y, ord)
+{
+	if (typeof x !== 'object')
+	{
+		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
+	}
+
+	/**/
+	if (x instanceof String)
+	{
+		var a = x.valueOf();
+		var b = y.valueOf();
+		return a === b ? 0 : a < b ? -1 : 1;
+	}
+	//*/
+
+	/**_UNUSED/
+	if (typeof x.$ === 'undefined')
+	//*/
+	/**/
+	if (x.$[0] === '#')
+	//*/
+	{
+		return (ord = _Utils_cmp(x.a, y.a))
+			? ord
+			: (ord = _Utils_cmp(x.b, y.b))
+				? ord
+				: _Utils_cmp(x.c, y.c);
+	}
+
+	// traverse conses until end of a list or a mismatch
+	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
+	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
+}
+
+var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
+var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
+var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
+var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
+
+var _Utils_compare = F2(function(x, y)
+{
+	var n = _Utils_cmp(x, y);
+	return n < 0 ? $elm$core$Basics$LT : n ? $elm$core$Basics$GT : $elm$core$Basics$EQ;
+});
+
+
+// COMMON VALUES
+
+var _Utils_Tuple0_UNUSED = 0;
+var _Utils_Tuple0 = { $: '#0' };
+
+function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
+function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
+
+function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
+function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
+
+function _Utils_chr_UNUSED(c) { return c; }
+function _Utils_chr(c) { return new String(c); }
+
+
+// RECORDS
+
+function _Utils_update(oldRecord, updatedFields)
+{
+	var newRecord = {};
+
+	for (var key in oldRecord)
+	{
+		newRecord[key] = oldRecord[key];
+	}
+
+	for (var key in updatedFields)
+	{
+		newRecord[key] = updatedFields[key];
+	}
+
+	return newRecord;
+}
+
+
+// APPEND
+
+var _Utils_append = F2(_Utils_ap);
+
+function _Utils_ap(xs, ys)
+{
+	// append Strings
+	if (typeof xs === 'string')
+	{
+		return xs + ys;
+	}
+
+	// append Lists
+	if (!xs.b)
+	{
+		return ys;
+	}
+	var root = _List_Cons(xs.a, ys);
+	xs = xs.b
+	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		curr = curr.b = _List_Cons(xs.a, ys);
+	}
+	return root;
+}
+
+
+
+var _List_Nil_UNUSED = { $: 0 };
+var _List_Nil = { $: '[]' };
+
+function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
+
+
+var _List_cons = F2(_List_Cons);
+
+function _List_fromArray(arr)
+{
+	var out = _List_Nil;
+	for (var i = arr.length; i--; )
+	{
+		out = _List_Cons(arr[i], out);
+	}
+	return out;
+}
+
+function _List_toArray(xs)
+{
+	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		out.push(xs.a);
+	}
+	return out;
+}
+
+var _List_map2 = F3(function(f, xs, ys)
+{
+	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
+	{
+		arr.push(A2(f, xs.a, ys.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map3 = F4(function(f, xs, ys, zs)
+{
+	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A3(f, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map4 = F5(function(f, ws, xs, ys, zs)
+{
+	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
+{
+	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_sortBy = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		return _Utils_cmp(f(a), f(b));
+	}));
+});
+
+var _List_sortWith = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		var ord = A2(f, a, b);
+		return ord === $elm$core$Basics$EQ ? 0 : ord === $elm$core$Basics$LT ? -1 : 1;
+	}));
+});
+
+
+
 var _JsArray_empty = [];
 
 function _JsArray_singleton(value)
@@ -525,271 +790,6 @@ function _Debug_regionToString(region)
 	}
 	return 'on lines ' + region.start.line + ' through ' + region.end.line;
 }
-
-
-
-// EQUALITY
-
-function _Utils_eq(x, y)
-{
-	for (
-		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
-		isEqual && (pair = stack.pop());
-		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
-		)
-	{}
-
-	return isEqual;
-}
-
-function _Utils_eqHelp(x, y, depth, stack)
-{
-	if (x === y)
-	{
-		return true;
-	}
-
-	if (typeof x !== 'object' || x === null || y === null)
-	{
-		typeof x === 'function' && _Debug_crash(5);
-		return false;
-	}
-
-	if (depth > 100)
-	{
-		stack.push(_Utils_Tuple2(x,y));
-		return true;
-	}
-
-	/**/
-	if (x.$ === 'Set_elm_builtin')
-	{
-		x = $elm$core$Set$toList(x);
-		y = $elm$core$Set$toList(y);
-	}
-	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
-	{
-		x = $elm$core$Dict$toList(x);
-		y = $elm$core$Dict$toList(y);
-	}
-	//*/
-
-	/**_UNUSED/
-	if (x.$ < 0)
-	{
-		x = $elm$core$Dict$toList(x);
-		y = $elm$core$Dict$toList(y);
-	}
-	//*/
-
-	for (var key in x)
-	{
-		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-var _Utils_equal = F2(_Utils_eq);
-var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
-
-
-
-// COMPARISONS
-
-// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
-// the particular integer values assigned to LT, EQ, and GT.
-
-function _Utils_cmp(x, y, ord)
-{
-	if (typeof x !== 'object')
-	{
-		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
-	}
-
-	/**/
-	if (x instanceof String)
-	{
-		var a = x.valueOf();
-		var b = y.valueOf();
-		return a === b ? 0 : a < b ? -1 : 1;
-	}
-	//*/
-
-	/**_UNUSED/
-	if (typeof x.$ === 'undefined')
-	//*/
-	/**/
-	if (x.$[0] === '#')
-	//*/
-	{
-		return (ord = _Utils_cmp(x.a, y.a))
-			? ord
-			: (ord = _Utils_cmp(x.b, y.b))
-				? ord
-				: _Utils_cmp(x.c, y.c);
-	}
-
-	// traverse conses until end of a list or a mismatch
-	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
-	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
-}
-
-var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
-var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
-var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
-var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
-
-var _Utils_compare = F2(function(x, y)
-{
-	var n = _Utils_cmp(x, y);
-	return n < 0 ? $elm$core$Basics$LT : n ? $elm$core$Basics$GT : $elm$core$Basics$EQ;
-});
-
-
-// COMMON VALUES
-
-var _Utils_Tuple0_UNUSED = 0;
-var _Utils_Tuple0 = { $: '#0' };
-
-function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
-function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
-
-function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
-function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
-
-function _Utils_chr_UNUSED(c) { return c; }
-function _Utils_chr(c) { return new String(c); }
-
-
-// RECORDS
-
-function _Utils_update(oldRecord, updatedFields)
-{
-	var newRecord = {};
-
-	for (var key in oldRecord)
-	{
-		newRecord[key] = oldRecord[key];
-	}
-
-	for (var key in updatedFields)
-	{
-		newRecord[key] = updatedFields[key];
-	}
-
-	return newRecord;
-}
-
-
-// APPEND
-
-var _Utils_append = F2(_Utils_ap);
-
-function _Utils_ap(xs, ys)
-{
-	// append Strings
-	if (typeof xs === 'string')
-	{
-		return xs + ys;
-	}
-
-	// append Lists
-	if (!xs.b)
-	{
-		return ys;
-	}
-	var root = _List_Cons(xs.a, ys);
-	xs = xs.b
-	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		curr = curr.b = _List_Cons(xs.a, ys);
-	}
-	return root;
-}
-
-
-
-var _List_Nil_UNUSED = { $: 0 };
-var _List_Nil = { $: '[]' };
-
-function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
-
-
-var _List_cons = F2(_List_Cons);
-
-function _List_fromArray(arr)
-{
-	var out = _List_Nil;
-	for (var i = arr.length; i--; )
-	{
-		out = _List_Cons(arr[i], out);
-	}
-	return out;
-}
-
-function _List_toArray(xs)
-{
-	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		out.push(xs.a);
-	}
-	return out;
-}
-
-var _List_map2 = F3(function(f, xs, ys)
-{
-	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
-	{
-		arr.push(A2(f, xs.a, ys.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map3 = F4(function(f, xs, ys, zs)
-{
-	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A3(f, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map4 = F5(function(f, ws, xs, ys, zs)
-{
-	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
-{
-	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_sortBy = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		return _Utils_cmp(f(a), f(b));
-	}));
-});
-
-var _List_sortWith = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		var ord = A2(f, a, b);
-		return ord === $elm$core$Basics$EQ ? 0 : ord === $elm$core$Basics$LT ? -1 : 1;
-	}));
-});
 
 
 
@@ -3929,31 +3929,10 @@ function _VirtualDom_dekey(keyedNode)
 		b: keyedNode.b
 	};
 }
+var $elm$core$Basics$EQ = {$: 'EQ'};
+var $elm$core$Basics$GT = {$: 'GT'};
+var $elm$core$Basics$LT = {$: 'LT'};
 var $elm$core$List$cons = _List_cons;
-var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
-var $elm$core$Array$foldr = F3(
-	function (func, baseCase, _v0) {
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = F2(
-			function (node, acc) {
-				if (node.$ === 'SubTree') {
-					var subTree = node.a;
-					return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
-				} else {
-					var values = node.a;
-					return A3($elm$core$Elm$JsArray$foldr, func, acc, values);
-				}
-			});
-		return A3(
-			$elm$core$Elm$JsArray$foldr,
-			helper,
-			A3($elm$core$Elm$JsArray$foldr, func, baseCase, tail),
-			tree);
-	});
-var $elm$core$Array$toList = function (array) {
-	return A3($elm$core$Array$foldr, $elm$core$List$cons, _List_Nil, array);
-};
 var $elm$core$Dict$foldr = F3(
 	function (func, acc, t) {
 		foldr:
@@ -4006,9 +3985,30 @@ var $elm$core$Set$toList = function (_v0) {
 	var dict = _v0.a;
 	return $elm$core$Dict$keys(dict);
 };
-var $elm$core$Basics$EQ = {$: 'EQ'};
-var $elm$core$Basics$GT = {$: 'GT'};
-var $elm$core$Basics$LT = {$: 'LT'};
+var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
+var $elm$core$Array$foldr = F3(
+	function (func, baseCase, _v0) {
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = F2(
+			function (node, acc) {
+				if (node.$ === 'SubTree') {
+					var subTree = node.a;
+					return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
+				} else {
+					var values = node.a;
+					return A3($elm$core$Elm$JsArray$foldr, func, acc, values);
+				}
+			});
+		return A3(
+			$elm$core$Elm$JsArray$foldr,
+			helper,
+			A3($elm$core$Elm$JsArray$foldr, func, baseCase, tail),
+			tree);
+	});
+var $elm$core$Array$toList = function (array) {
+	return A3($elm$core$Array$foldr, $elm$core$List$cons, _List_Nil, array);
+};
 var $elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -4419,6 +4419,17 @@ var $elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
+var $author$project$Post$initialModel = {
+	article: 'String',
+	authorimage: 'http://i.imgur.com/Qr71crq.jpg',
+	authorname: 'Eric Simons',
+	authorpage: 'profile.html',
+	comments: _List_fromArray(
+		['With supporting text below as a natural lead-in to additional content.', 'With supporting text below as a natural lead-in to additional content.']),
+	date: 'January 20th',
+	heading: 'How to build webapps that scale',
+	newComment: ''
+};
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
@@ -4469,971 +4480,974 @@ var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Post$main = A2(
-	$elm$html$Html$div,
-	_List_Nil,
-	_List_fromArray(
-		[
-			A2(
-			$elm$html$Html$nav,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('navbar navbar-light')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('container')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$a,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('navbar-brand'),
-									$elm$html$Html$Attributes$href('indexelm.html')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('conduit')
-								])),
-							A2(
-							$elm$html$Html$ul,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('nav navbar-nav pull-xs-right')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$li,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('nav-item')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$a,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('nav-link'),
-													$elm$html$Html$Attributes$href('editorelm.html')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$i,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('ion-compose')
-														]),
-													_List_Nil),
-													$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + 'New Post')
-												]))
-										])),
-									A2(
-									$elm$html$Html$li,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('nav-item')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$a,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('nav-link'),
-													$elm$html$Html$Attributes$href('authelm.html')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Sign up')
-												]))
-										])),
-									A2(
-									$elm$html$Html$li,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('nav-item')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$a,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('nav-link'),
-													$elm$html$Html$Attributes$href('settingselm.html')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Settings')
-												]))
-										]))
-								]))
-						]))
-				])),
-			A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('post-page')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('banner')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('container')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$h1,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text('How to build webapps that scale')
-										])),
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('post-meta')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$a,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$href('profile.html')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$img,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg')
-														]),
-													_List_Nil)
-												])),
-											$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-											A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('info')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('profile.html'),
-															$elm$html$Html$Attributes$class('author')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('Eric Simons')
-														])),
-													A2(
-													$elm$html$Html$span,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('date')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('January 20th')
-														]))
-												])),
-											$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-											A2(
-											$elm$html$Html$button,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$i,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('ion-plus-round')
-														]),
-													_List_Nil),
-													$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
-													A2(
-													$elm$html$Html$span,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('counter')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('(10)')
-														]))
-												])),
-											$elm$html$Html$text(
-											_Utils_ap(
-												$krisajenkins$elm_exts$Exts$Html$nbsp,
+var $author$project$Post$view = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$nav,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('navbar navbar-light')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('container')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('navbar-brand'),
+										$elm$html$Html$Attributes$href('indexelm.html')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('conduit')
+									])),
+								A2(
+								$elm$html$Html$ul,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('nav navbar-nav pull-xs-right')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$li,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('nav-item')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('nav-link'),
+														$elm$html$Html$Attributes$href('editorelm.html')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$i,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('ion-compose')
+															]),
+														_List_Nil),
+														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + 'New Post')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('nav-item')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('nav-link'),
+														$elm$html$Html$Attributes$href('authelm.html')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Sign up')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('nav-item')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('nav-link'),
+														$elm$html$Html$Attributes$href('settingselm.html')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Settings')
+													]))
+											]))
+									]))
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('post-page')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('banner')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('container')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$h1,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('How to build webapps that scale')
+											])),
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('post-meta')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('profile.html')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$img,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg')
+															]),
+														_List_Nil)
+													])),
+												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+												A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('info')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('profile.html'),
+																$elm$html$Html$Attributes$class('author')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Eric Simons')
+															])),
+														A2(
+														$elm$html$Html$span,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('date')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('January 20th')
+															]))
+													])),
+												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$i,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('ion-plus-round')
+															]),
+														_List_Nil),
+														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
+														A2(
+														$elm$html$Html$span,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('counter')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('(10)')
+															]))
+													])),
+												$elm$html$Html$text(
 												_Utils_ap(
 													$krisajenkins$elm_exts$Exts$Html$nbsp,
-													_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp)))),
-											A2(
-											$elm$html$Html$button,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('btn btn-sm btn-outline-primary')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$i,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('ion-heart')
-														]),
-													_List_Nil),
-													$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Favorite Post ')),
-													A2(
-													$elm$html$Html$span,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('counter')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('(29)')
-														]))
-												]))
-										]))
-								]))
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('container page')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('row post-content')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('col-md-12')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Web development technologies have evolved at an incredible clip over the past few years.\r\n                            We\'ve gone from rudimentary DOM manipulation with libraries like jQuery to supercharged web \r\n                            applications organized & powered by elegant MV* based frameworks like AngularJS. \r\n                            Pair this with significant increases in browser rendering speeds, and it is now easier than ever \r\n                            before to build production quality applications on top of Javascript, HTML5, and CSS3.')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('While these advances have been incredible, they are only just starting to affect the clear \r\n                            platform of the future: mobile. For years, mobile rendering speeds were atrocious, and the MVC frameworks \r\n                            & UI libraries provided by iOS and Android were far superior to writing mobile apps using web technologies. \r\n                            There were also some very public failures -- Facebook famously wrote their first iOS app in 2011 using HTML5 but \r\n                            ended up scrapping it due to terrible performance.')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('For years now, hybrid apps have been mocked and jeered by \r\n                            native app developers for being clunky and ugly, having subpar performance, and having no advantages over native apps. \r\n                            While these may have been valid reasons in 2011, they are now virtually baseless, thanks to a collection of new technologies\r\n                            that have emerged over the past two years. With these technologies, you can design, build, and deploy robust mobile apps faster\r\n                            than you could with native technologies, all while incurring little to no app performance penalties. This is thanks in large part\r\n                            to super fast mobile browser rendering speeds and better JavaScript performance. This course is designed to teach you how to effectively\r\n                            use these new technologies to build insanely great mobile apps.')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Without further ado, we\'d like to welcome you to the future of\r\n                           mobile app development, freed from the shackles of native languages & frameworks. \r\n                           Let\'s learn what the new mobile stack consists of and how it works.')
-												])),
-											A2(
-											$elm$html$Html$h2,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$id('introducing-ionic')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Introducing Ionic.')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Before, building hybrid apps was a chore -- not because it was hard to build web pages, but because it was hard to build full-fledged web applications. \r\n                                    With AngularJS, that has changed. As a result, Angular became the core innovation that made hybrid apps possible. The bright folks at Drifty were some of the \r\n                                    first to realize this and subsequently created the '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('http://ionicframework.com/'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('Ionic Framework ')
-														])),
-													$elm$html$Html$text('to bridge the gap between AngularJS web apps and hybrid mobile apps. Since launching a little over a year ago, the Ionic Framework has '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('http://www.google.com/trends/explore?hl=en-US&q=ionic+framework&cmpt=q&tz&tz&content=1'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('quickly grown in popularity amongst developers')
-														])),
-													$elm$html$Html$text(' and their '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('https://github.com/driftyco/ionic'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('main Github repo')
-														])),
-													$elm$html$Html$text(' has over 13K stars as of this writing.')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Ionic provides similar functionality for AngularJS that '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIKit_Framework/'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('iOS UIKit')
-														])),
-													$elm$html$Html$text(' provides for Obj-C/Swift, and that '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('http://developer.android.com/guide/topics/ui/overview.html'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('Android UI elements')
-														])),
-													$elm$html$Html$text(' provides for Java. Core mobile UI paradigms are available to developers out of the box, which means that developers can focus on building apps, \r\n                                instead of common user interface elements. Some examples of these include '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('http://ionicframework.com/docs/api/directive/ionList/'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('list views')
-														])),
-													$elm$html$Html$text(', '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('http://ionicframework.com/docs/api/directive/ionNavView/'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('stateful navigation')
-														])),
-													$elm$html$Html$text(', '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('http://ionicframework.com/docs/nightly/api/directive/ionTabs/'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('tab bars')
-														])),
-													$elm$html$Html$text(', '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('http://ionicframework.com/docs/api/service/$ionicActionSheet/'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('action sheets')
-														])),
-													$elm$html$Html$text(', and '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('http://ionicframework.com/docs/nightly/api/'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('so much more')
-														])),
-													$elm$html$Html$text('.')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Ionic is a great solution for creating both mobile web apps and native apps. The first sections of this course will go over structuring Ionic apps that can run on the web. \r\n                            Then we will cover packaging that same exact code into a native app. We will be using a build tool called Cordova for packaging our app. For those unfamiliar with Cordova, it is\r\n                            the open source core of Adobe\'s proprietary PhoneGap build system. Adobe describes it with this analogy: Cordova is to PhoneGap as Blink is to Chrome. Basically, PhoneGap is\r\n                            Cordova plus a whole bunch of other Adobe stuff.')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('The folks at Ionic have done a fantastic job of making Cordova super easy to use by directly wrapping it in their \'ionic\' command line tool (don\'t worry, we\'ll cover this later).\r\n                            Just remember that Cordova is something that is running under the hood of your hybrid app that you will rarely need to worry about, but we will cover some common interactions with it in this course.')
-												])),
-											A2(
-											$elm$html$Html$h2,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$id('what-we-re-going-to-build')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('What we\'re going to build')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('We will be building an app called Songhop, a "Tinder for music" app that allows you to listen to 30-second song samples and favorite the ones you like. This is based on a real \r\n                            Ionic/Cordova powered app we built that exists on the '),
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('https://itunes.apple.com/us/app/songhop/id899245239?mt=8'),
-															$elm$html$Html$Attributes$target('_blank')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('iOS App Store')
-														])),
-													$elm$html$Html$text(' -- feel free to download it to get a feeling for what Ionic is capable of (and rate it 5 stars :). It\'s also worth noting that it only took us a month to build the Songhop app that\'s\r\n                             on the App Store, so that should give you an idea of how fast you can build & iterate using Ionic / Cordova.')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$strong,
-													_List_Nil,
-													_List_fromArray(
-														[
-															$elm$html$Html$text('You can also see a '),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('https://ionic-songhop.herokuapp.com'),
-																	$elm$html$Html$Attributes$target('_blank')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('live demo of the completed application we\'ll be building here')
-																])),
-															$elm$html$Html$text(' (resize your browser window to the size of a phone for the best experience).')
-														]))
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('We\'ll be covering a wide variety of topics in this course: scaffolding a new application, testing it in the emulator, installing native plugins for manipulating audio & \r\n                            files, swipe gestures for our interface, installing the app on your own device, deploying to the iOS & Android app stores, and so much more.')
-												]))
-										]))
-								])),
-							A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('post-actions')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('post-meta')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$a,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$href('profile.html')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$img,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg')
-														]),
-													_List_Nil)
-												])),
-											$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-											A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('info')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$a,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('profile.html'),
-															$elm$html$Html$Attributes$class('author')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('Eric Simons')
-														])),
-													A2(
-													$elm$html$Html$span,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('date')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('January 20th')
-														]))
-												])),
-											$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-											A2(
-											$elm$html$Html$button,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$i,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('ion-plus-round')
-														]),
-													_List_Nil),
-													$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
-													A2(
-													$elm$html$Html$span,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('counter')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('(10)')
-														]))
-												])),
-											$elm$html$Html$text(
-											_Utils_ap(
-												$krisajenkins$elm_exts$Exts$Html$nbsp,
-												_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
-											A2(
-											$elm$html$Html$button,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('btn btn-sm btn-outline-primary')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$i,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('ion-heart')
-														]),
-													_List_Nil),
-													$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Favorite Post ')),
-													A2(
-													$elm$html$Html$span,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('counter')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('(29)')
-														]))
-												]))
-										]))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('row')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('col-md-8 col-md-offset-2')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('card')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('card-block')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$p,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('card-text')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('With supporting text below as a natural lead-in to additional content.')
-																]))
-														])),
-													A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('card-footer')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('profile.html'),
-																	$elm$html$Html$Attributes$class('comment-author')
-																]),
-															_List_fromArray(
-																[
-																	A2(
-																	$elm$html$Html$img,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
-																			$elm$html$Html$Attributes$class('comment-author-img')
-																		]),
-																	_List_Nil)
-																])),
-															$elm$html$Html$text(
-															_Utils_ap(
-																$krisajenkins$elm_exts$Exts$Html$nbsp,
-																_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('profile.html'),
-																	$elm$html$Html$Attributes$class('comment-author')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Jacob Schmidt')
-																])),
-															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$span,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('date-posted')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Dec 29th')
-																]))
-														]))
-												])),
-											A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('card')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('card-block')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$p,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('card-text')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('With supporting text below as a natural lead-in to additional content.')
-																]))
-														])),
-													A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('card-footer')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('profile.html'),
-																	$elm$html$Html$Attributes$class('comment-author')
-																]),
-															_List_fromArray(
-																[
-																	A2(
-																	$elm$html$Html$img,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
-																			$elm$html$Html$Attributes$class('comment-author-img')
-																		]),
-																	_List_Nil)
-																])),
-															$elm$html$Html$text(
-															_Utils_ap(
-																$krisajenkins$elm_exts$Exts$Html$nbsp,
-																_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
-															A2(
-															$elm$html$Html$a,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$href('profile.html'),
-																	$elm$html$Html$Attributes$class('comment-author')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Jacob Schmidt')
-																])),
-															$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-															A2(
-															$elm$html$Html$span,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('date-posted')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Dec 29th')
-																])),
-															A2(
-															$elm$html$Html$span,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('mod-options')
-																]),
-															_List_fromArray(
-																[
-																	A2(
-																	$elm$html$Html$i,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$class('ion-edit')
-																		]),
-																	_List_Nil),
-																	$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-																	A2(
-																	$elm$html$Html$i,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$class('ion-trash-a')
-																		]),
-																	_List_Nil)
-																]))
-														]))
-												])),
-											A2(
-											$elm$html$Html$form,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('card comment-form')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('card-block')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$textarea,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('form-control'),
-																	$elm$html$Html$Attributes$placeholder('Write a comment...'),
-																	$elm$html$Html$Attributes$rows(3)
-																]),
-															_List_Nil)
-														])),
-													A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('card-footer')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$img,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
-																	$elm$html$Html$Attributes$class('comment-author-img')
-																]),
-															_List_Nil),
-															A2(
-															$elm$html$Html$button,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('btn btn-sm btn-primary')
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(' Post Comment')
-																]))
-														]))
-												]))
-										]))
-								]))
-						]))
-				])),
-			A2(
-			$elm$html$Html$footer,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('container')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$a,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$href('/'),
-									$elm$html$Html$Attributes$class('logo-font')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('conduit')
-								])),
-							$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-							A2(
-							$elm$html$Html$span,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('attribution')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('An interactive learning project from '),
-									A2(
-									$elm$html$Html$a,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$href('https:..thinkster.io')
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Thinkster')
-										])),
-									$elm$html$Html$text('. Code & design licensed under MIT.')
-								]))
-						]))
-				]))
-		]));
+													_Utils_ap(
+														$krisajenkins$elm_exts$Exts$Html$nbsp,
+														_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp)))),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('btn btn-sm btn-outline-primary')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$i,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('ion-heart')
+															]),
+														_List_Nil),
+														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Favorite Post ')),
+														A2(
+														$elm$html$Html$span,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('counter')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('(29)')
+															]))
+													]))
+											]))
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('container page')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('row post-content')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('col-md-12')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Web development technologies have evolved at an incredible clip over the past few years.\r\n                            We\'ve gone from rudimentary DOM manipulation with libraries like jQuery to supercharged web \r\n                            applications organized & powered by elegant MV* based frameworks like AngularJS. \r\n                            Pair this with significant increases in browser rendering speeds, and it is now easier than ever \r\n                            before to build production quality applications on top of Javascript, HTML5, and CSS3.')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('While these advances have been incredible, they are only just starting to affect the clear \r\n                            platform of the future: mobile. For years, mobile rendering speeds were atrocious, and the MVC frameworks \r\n                            & UI libraries provided by iOS and Android were far superior to writing mobile apps using web technologies. \r\n                            There were also some very public failures -- Facebook famously wrote their first iOS app in 2011 using HTML5 but \r\n                            ended up scrapping it due to terrible performance.')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('For years now, hybrid apps have been mocked and jeered by \r\n                            native app developers for being clunky and ugly, having subpar performance, and having no advantages over native apps. \r\n                            While these may have been valid reasons in 2011, they are now virtually baseless, thanks to a collection of new technologies\r\n                            that have emerged over the past two years. With these technologies, you can design, build, and deploy robust mobile apps faster\r\n                            than you could with native technologies, all while incurring little to no app performance penalties. This is thanks in large part\r\n                            to super fast mobile browser rendering speeds and better JavaScript performance. This course is designed to teach you how to effectively\r\n                            use these new technologies to build insanely great mobile apps.')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Without further ado, we\'d like to welcome you to the future of\r\n                           mobile app development, freed from the shackles of native languages & frameworks. \r\n                           Let\'s learn what the new mobile stack consists of and how it works.')
+													])),
+												A2(
+												$elm$html$Html$h2,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$id('introducing-ionic')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Introducing Ionic.')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Before, building hybrid apps was a chore -- not because it was hard to build web pages, but because it was hard to build full-fledged web applications. \r\n                                    With AngularJS, that has changed. As a result, Angular became the core innovation that made hybrid apps possible. The bright folks at Drifty were some of the \r\n                                    first to realize this and subsequently created the '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('http://ionicframework.com/'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Ionic Framework ')
+															])),
+														$elm$html$Html$text('to bridge the gap between AngularJS web apps and hybrid mobile apps. Since launching a little over a year ago, the Ionic Framework has '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('http://www.google.com/trends/explore?hl=en-US&q=ionic+framework&cmpt=q&tz&tz&content=1'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('quickly grown in popularity amongst developers')
+															])),
+														$elm$html$Html$text(' and their '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('https://github.com/driftyco/ionic'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('main Github repo')
+															])),
+														$elm$html$Html$text(' has over 13K stars as of this writing.')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Ionic provides similar functionality for AngularJS that '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIKit_Framework/'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('iOS UIKit')
+															])),
+														$elm$html$Html$text(' provides for Obj-C/Swift, and that '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('http://developer.android.com/guide/topics/ui/overview.html'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Android UI elements')
+															])),
+														$elm$html$Html$text(' provides for Java. Core mobile UI paradigms are available to developers out of the box, which means that developers can focus on building apps, \r\n                                instead of common user interface elements. Some examples of these include '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('http://ionicframework.com/docs/api/directive/ionList/'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('list views')
+															])),
+														$elm$html$Html$text(', '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('http://ionicframework.com/docs/api/directive/ionNavView/'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('stateful navigation')
+															])),
+														$elm$html$Html$text(', '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('http://ionicframework.com/docs/nightly/api/directive/ionTabs/'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('tab bars')
+															])),
+														$elm$html$Html$text(', '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('http://ionicframework.com/docs/api/service/$ionicActionSheet/'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('action sheets')
+															])),
+														$elm$html$Html$text(', and '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('http://ionicframework.com/docs/nightly/api/'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('so much more')
+															])),
+														$elm$html$Html$text('.')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Ionic is a great solution for creating both mobile web apps and native apps. The first sections of this course will go over structuring Ionic apps that can run on the web. \r\n                            Then we will cover packaging that same exact code into a native app. We will be using a build tool called Cordova for packaging our app. For those unfamiliar with Cordova, it is\r\n                            the open source core of Adobe\'s proprietary PhoneGap build system. Adobe describes it with this analogy: Cordova is to PhoneGap as Blink is to Chrome. Basically, PhoneGap is\r\n                            Cordova plus a whole bunch of other Adobe stuff.')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('The folks at Ionic have done a fantastic job of making Cordova super easy to use by directly wrapping it in their \'ionic\' command line tool (don\'t worry, we\'ll cover this later).\r\n                            Just remember that Cordova is something that is running under the hood of your hybrid app that you will rarely need to worry about, but we will cover some common interactions with it in this course.')
+													])),
+												A2(
+												$elm$html$Html$h2,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$id('what-we-re-going-to-build')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('What we\'re going to build')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('We will be building an app called Songhop, a "Tinder for music" app that allows you to listen to 30-second song samples and favorite the ones you like. This is based on a real \r\n                            Ionic/Cordova powered app we built that exists on the '),
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('https://itunes.apple.com/us/app/songhop/id899245239?mt=8'),
+																$elm$html$Html$Attributes$target('_blank')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('iOS App Store')
+															])),
+														$elm$html$Html$text(' -- feel free to download it to get a feeling for what Ionic is capable of (and rate it 5 stars :). It\'s also worth noting that it only took us a month to build the Songhop app that\'s\r\n                             on the App Store, so that should give you an idea of how fast you can build & iterate using Ionic / Cordova.')
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$strong,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text('You can also see a '),
+																A2(
+																$elm$html$Html$a,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$href('https://ionic-songhop.herokuapp.com'),
+																		$elm$html$Html$Attributes$target('_blank')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('live demo of the completed application we\'ll be building here')
+																	])),
+																$elm$html$Html$text(' (resize your browser window to the size of a phone for the best experience).')
+															]))
+													])),
+												A2(
+												$elm$html$Html$p,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('We\'ll be covering a wide variety of topics in this course: scaffolding a new application, testing it in the emulator, installing native plugins for manipulating audio & \r\n                            files, swipe gestures for our interface, installing the app on your own device, deploying to the iOS & Android app stores, and so much more.')
+													]))
+											]))
+									])),
+								A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('post-actions')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('post-meta')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('profile.html')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$img,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg')
+															]),
+														_List_Nil)
+													])),
+												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+												A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('info')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$a,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$href('profile.html'),
+																$elm$html$Html$Attributes$class('author')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Eric Simons')
+															])),
+														A2(
+														$elm$html$Html$span,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('date')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('January 20th')
+															]))
+													])),
+												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$i,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('ion-plus-round')
+															]),
+														_List_Nil),
+														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
+														A2(
+														$elm$html$Html$span,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('counter')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('(10)')
+															]))
+													])),
+												$elm$html$Html$text(
+												_Utils_ap(
+													$krisajenkins$elm_exts$Exts$Html$nbsp,
+													_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('btn btn-sm btn-outline-primary')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$i,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('ion-heart')
+															]),
+														_List_Nil),
+														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Favorite Post ')),
+														A2(
+														$elm$html$Html$span,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('counter')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('(29)')
+															]))
+													]))
+											]))
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('row')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('col-md-8 col-md-offset-2')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('card')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$div,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('card-block')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$p,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('card-text')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('With supporting text below as a natural lead-in to additional content.')
+																	]))
+															])),
+														A2(
+														$elm$html$Html$div,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('card-footer')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$a,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$href('profile.html'),
+																		$elm$html$Html$Attributes$class('comment-author')
+																	]),
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$img,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
+																				$elm$html$Html$Attributes$class('comment-author-img')
+																			]),
+																		_List_Nil)
+																	])),
+																$elm$html$Html$text(
+																_Utils_ap(
+																	$krisajenkins$elm_exts$Exts$Html$nbsp,
+																	_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
+																A2(
+																$elm$html$Html$a,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$href('profile.html'),
+																		$elm$html$Html$Attributes$class('comment-author')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Jacob Schmidt')
+																	])),
+																$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																A2(
+																$elm$html$Html$span,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('date-posted')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Dec 29th')
+																	]))
+															]))
+													])),
+												A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('card')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$div,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('card-block')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$p,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('card-text')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('With supporting text below as a natural lead-in to additional content.')
+																	]))
+															])),
+														A2(
+														$elm$html$Html$div,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('card-footer')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$a,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$href('profile.html'),
+																		$elm$html$Html$Attributes$class('comment-author')
+																	]),
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$img,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
+																				$elm$html$Html$Attributes$class('comment-author-img')
+																			]),
+																		_List_Nil)
+																	])),
+																$elm$html$Html$text(
+																_Utils_ap(
+																	$krisajenkins$elm_exts$Exts$Html$nbsp,
+																	_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
+																A2(
+																$elm$html$Html$a,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$href('profile.html'),
+																		$elm$html$Html$Attributes$class('comment-author')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Jacob Schmidt')
+																	])),
+																$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																A2(
+																$elm$html$Html$span,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('date-posted')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Dec 29th')
+																	])),
+																A2(
+																$elm$html$Html$span,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('mod-options')
+																	]),
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$i,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$class('ion-edit')
+																			]),
+																		_List_Nil),
+																		$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																		A2(
+																		$elm$html$Html$i,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$class('ion-trash-a')
+																			]),
+																		_List_Nil)
+																	]))
+															]))
+													])),
+												A2(
+												$elm$html$Html$form,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('card comment-form')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$div,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('card-block')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$textarea,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('form-control'),
+																		$elm$html$Html$Attributes$placeholder('Write a comment...'),
+																		$elm$html$Html$Attributes$rows(3)
+																	]),
+																_List_Nil)
+															])),
+														A2(
+														$elm$html$Html$div,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('card-footer')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$img,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
+																		$elm$html$Html$Attributes$class('comment-author-img')
+																	]),
+																_List_Nil),
+																A2(
+																$elm$html$Html$button,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('btn btn-sm btn-primary')
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text(' Post Comment')
+																	]))
+															]))
+													]))
+											]))
+									]))
+							]))
+					])),
+				A2(
+				$elm$html$Html$footer,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('container')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('/'),
+										$elm$html$Html$Attributes$class('logo-font')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('conduit')
+									])),
+								$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('attribution')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('An interactive learning project from '),
+										A2(
+										$elm$html$Html$a,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$href('https:..thinkster.io')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Thinkster')
+											])),
+										$elm$html$Html$text('. Code & design licensed under MIT.')
+									]))
+							]))
+					]))
+			]));
+};
+var $author$project$Post$main = $author$project$Post$view($author$project$Post$initialModel);
 _Platform_export({'Post':{'init':_VirtualDom_init($author$project$Post$main)(0)(0)}});}(this));

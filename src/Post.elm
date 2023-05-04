@@ -7,15 +7,11 @@ import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, s
 import Exts.Html exposing (nbsp)
 
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Browser
 
 --extra Exts.Html installed with "elm package install krisajenkins/elm-exts" for using nbsp
 
 -- Model --
-type Msg =
-    ToggleLike 
-    | UpdateComment String
-    | SaveComment 
-
 type alias Model =
     { heading : String
     , authorpage : String
@@ -40,12 +36,13 @@ initialModel =
     }
 -- Update --
 -- update : Msg -> Model -> Model 
--- update model =
+-- update message model =
+--     case message of 
+--         ToggleLike ->
+--         UpdateComment String ->
+--         SaveComment -> 
 
 -- View --
--- view : Model -> Html Msg
--- view model =
-
 viewComment : String -> Html Msg
 viewComment comment = --display a comment 
     div [class "card"]  
@@ -89,8 +86,8 @@ viewComments model = --display all the comments and a place for adding a new com
             ]
         ]
 
-main : Html Msg
-main =
+view : Model -> Html Msg
+view model =
     div[]
     [ nav[class "navbar navbar-light"]
         [div [class "container"] 
@@ -280,4 +277,17 @@ main =
             ]
         ]
     ]
+type Msg 
+    = ToggleLike 
+    | UpdateComment String
+    | SaveComment 
+
+main : Html Msg
+main =
+    view initialModel
+    -- Browser.sandbox
+    -- { init = initialModel
+    -- , view = view
+    -- , update = update 
+    -- }
     
