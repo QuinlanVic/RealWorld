@@ -25,6 +25,7 @@ initialModel =
     , tags = [""]
     , created = False 
     }
+    
 -- Update --
 update : Msg -> Post -> Post 
 update message post =

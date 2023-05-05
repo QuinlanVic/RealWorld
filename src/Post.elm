@@ -7,6 +7,7 @@ import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, s
 import Exts.Html exposing (nbsp)
 
 import Html.Events exposing (onClick, onInput, onSubmit)
+
 import Browser
 
 --extra Exts.Html installed with "elm package install krisajenkins/elm-exts" for using nbsp
@@ -34,6 +35,7 @@ initialModel =
     , comments = ["With supporting text below as a natural lead-in to additional content.", "With supporting text below as a natural lead-in to additional content."]
     , newComment = ""
     }
+    
 -- Update --
 -- update : Msg -> Model -> Model 
 -- update message model =

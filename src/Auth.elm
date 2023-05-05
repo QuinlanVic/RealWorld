@@ -16,6 +16,7 @@ type alias User =
     , password : String
     , loggedIn : Bool 
     }
+
 initialModel : User
 initialModel =
     { name = ""
@@ -33,6 +34,7 @@ update message user = --what to do (update) with each message type
         SavePassword password -> {user | password = password }
         Signup -> { user | loggedIn = True }
         Error errormsg -> user 
+        
 --View--
 getType : String -> String -> Msg
 getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)

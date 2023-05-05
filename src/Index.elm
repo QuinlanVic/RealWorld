@@ -14,7 +14,7 @@ import Html.Events exposing (onClick)
 
 --Model--
 type alias Model =
-    {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : String, liked : Bool}
+    {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : Int, liked : Bool} 
 initialModel : Model 
 initialModel =
     { authorpage = "profileelm.html"
@@ -25,7 +25,7 @@ initialModel =
     , articlepreview = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
                         and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
                         the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
-    , numlikes = " 29"
+    , numlikes = 29
     , liked = False
     }
 
@@ -33,9 +33,10 @@ initialModel =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        ToggleLike -> {model | liked = not model.liked}
+        ToggleLike -> if model.liked then {model | liked = not model.liked, numlikes = model.numlikes - 1} else {model | liked = not model.liked, numlikes = model.numlikes + 1}
         -- Like -> {model | liked = True}
         -- Unlike -> {model | liked = False}
+
 --View--
 viewTag : String -> Html msg
 viewTag tag =
@@ -54,18 +55,13 @@ viewLoveButton model =
     let 
         buttonClass =
             if model.liked then 
-                style "background-color" "#d00"
+                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", onClick ToggleLike] 
             else 
-                style "" ""
-        heartClass =
-            if model.liked then
-                style "color" "#fff"
-            else 
-                style "" ""
+                [class "btn btn-outline-primary btn-sm pull-xs-right", onClick ToggleLike] 
     in
-    button [class "btn btn-outline-primary btn-sm pull-xs-right", buttonClass, onClick ToggleLike] 
-           [i [class "ion-heart", heartClass] []
-           , text model.numlikes
+    button buttonClass
+           [i [class "ion-heart"] []
+           , text (" " ++ String.fromInt model.numlikes)
            ]
 
 viewPostPreview : Model -> Html Msg 
@@ -158,7 +154,7 @@ view model =
                                 ]
                             , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
                                 [ i [class "ion-heart"] []
-                                , text " 32" 
+                                , text (" " ++ String.fromInt 32)
                                 ]
                             ]
                         , a [href "postelm.html", class "preview-link"] 
@@ -215,8 +211,9 @@ view model =
     ]
     
 
-type Msg =
-    ToggleLike 
+type Msg 
+    = ToggleLike 
+
 
 main : Program () Model Msg
 main = 

@@ -4371,7 +4371,7 @@ function _Browser_load(url)
 	}));
 }
 var $elm$core$Basics$False = {$: 'False'};
-var $author$project$Index$initialModel = {articlepreview: 'In my demo, the holy grail layout is nested inside a document, so there\'s no body or main tags like shown above. Regardless, we\'re interested in the class names \r\n                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and \r\n                        the trivial order in which they appear in the markup. Let\'s break this down to paint a clear picture of what\'s happening...', articletitle: 'How to build webapps that scale', authorimage: 'http://i.imgur.com/Qr71crq.jpg', authorname: 'Eric Simons', authorpage: 'profileelm.html', date: 'January 20th', liked: false, numlikes: ' 29'};
+var $author$project$Index$initialModel = {articlepreview: 'In my demo, the holy grail layout is nested inside a document, so there\'s no body or main tags like shown above. Regardless, we\'re interested in the class names \r\n                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and \r\n                        the trivial order in which they appear in the markup. Let\'s break this down to paint a clear picture of what\'s happening...', articletitle: 'How to build webapps that scale', authorimage: 'http://i.imgur.com/Qr71crq.jpg', authorname: 'Eric Simons', authorpage: 'profileelm.html', date: 'January 20th', liked: false, numlikes: 29};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -5184,9 +5184,11 @@ var $elm$browser$Browser$sandbox = function (impl) {
 var $elm$core$Basics$not = _Basics_not;
 var $author$project$Index$update = F2(
 	function (msg, model) {
-		return _Utils_update(
+		return model.liked ? _Utils_update(
 			model,
-			{liked: !model.liked});
+			{liked: !model.liked, numlikes: model.numlikes - 1}) : _Utils_update(
+			model,
+			{liked: !model.liked, numlikes: model.numlikes + 1});
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$button = _VirtualDom_node('button');
@@ -5245,27 +5247,31 @@ var $elm$html$Html$Events$onClick = function (msg) {
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Index$viewLoveButton = function (model) {
-	var heartClass = model.liked ? A2($elm$html$Html$Attributes$style, 'color', '#fff') : A2($elm$html$Html$Attributes$style, '', '');
-	var buttonClass = model.liked ? A2($elm$html$Html$Attributes$style, 'background-color', '#d00') : A2($elm$html$Html$Attributes$style, '', '');
+	var buttonClass = model.liked ? _List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right'),
+			A2($elm$html$Html$Attributes$style, 'background-color', '#d00'),
+			A2($elm$html$Html$Attributes$style, 'color', '#fff'),
+			$elm$html$Html$Events$onClick($author$project$Index$ToggleLike)
+		]) : _List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right'),
+			$elm$html$Html$Events$onClick($author$project$Index$ToggleLike)
+		]);
 	return A2(
 		$elm$html$Html$button,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right'),
-				buttonClass,
-				$elm$html$Html$Events$onClick($author$project$Index$ToggleLike)
-			]),
+		buttonClass,
 		_List_fromArray(
 			[
 				A2(
 				$elm$html$Html$i,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('ion-heart'),
-						heartClass
+						$elm$html$Html$Attributes$class('ion-heart')
 					]),
 				_List_Nil),
-				$elm$html$Html$text(model.numlikes)
+				$elm$html$Html$text(
+				' ' + $elm$core$String$fromInt(model.numlikes))
 			]));
 };
 var $author$project$Index$viewPostPreview = function (model) {
@@ -5695,7 +5701,8 @@ var $author$project$Index$view = function (model) {
 																				$elm$html$Html$Attributes$class('ion-heart')
 																			]),
 																		_List_Nil),
-																		$elm$html$Html$text(' 32')
+																		$elm$html$Html$text(
+																		' ' + $elm$core$String$fromInt(32))
 																	]))
 															])),
 														A2(
