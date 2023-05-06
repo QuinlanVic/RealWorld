@@ -2,7 +2,7 @@ module Post exposing (..)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, target, type_, value)
+import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
 
 import Exts.Html exposing (nbsp)
 
@@ -22,6 +22,8 @@ type alias Model =
     , article : String 
     , comments : List String
     , newComment : String
+    , liked : Bool
+    , numlikes : Int 
     }
 
 initialModel : Model 
@@ -34,17 +36,47 @@ initialModel =
     , article = "String" 
     , comments = ["With supporting text below as a natural lead-in to additional content."]
     , newComment = ""
+    , liked = False 
+    , numlikes = 29
     }
     
 -- Update --
--- update : Msg -> Model -> Model 
--- update message model =
---     case message of 
---         ToggleLike ->
---         UpdateComment String ->
---         SaveComment -> 
+saveNewComment : Model -> Model 
+saveNewComment model =
+    let
+        comment = 
+            String.trim model.newComment --remove trailing spaces form the comment   
+    in
+    case comment of
+        "" -> model
+        _ -> 
+            {model 
+                | comments = model.comments ++ [ comment ]
+                , newComment = "" 
+            }
+
+update : Msg -> Model -> Model 
+update message model =
+    case message of 
+        ToggleLike -> if model.liked then {model | liked = not model.liked, numlikes = model.numlikes - 1} else {model | liked = not model.liked, numlikes = model.numlikes + 1}
+        UpdateComment comment -> {model | newComment = comment}
+        SaveComment -> saveNewComment model 
 
 -- View --
+viewLoveButton : Model -> Html Msg 
+viewLoveButton model =
+    let 
+        buttonClass =
+            if model.liked then 
+                [class "btn btn-sm btn-outline-primary", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike] 
+            else 
+                [class "btn btn-sm btn-outline-primary", onClick ToggleLike] 
+    in
+    button buttonClass
+           [ i [class "ion-heart"] []
+           , text (nbsp ++ nbsp ++ "  Favorite Post ")
+           , span [class "counter"] [text ("(" ++ String.fromInt model.numlikes ++ ")")]]
+
 viewComment : String -> Html Msg
 viewComment comment = --display a comment 
     li [class "card"]  --(div)
@@ -81,7 +113,7 @@ viewComments model = --display all the comments and a place for adding a new com
         [ viewCommentList model.comments
         , form [class "card comment-form", onSubmit SaveComment] 
             [ div [class "card-block"] 
-                [input [class "form-control", placeholder "Write a comment...", rows 3, type_ "text"] []]
+                [input [class "form-control", placeholder "Write a comment...", rows 3, type_ "text", value model.newComment, onInput UpdateComment] []]
             , div [class "card-footer"] 
                 [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
                 , button [class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment)] [text " Post Comment"]
@@ -124,10 +156,7 @@ view model =
                         , span [class "counter"] [text "(10)"]
                         ]
                     , text (nbsp ++ nbsp ++ nbsp ++ nbsp)
-                    , button [class "btn btn-sm btn-outline-primary"]
-                        [ i [class "ion-heart"] []
-                        , text (nbsp ++ nbsp ++ "  Favorite Post ")
-                        , span [class "counter"] [text "(29)"]] 
+                    , viewLoveButton model 
                     ]
                 ]
             ]
@@ -286,12 +315,12 @@ type Msg
     | UpdateComment String
     | SaveComment 
 
-main : Html Msg
+main : Program () Model Msg
 main =
-    view initialModel
-    -- Browser.sandbox
-    -- { init = initialModel
-    -- , view = view
-    -- , update = update 
-    -- }
+    -- view initialModel
+    Browser.sandbox
+    { init = initialModel
+    , view = view
+    , update = update 
+    }
     
