@@ -4371,7 +4371,7 @@ function _Browser_load(url)
 	}));
 }
 var $elm$core$Basics$False = {$: 'False'};
-var $author$project$Auth$initialModel = {email: '', loggedIn: false, name: '', password: ''};
+var $author$project$Auth$initialModel = {email: '', name: '', password: '', signedUp: false};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -5199,15 +5199,21 @@ var $author$project$Auth$update = F2(
 				return _Utils_update(
 					user,
 					{password: password});
-			case 'Signup':
+			default:
 				return _Utils_update(
 					user,
-					{loggedIn: true});
-			default:
-				var errormsg = message.a;
-				return user;
+					{signedUp: true});
 		}
 	});
+var $author$project$Auth$SaveEmail = function (a) {
+	return {$: 'SaveEmail', a: a};
+};
+var $author$project$Auth$SaveName = function (a) {
+	return {$: 'SaveName', a: a};
+};
+var $author$project$Auth$SavePassword = function (a) {
+	return {$: 'SavePassword', a: a};
+};
 var $author$project$Auth$Signup = {$: 'Signup'};
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$button = _VirtualDom_node('button');
@@ -5221,6 +5227,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$footer = _VirtualDom_node('footer');
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
@@ -5231,6 +5238,7 @@ var $elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var $elm$html$Html$i = _VirtualDom_node('i');
+var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
@@ -5251,37 +5259,6 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$html$Html$p = _VirtualDom_node('p');
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
-var $author$project$Auth$Error = function (a) {
-	return {$: 'Error', a: a};
-};
-var $author$project$Auth$SaveEmail = function (a) {
-	return {$: 'SaveEmail', a: a};
-};
-var $author$project$Auth$SaveName = function (a) {
-	return {$: 'SaveName', a: a};
-};
-var $author$project$Auth$SavePassword = function (a) {
-	return {$: 'SavePassword', a: a};
-};
-var $author$project$Auth$getType = function (messageType) {
-	switch (messageType) {
-		case 'Your Name':
-			return $author$project$Auth$SaveName;
-		case 'Email':
-			return $author$project$Auth$SaveEmail;
-		case 'Password':
-			return $author$project$Auth$SavePassword;
-		default:
-			return $author$project$Auth$Error;
-	}
-};
-var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -5315,31 +5292,13 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
+var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $author$project$Auth$viewForm = F2(
-	function (textType, textHolder) {
-		return A2(
-			$elm$html$Html$fieldset,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('form-group')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$input,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('form-control form-control-lg'),
-							$elm$html$Html$Attributes$type_(textType),
-							$elm$html$Html$Attributes$placeholder(textHolder),
-							$elm$html$Html$Events$onInput(
-							$author$project$Auth$getType(textType))
-						]),
-					_List_Nil)
-				]));
-	});
+var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Auth$view = function (user) {
 	return A2(
 		$elm$html$Html$div,
@@ -5505,7 +5464,7 @@ var $author$project$Auth$view = function (user) {
 														$elm$html$Html$a,
 														_List_fromArray(
 															[
-																$elm$html$Html$Attributes$href('#')
+																$elm$html$Html$Attributes$href('loginelm.html')
 															]),
 														_List_fromArray(
 															[
@@ -5517,9 +5476,63 @@ var $author$project$Auth$view = function (user) {
 												_List_Nil,
 												_List_fromArray(
 													[
-														A2($author$project$Auth$viewForm, 'text', 'Your Name'),
-														A2($author$project$Auth$viewForm, 'text', 'Email'),
-														A2($author$project$Auth$viewForm, 'password', 'Password'),
+														A2(
+														$elm$html$Html$fieldset,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('form-group')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$input,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																		$elm$html$Html$Attributes$type_('text'),
+																		$elm$html$Html$Attributes$placeholder('Your Name'),
+																		$elm$html$Html$Events$onInput($author$project$Auth$SaveName)
+																	]),
+																_List_Nil)
+															])),
+														A2(
+														$elm$html$Html$fieldset,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('form-group')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$input,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																		$elm$html$Html$Attributes$type_('text'),
+																		$elm$html$Html$Attributes$placeholder('Email'),
+																		$elm$html$Html$Events$onInput($author$project$Auth$SaveEmail)
+																	]),
+																_List_Nil)
+															])),
+														A2(
+														$elm$html$Html$fieldset,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('form-group')
+															]),
+														_List_fromArray(
+															[
+																A2(
+																$elm$html$Html$input,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																		$elm$html$Html$Attributes$type_('password'),
+																		$elm$html$Html$Attributes$placeholder('Password'),
+																		$elm$html$Html$Events$onInput($author$project$Auth$SavePassword)
+																	]),
+																_List_Nil)
+															])),
 														A2(
 														$elm$html$Html$button,
 														_List_fromArray(

@@ -2,7 +2,7 @@ module Post exposing (..)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, target, value)
+import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, target, type_, value)
 
 import Exts.Html exposing (nbsp)
 
@@ -32,7 +32,7 @@ initialModel =
     , authorname = "Eric Simons"
     , date = "January 20th" 
     , article = "String" 
-    , comments = ["With supporting text below as a natural lead-in to additional content.", "With supporting text below as a natural lead-in to additional content."]
+    , comments = ["With supporting text below as a natural lead-in to additional content."]
     , newComment = ""
     }
     
@@ -47,7 +47,7 @@ initialModel =
 -- View --
 viewComment : String -> Html Msg
 viewComment comment = --display a comment 
-    div [class "card"]  
+    li [class "card"]  --(div)
         [div [class "card-block"] 
             [p [class "card-text"] [text comment]
             ]
@@ -72,15 +72,16 @@ viewCommentList comments = --display a list of comments (if there are)
         [] -> text ""
         _ ->
             div [class "col-md-8 col-md-offset-2"] 
-                (List.map viewComment comments)
-
+                [ ul []
+                    (List.map viewComment comments)
+                ]
 viewComments : Model -> Html Msg
 viewComments model = --display all the comments and a place for adding a new comment 
      div [class "row"]
         [ viewCommentList model.comments
         , form [class "card comment-form", onSubmit SaveComment] 
             [ div [class "card-block"] 
-                [textarea [class "form-control", placeholder "Write a comment...", rows 3] []]
+                [input [class "form-control", placeholder "Write a comment...", rows 3, type_ "text"] []]
             , div [class "card-footer"] 
                 [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
                 , button [class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment)] [text " Post Comment"]
@@ -222,49 +223,50 @@ view model =
                         ]
                     ]
                 ]
-            , div [class "row"] 
-                [div [class "col-md-8 col-md-offset-2"] 
-                    [ div [class "card"] --function to do these 2
-                        [ div [class "card-block"] 
-                            [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
-                            ]
-                        , div [class "card-footer"] 
-                            [ a [href "profile.html", class "comment-author"] 
-                                [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-                            , text (nbsp ++ nbsp ++ nbsp)
-                            , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
-                            , text nbsp
-                            , span [class "date-posted"] [text "Dec 29th"]
-                            ]
-                        ]
-                    , div [class "card"]  
-                        [div [class "card-block"] 
-                            [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
-                            ]
-                        , div [class "card-footer"] 
-                            [ a [href "profile.html", class "comment-author"] 
-                                [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-                            , text (nbsp ++ nbsp ++ nbsp)
-                            , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
-                            , text nbsp
-                            , span [class "date-posted"] [text "Dec 29th"]
-                            , span [class "mod-options"] 
-                                [ i [class "ion-edit"] []
-                                , text nbsp
-                                , i [class "ion-trash-a"] []
-                                ]
-                            ]
-                        ]
-                    , form [class "card comment-form"] 
-                        [ div [class "card-block"] 
-                            [textarea [class "form-control", placeholder "Write a comment...", rows 3] []]
-                        , div [class "card-footer"] 
-                            [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
-                            , button [class "btn btn-sm btn-primary"] [text " Post Comment"]
-                            ]
-                        ]
-                    ]
-                ]
+            , viewComments model 
+            -- , div [class "row"] 
+            --     [div [class "col-md-8 col-md-offset-2"] 
+            --         [ div [class "card"] --function to do these 2
+            --             [ div [class "card-block"] 
+            --                 [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
+            --                 ]
+            --             , div [class "card-footer"] 
+            --                 [ a [href "profile.html", class "comment-author"] 
+            --                     [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
+            --                 , text (nbsp ++ nbsp ++ nbsp)
+            --                 , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
+            --                 , text nbsp
+            --                 , span [class "date-posted"] [text "Dec 29th"]
+            --                 ]
+            --             ]
+            --         , div [class "card"]  
+            --             [div [class "card-block"] 
+            --                 [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
+            --                 ]
+            --             , div [class "card-footer"] 
+            --                 [ a [href "profile.html", class "comment-author"] 
+            --                     [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
+            --                 , text (nbsp ++ nbsp ++ nbsp)
+            --                 , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
+            --                 , text nbsp
+            --                 , span [class "date-posted"] [text "Dec 29th"]
+            --                 , span [class "mod-options"] 
+            --                     [ i [class "ion-edit"] []
+            --                     , text nbsp
+            --                     , i [class "ion-trash-a"] []
+            --                     ]
+            --                 ]
+            --             ]
+            --         , form [class "card comment-form"] 
+            --             [ div [class "card-block"] 
+            --                 [textarea [class "form-control", placeholder "Write a comment...", rows 3] []]
+            --             , div [class "card-footer"] 
+            --                 [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
+            --                 , button [class "btn btn-sm btn-primary"] [text " Post Comment"]
+            --                 ]
+            --             ]
+            --         ]
+            --     ]
             ]
         ]   
     , footer []

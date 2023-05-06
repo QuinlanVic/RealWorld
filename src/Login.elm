@@ -1,4 +1,4 @@
-module Auth exposing (main)
+module Login exposing (main)
 
 import Html exposing (..)
 
@@ -11,35 +11,31 @@ import Browser
 
 --Model--
 type alias User =
-    { name : String
-    , email : String
+    { email : String
     , password : String
-    , signedUp : Bool 
+    , loggedIn : Bool 
     }
 
 initialModel : User
 initialModel =
-    { name = ""
-    , email = ""
+    { email = ""
     , password = ""
-    , signedUp = False
+    , loggedIn = False
     }
 
 --Update--
 update : Msg -> User -> User 
 update message user = --what to do (update) with each message type
     case message of
-        SaveName name -> { user | name = name } --update record syntax
         SaveEmail email -> { user | email = email }
         SavePassword password -> {user | password = password }
-        Signup -> { user | signedUp = True }
+        Login -> { user | loggedIn = True }
         -- Error errormsg -> user 
         
 --View--
 -- getType : String -> String -> Msg
 -- getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)
---     case messageType of
---         "Your Name" -> SaveName  
+--     case messageType of  
 --         "Email" -> SaveEmail  
 --         "Password" -> SavePassword
 --         _ -> Error    
@@ -70,16 +66,15 @@ view user =
         [ div[class "container page"]
             [div [class "row"]
                 [div[class "col-md-6 col-md-offset-3 col-xs-12"]
-                    [h1 [class "text-xs-center"] [text "Sign up"],
-                    p [class "text-xs-center"] [a [href "loginelm.html"] [text "Have an account?"]]        
+                    [h1 [class "text-xs-center"] [text "Log in"],
+                    p [class "text-xs-center"] [a [href "authelm.html"] [text "Don't have an account?"]]        
                     , form []
                     -- [ viewForm "text" "Your Name"
                     -- , viewForm "text" "Email"
                     -- , viewForm "password" "Password"
-                    [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []] --another function for this
-                    , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []]
+                    [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []]
                     , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []]
-                    , button [class "btn btn-lg btn-primary pull-xs-right", onClick Signup] [text "Sign up"]
+                    , button [class "btn btn-lg btn-primary pull-xs-right", onClick Login] [text "Log In"]
                     ]
                     ]
                 ]
@@ -101,10 +96,9 @@ view user =
 
 --messages for defining what the update is to do upon interactivity
 type Msg 
-    = SaveName String 
-    | SaveEmail String
+    = SaveEmail String
     | SavePassword String
-    | Signup 
+    | Login 
     -- | Error String 
 
 

@@ -28,6 +28,19 @@ initialModel =
     , numlikes = 29
     , liked = False
     }
+model2 : Model
+model2 =
+    { authorpage = "profileelm.html"
+    , authorimage = "http://i.imgur.com/N4VcUeJ.jpg"
+    , authorname = "Albert Pai"
+    , date = "January 20th"
+    , articletitle = "The song you won't ever stop singing. No matter how hard you try."
+    , articlepreview = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
+                        the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
+    , numlikes = 32
+    , liked = False
+    }
 
 --Update--
 update : Msg -> Model -> Model
@@ -55,7 +68,7 @@ viewLoveButton model =
     let 
         buttonClass =
             if model.liked then 
-                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", onClick ToggleLike] 
+                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike] 
             else 
                 [class "btn btn-outline-primary btn-sm pull-xs-right", onClick ToggleLike] 
     in
@@ -82,6 +95,7 @@ viewPostPreview model =
                 , span [] [text "Read more..."]
                 ]
         ]
+
 
 view : Model -> Html Msg
 view model =
@@ -122,7 +136,7 @@ view model =
                                 ]
                             ]
                         ]
-                    , viewPostPreview model 
+                    , viewPostPreview model
                     -- , div [class "post-preview"] 
                     --     [ div [class "post-meta"] 
                     --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
@@ -144,27 +158,28 @@ view model =
                     --         , span [] [text "Read more..."]
                     --         ]
                     --     ]
-                    , div [class "post-preview"] 
-                        [ div [class "post-meta"] 
-                            [ a [href "profileelm.html"] [img [src "http://i.imgur.com/N4VcUeJ.jpg"] []]
-                            , text nbsp
-                            , div [class "info"] 
-                                [ a [href "profileelm.html", class "author"] [text "Albert Pai"]
-                                , span [class "date"] [text "January 20th"]
-                                ]
-                            , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
-                                [ i [class "ion-heart"] []
-                                , text (" " ++ String.fromInt 32)
-                                ]
-                            ]
-                        , a [href "postelm.html", class "preview-link"] 
-                            [ h1 [] [text "The song you won't ever stop singing. No matter how hard you try."]
-                            , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
-                                    and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
-                                    the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""]
-                            , span [] [text "Read more..."]
-                            ]
-                        ]
+                    , viewPostPreview model2
+                    -- , div [class "post-preview"] 
+                    --     [ div [class "post-meta"] 
+                    --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/N4VcUeJ.jpg"] []]
+                    --         , text nbsp
+                    --         , div [class "info"] 
+                    --             [ a [href "profileelm.html", class "author"] [text "Albert Pai"]
+                    --             , span [class "date"] [text "January 20th"]
+                    --             ]
+                    --         , button [class "btn btn-outline-primary btn-sm pull-xs-right"] 
+                    --             [ i [class "ion-heart"] []
+                    --             , text (" " ++ String.fromInt 32)
+                    --             ]
+                    --         ]
+                    --     , a [href "postelm.html", class "preview-link"] 
+                    --         [ h1 [] [text "The song you won't ever stop singing. No matter how hard you try."]
+                    --         , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+                    --                 and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
+                    --                 the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""]
+                    --         , span [] [text "Read more..."]
+                    --         ]
+                    --     ]
                     ]
                 , div [class "col-md-3"] 
                     [div [class "sidebar"] 

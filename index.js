@@ -5191,7 +5191,6 @@ var $author$project$Index$update = F2(
 			{liked: !model.liked, numlikes: model.numlikes + 1});
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5213,6 +5212,7 @@ var $elm$html$Html$Attributes$href = function (url) {
 var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$li = _VirtualDom_node('li');
+var $author$project$Index$model2 = {articlepreview: 'In my demo, the holy grail layout is nested inside a document, so there\'s no body or main tags like shown above. Regardless, we\'re interested in the class names \r\n                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and \r\n                        the trivial order in which they appear in the markup. Let\'s break this down to paint a clear picture of what\'s happening...', articletitle: 'The song you won\'t ever stop singing. No matter how hard you try.', authorimage: 'http://i.imgur.com/N4VcUeJ.jpg', authorname: 'Albert Pai', authorpage: 'profileelm.html', date: 'January 20th', liked: false, numlikes: 32};
 var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
 var $elm$html$Html$p = _VirtualDom_node('p');
@@ -5227,6 +5227,7 @@ var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Index$ToggleLike = {$: 'ToggleLike'};
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5252,6 +5253,7 @@ var $author$project$Index$viewLoveButton = function (model) {
 			$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right'),
 			A2($elm$html$Html$Attributes$style, 'background-color', '#d00'),
 			A2($elm$html$Html$Attributes$style, 'color', '#fff'),
+			A2($elm$html$Html$Attributes$style, 'border-color', 'black'),
 			$elm$html$Html$Events$onClick($author$project$Index$ToggleLike)
 		]) : _List_fromArray(
 		[
@@ -5686,24 +5688,7 @@ var $author$project$Index$view = function (model) {
 																				$elm$html$Html$text('January 20th')
 																			]))
 																	])),
-																A2(
-																$elm$html$Html$button,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$class('btn btn-outline-primary btn-sm pull-xs-right')
-																	]),
-																_List_fromArray(
-																	[
-																		A2(
-																		$elm$html$Html$i,
-																		_List_fromArray(
-																			[
-																				$elm$html$Html$Attributes$class('ion-heart')
-																			]),
-																		_List_Nil),
-																		$elm$html$Html$text(
-																		' ' + $elm$core$String$fromInt(32))
-																	]))
+																$author$project$Index$viewLoveButton($author$project$Index$model2)
 															])),
 														A2(
 														$elm$html$Html$a,
