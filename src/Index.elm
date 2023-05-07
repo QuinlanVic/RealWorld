@@ -14,9 +14,29 @@ import Html.Events exposing (onClick)
 
 --Model--
 type alias Model =
-    {authorpage : String, authorimage : String, authorname : String, date : String, articletitle : String, articlepreview : String, numlikes : Int, liked : Bool} 
-initialModel : Model 
+    { postPreviews : List PostPreview
+    , tags : List String 
+    }
+
+initialModel : Model
 initialModel =
+    { postPreviews = [postPreview1, postPreview2]
+    , tags =  [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
+    }
+
+type alias PostPreview =
+    { authorpage : String
+    , authorimage : String
+    , authorname : String
+    , date : String
+    , articletitle : String
+    , articlepreview : String
+    , numlikes : Int
+    , liked : Bool
+    }
+
+postPreview1 : PostPreview 
+postPreview1 = 
     { authorpage = "profileelm.html"
     , authorimage = "http://i.imgur.com/Qr71crq.jpg"
     , authorname = "Eric Simons"
@@ -28,8 +48,9 @@ initialModel =
     , numlikes = 29
     , liked = False
     }
-model2 : Model
-model2 =
+
+postPreview2 : PostPreview 
+postPreview2 =
     { authorpage = "profileelm.html"
     , authorimage = "http://i.imgur.com/N4VcUeJ.jpg"
     , authorname = "Albert Pai"
@@ -43,10 +64,14 @@ model2 =
     }
 
 --Update--
+updatePostPreviewLikes : PostPreview -> PostPreview
+updatePostPreviewLikes postpreview = --very inefficient
+    if postpreview.liked then {postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes - 1} else {postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes + 1}
+
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        ToggleLike -> if model.liked then {model | liked = not model.liked, numlikes = model.numlikes - 1} else {model | liked = not model.liked, numlikes = model.numlikes + 1}
+        ToggleLike -> {model | postPreviews = List.map updatePostPreviewLikes model.postPreviews} --need lazy execution
         -- Like -> {model | liked = True}
         -- Unlike -> {model | liked = False}
 
@@ -63,39 +88,43 @@ viewTag tag =
 --         , text nbsp --spaces inbetween the labels
 --         ]
 
-viewLoveButton : Model -> Html Msg 
-viewLoveButton model =
+viewLoveButton : PostPreview -> Html Msg 
+viewLoveButton postPreview =
     let 
         buttonClass =
-            if model.liked then 
+            if postPreview.liked then 
                 [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike] 
             else 
                 [class "btn btn-outline-primary btn-sm pull-xs-right", onClick ToggleLike] 
     in
     button buttonClass
            [i [class "ion-heart"] []
-           , text (" " ++ String.fromInt model.numlikes)
+           , text (" " ++ String.fromInt postPreview.numlikes)
            ]
 
-viewPostPreview : Model -> Html Msg 
-viewPostPreview model =
+viewPostPreview : PostPreview -> Html Msg 
+viewPostPreview postPreview =
     div [class "post-preview"] 
         [ div [class "post-meta"] 
-                [ a [href model.authorpage] [img [src model.authorimage] []]
+                [ a [href postPreview.authorpage] [img [src postPreview.authorimage] []]
                 , text nbsp
                 , div [class "info"] 
-                    [ a [href model.authorpage, class "author"] [text model.authorname]
-                    , span [class "date"] [text model.date] 
+                    [ a [href postPreview.authorpage, class "author"] [text postPreview.authorname]
+                    , span [class "date"] [text postPreview.date] 
                     ]
-                , viewLoveButton model
+                , viewLoveButton postPreview
                 ]
             , a [href "postelm.html", class "preview-link"] 
-                [ h1 [] [text model.articletitle]
-                , p [] [text model.articlepreview]
+                [ h1 [] [text postPreview.articletitle]
+                , p [] [text postPreview.articlepreview]
                 , span [] [text "Read more..."]
                 ]
         ]
 
+viewPosts : List PostPreview -> Html Msg 
+viewPosts postPreviews =
+    div [] --ul and li = weird dot :)
+        (List.map viewPostPreview postPreviews) 
 
 view : Model -> Html Msg
 view model =
@@ -136,7 +165,7 @@ view model =
                                 ]
                             ]
                         ]
-                    , viewPostPreview model
+                    , viewPosts model.postPreviews
                     -- , div [class "post-preview"] 
                     --     [ div [class "post-meta"] 
                     --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
@@ -158,7 +187,7 @@ view model =
                     --         , span [] [text "Read more..."]
                     --         ]
                     --     ]
-                    , viewPostPreview model2
+                    -- , viewPostPreview model2
                     -- , div [class "post-preview"] 
                     --     [ div [class "post-meta"] 
                     --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/N4VcUeJ.jpg"] []]

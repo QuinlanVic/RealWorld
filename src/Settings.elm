@@ -54,7 +54,7 @@ update message userset =
 --     fieldset [class "form-group"] 
 --         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
 --         ]
-
+-- #373a3c
 view : UserSettings -> Html Msg
 view user =
     div[]

@@ -4455,13 +4455,15 @@ var $author$project$Post$initialModel = {
 	article: 'String',
 	authorimage: 'http://i.imgur.com/Qr71crq.jpg',
 	authorname: 'Eric Simons',
-	authorpage: 'profile.html',
+	authorpage: 'profileelm.html',
 	comments: _List_fromArray(
 		['With supporting text below as a natural lead-in to additional content.']),
 	date: 'January 20th',
+	followed: false,
 	heading: 'How to build webapps that scale',
 	liked: false,
 	newComment: '',
+	numfollowers: 10,
 	numlikes: 29
 };
 var $elm$core$Result$Err = function (a) {
@@ -5220,6 +5222,12 @@ var $author$project$Post$update = F2(
 					{liked: !model.liked, numlikes: model.numlikes - 1}) : _Utils_update(
 					model,
 					{liked: !model.liked, numlikes: model.numlikes + 1});
+			case 'ToggleFollow':
+				return model.followed ? _Utils_update(
+					model,
+					{followed: !model.followed, numfollowers: model.numfollowers - 1}) : _Utils_update(
+					model,
+					{followed: !model.followed, numfollowers: model.numfollowers + 1});
 			case 'UpdateComment':
 				var comment = message.a;
 				return _Utils_update(
@@ -5230,7 +5238,6 @@ var $author$project$Post$update = F2(
 		}
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5274,6 +5281,7 @@ var $author$project$Post$SaveComment = {$: 'SaveComment'};
 var $author$project$Post$UpdateComment = function (a) {
 	return {$: 'UpdateComment', a: a};
 };
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -5284,7 +5292,6 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 	});
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$html$Html$form = _VirtualDom_node('form');
-var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -5348,11 +5355,11 @@ var $elm$html$Html$Attributes$rows = function (n) {
 		'rows',
 		$elm$core$String$fromInt(n));
 };
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Post$viewComment = function (comment) {
 	return A2(
-		$elm$html$Html$li,
+		$elm$html$Html$div,
 		_List_fromArray(
 			[
 				$elm$html$Html$Attributes$class('card')
@@ -5390,7 +5397,7 @@ var $author$project$Post$viewComment = function (comment) {
 						$elm$html$Html$a,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$href('profile.html'),
+								$elm$html$Html$Attributes$href('profileelm.html'),
 								$elm$html$Html$Attributes$class('comment-author')
 							]),
 						_List_fromArray(
@@ -5412,7 +5419,7 @@ var $author$project$Post$viewComment = function (comment) {
 						$elm$html$Html$a,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$href('profile.html'),
+								$elm$html$Html$Attributes$href('profileelm.html'),
 								$elm$html$Html$Attributes$class('comment-author')
 							]),
 						_List_fromArray(
@@ -5463,17 +5470,8 @@ var $author$project$Post$viewCommentList = function (comments) {
 	} else {
 		return A2(
 			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('col-md-8 col-md-offset-2')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$ul,
-					_List_Nil,
-					A2($elm$core$List$map, $author$project$Post$viewComment, comments))
-				]));
+			_List_Nil,
+			A2($elm$core$List$map, $author$project$Post$viewComment, comments));
 	}
 };
 var $author$project$Post$viewComments = function (model) {
@@ -5485,70 +5483,78 @@ var $author$project$Post$viewComments = function (model) {
 			]),
 		_List_fromArray(
 			[
-				$author$project$Post$viewCommentList(model.comments),
 				A2(
-				$elm$html$Html$form,
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('card comment-form'),
-						$elm$html$Html$Events$onSubmit($author$project$Post$SaveComment)
+						$elm$html$Html$Attributes$class('col-md-8 col-md-offset-2')
 					]),
 				_List_fromArray(
 					[
+						$author$project$Post$viewCommentList(model.comments),
 						A2(
-						$elm$html$Html$div,
+						$elm$html$Html$form,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('card-block')
+								$elm$html$Html$Attributes$class('card comment-form'),
+								$elm$html$Html$Events$onSubmit($author$project$Post$SaveComment)
 							]),
 						_List_fromArray(
 							[
 								A2(
-								$elm$html$Html$input,
+								$elm$html$Html$div,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$class('form-control'),
-										$elm$html$Html$Attributes$placeholder('Write a comment...'),
-										$elm$html$Html$Attributes$rows(3),
-										$elm$html$Html$Attributes$type_('text'),
-										$elm$html$Html$Attributes$value(model.newComment),
-										$elm$html$Html$Events$onInput($author$project$Post$UpdateComment)
+										$elm$html$Html$Attributes$class('card-block')
 									]),
-								_List_Nil)
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('card-footer')
-							]),
-						_List_fromArray(
-							[
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$textarea,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('form-control'),
+												$elm$html$Html$Attributes$placeholder('Write a comment...'),
+												$elm$html$Html$Attributes$rows(3),
+												$elm$html$Html$Attributes$value(model.newComment),
+												$elm$html$Html$Events$onInput($author$project$Post$UpdateComment)
+											]),
+										_List_Nil)
+									])),
 								A2(
-								$elm$html$Html$img,
+								$elm$html$Html$div,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
-										$elm$html$Html$Attributes$class('comment-author-img')
-									]),
-								_List_Nil),
-								A2(
-								$elm$html$Html$button,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('btn btn-sm btn-primary'),
-										$elm$html$Html$Attributes$disabled(
-										$elm$core$String$isEmpty(model.newComment))
+										$elm$html$Html$Attributes$class('card-footer')
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text(' Post Comment')
+										A2(
+										$elm$html$Html$img,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
+												$elm$html$Html$Attributes$class('comment-author-img')
+											]),
+										_List_Nil),
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('btn btn-sm btn-primary'),
+												$elm$html$Html$Attributes$disabled(
+												$elm$core$String$isEmpty(model.newComment))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(' Post Comment')
+											]))
 									]))
 							]))
 					]))
 			]));
 };
-var $author$project$Post$ToggleLike = {$: 'ToggleLike'};
+var $author$project$Post$ToggleFollow = {$: 'ToggleFollow'};
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5567,6 +5573,46 @@ var $elm$html$Html$Events$onClick = function (msg) {
 };
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Post$viewFollowButton = function (model) {
+	var buttonClass = model.followed ? _List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary'),
+			A2($elm$html$Html$Attributes$style, 'background-color', 'skyblue'),
+			A2($elm$html$Html$Attributes$style, 'color', '#fff'),
+			A2($elm$html$Html$Attributes$style, 'border-color', 'black'),
+			$elm$html$Html$Events$onClick($author$project$Post$ToggleFollow)
+		]) : _List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary'),
+			$elm$html$Html$Events$onClick($author$project$Post$ToggleFollow)
+		]);
+	return A2(
+		$elm$html$Html$button,
+		buttonClass,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$i,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('ion-plus-round')
+					]),
+				_List_Nil),
+				$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
+				A2(
+				$elm$html$Html$span,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('counter')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						'(' + ($elm$core$String$fromInt(model.numfollowers) + ')'))
+					]))
+			]));
+};
+var $author$project$Post$ToggleLike = {$: 'ToggleLike'};
 var $author$project$Post$viewLoveButton = function (model) {
 	var buttonClass = model.liked ? _List_fromArray(
 		[
@@ -5760,7 +5806,7 @@ var $author$project$Post$view = function (model) {
 												$elm$html$Html$a,
 												_List_fromArray(
 													[
-														$elm$html$Html$Attributes$href('profile.html')
+														$elm$html$Html$Attributes$href('profileelm.html')
 													]),
 												_List_fromArray(
 													[
@@ -5785,7 +5831,7 @@ var $author$project$Post$view = function (model) {
 														$elm$html$Html$a,
 														_List_fromArray(
 															[
-																$elm$html$Html$Attributes$href('profile.html'),
+																$elm$html$Html$Attributes$href('profileelm.html'),
 																$elm$html$Html$Attributes$class('author')
 															]),
 														_List_fromArray(
@@ -5804,33 +5850,7 @@ var $author$project$Post$view = function (model) {
 															]))
 													])),
 												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$i,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('ion-plus-round')
-															]),
-														_List_Nil),
-														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
-														A2(
-														$elm$html$Html$span,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('counter')
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('(10)')
-															]))
-													])),
+												$author$project$Post$viewFollowButton(model),
 												$elm$html$Html$text(
 												_Utils_ap(
 													$krisajenkins$elm_exts$Exts$Html$nbsp,
@@ -6135,7 +6155,7 @@ var $author$project$Post$view = function (model) {
 												$elm$html$Html$a,
 												_List_fromArray(
 													[
-														$elm$html$Html$Attributes$href('profile.html')
+														$elm$html$Html$Attributes$href('profileelm.html')
 													]),
 												_List_fromArray(
 													[
@@ -6160,7 +6180,7 @@ var $author$project$Post$view = function (model) {
 														$elm$html$Html$a,
 														_List_fromArray(
 															[
-																$elm$html$Html$Attributes$href('profile.html'),
+																$elm$html$Html$Attributes$href('profileelm.html'),
 																$elm$html$Html$Attributes$class('author')
 															]),
 														_List_fromArray(
@@ -6179,64 +6199,12 @@ var $author$project$Post$view = function (model) {
 															]))
 													])),
 												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$i,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('ion-plus-round')
-															]),
-														_List_Nil),
-														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
-														A2(
-														$elm$html$Html$span,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('counter')
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('(10)')
-															]))
-													])),
+												$author$project$Post$viewFollowButton(model),
 												$elm$html$Html$text(
 												_Utils_ap(
 													$krisajenkins$elm_exts$Exts$Html$nbsp,
 													_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('btn btn-sm btn-outline-primary')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$i,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('ion-heart')
-															]),
-														_List_Nil),
-														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Favorite Post ')),
-														A2(
-														$elm$html$Html$span,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('counter')
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('(29)')
-															]))
-													]))
+												$author$project$Post$viewLoveButton(model)
 											]))
 									])),
 								$author$project$Post$viewComments(model)

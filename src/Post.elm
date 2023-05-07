@@ -24,12 +24,14 @@ type alias Model =
     , newComment : String
     , liked : Bool
     , numlikes : Int 
+    , followed : Bool 
+    , numfollowers : Int 
     }
 
 initialModel : Model 
 initialModel =
     { heading = "How to build webapps that scale"
-    , authorpage = "profile.html"
+    , authorpage = "profileelm.html"
     , authorimage = "http://i.imgur.com/Qr71crq.jpg"
     , authorname = "Eric Simons"
     , date = "January 20th" 
@@ -38,6 +40,8 @@ initialModel =
     , newComment = ""
     , liked = False 
     , numlikes = 29
+    , followed = False 
+    , numfollowers = 10
     }
     
 -- Update --
@@ -59,10 +63,26 @@ update : Msg -> Model -> Model
 update message model =
     case message of 
         ToggleLike -> if model.liked then {model | liked = not model.liked, numlikes = model.numlikes - 1} else {model | liked = not model.liked, numlikes = model.numlikes + 1}
+        ToggleFollow -> if model.followed then {model | followed = not model.followed, numfollowers = model.numfollowers - 1} else {model | followed = not model.followed, numfollowers = model.numfollowers + 1}
         UpdateComment comment -> {model | newComment = comment}
         SaveComment -> saveNewComment model 
 
 -- View --
+viewFollowButton : Model -> Html Msg 
+viewFollowButton model =
+    let 
+        buttonClass =
+            if model.followed then 
+                [class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow] 
+            else 
+                [class "btn btn-sm btn-outline-secondary", onClick ToggleFollow] 
+    in
+    button buttonClass
+        [ i [class "ion-plus-round"][]
+        , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
+        , span [class "counter"] [text ("(" ++ String.fromInt model.numfollowers ++ ")")]
+        ]
+
 viewLoveButton : Model -> Html Msg 
 viewLoveButton model =
     let 
@@ -79,15 +99,15 @@ viewLoveButton model =
 
 viewComment : String -> Html Msg
 viewComment comment = --display a comment 
-    li [class "card"]  --(div)
+    div [class "card"]  --(div)
         [div [class "card-block"] 
             [p [class "card-text"] [text comment]
             ]
         , div [class "card-footer"] 
-            [ a [href "profile.html", class "comment-author"] 
+            [ a [href "profileelm.html", class "comment-author"] 
                 [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
             , text (nbsp ++ nbsp ++ nbsp)
-            , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
+            , a [href "profileelm.html", class "comment-author"] [text "Jacob Schmidt"]
             , text nbsp
             , span [class "date-posted"] [text "Dec 29th"]
             , span [class "mod-options"] 
@@ -103,23 +123,67 @@ viewCommentList comments = --display a list of comments (if there are)
     case comments of
         [] -> text ""
         _ ->
-            div [class "col-md-8 col-md-offset-2"] 
-                [ ul []
-                    (List.map viewComment comments)
-                ]
+            div []
+                (List.map viewComment comments)
 viewComments : Model -> Html Msg
 viewComments model = --display all the comments and a place for adding a new comment 
      div [class "row"]
-        [ viewCommentList model.comments
-        , form [class "card comment-form", onSubmit SaveComment] 
-            [ div [class "card-block"] 
-                [input [class "form-control", placeholder "Write a comment...", rows 3, type_ "text", value model.newComment, onInput UpdateComment] []]
-            , div [class "card-footer"] 
-                [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
-                , button [class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment)] [text " Post Comment"]
-                ]
-            ]
+        [ div [class "col-md-8 col-md-offset-2"] 
+              [ viewCommentList model.comments
+              , form [class "card comment-form", onSubmit SaveComment] 
+                    [ div [class "card-block"] 
+                       [textarea [class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment] []] --add enter on enter and shift enter to move to next row :)
+                    , div [class "card-footer"] 
+                        [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
+                        , button [class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment)] [text " Post Comment"]
+                        ]
+                    ]
+              ]  
         ]
+
+            -- div [class "row"] 
+            --     [div [class "col-md-8 col-md-offset-2"] 
+            --         [ div [class "card"] --function to do these 2
+            --             [ div [class "card-block"] 
+            --                 [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
+            --                 ]
+            --             , div [class "card-footer"] 
+            --                 [ a [href "profile.html", class "comment-author"] 
+            --                     [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
+            --                 , text (nbsp ++ nbsp ++ nbsp)
+            --                 , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
+            --                 , text nbsp
+            --                 , span [class "date-posted"] [text "Dec 29th"]
+            --                 ]
+            --             ]
+            --         , div [class "card"]  
+            --             [div [class "card-block"] 
+            --                 [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
+            --                 ]
+            --             , div [class "card-footer"] 
+            --                 [ a [href "profile.html", class "comment-author"] 
+            --                     [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
+            --                 , text (nbsp ++ nbsp ++ nbsp)
+            --                 , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
+            --                 , text nbsp
+            --                 , span [class "date-posted"] [text "Dec 29th"]
+            --                 , span [class "mod-options"] 
+            --                     [ i [class "ion-edit"] []
+            --                     , text nbsp
+            --                     , i [class "ion-trash-a"] []
+            --                     ]
+            --                 ]
+            --             ]
+            --         , form [class "card comment-form"] 
+            --             [ div [class "card-block"] 
+            --                 [textarea [class "form-control", placeholder "Write a comment...", rows 3] []]
+            --             , div [class "card-footer"] 
+            --                 [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
+            --                 , button [class "btn btn-sm btn-primary"] [text " Post Comment"]
+            --                 ]
+            --             ]
+            --         ]
+            --     ]
 
 view : Model -> Html Msg
 view model =
@@ -142,19 +206,20 @@ view model =
             [div [class "container"] 
                 [ h1 [] [text "How to build webapps that scale"]
                 , div [class "post-meta"] 
-                    [ a [href "profile.html"] 
+                    [ a [href "profileelm.html"] 
                         [img [src "http://i.imgur.com/Qr71crq.jpg"][]]
                     , text (nbsp) --helps make spacing perfect even though it's not exactly included in the og html version
                     , div [class "info"] 
-                        [ a [href "profile.html", class "author"] [text "Eric Simons"]
+                        [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
                         , span [class "date"] [text "January 20th"]
                         ]
                     , text (nbsp) --helps make spacing perfect even though it's not exactly included in the og html version
-                    , button [class "btn btn-sm btn-outline-secondary"] 
-                        [ i [class "ion-plus-round"][]
-                        , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
-                        , span [class "counter"] [text "(10)"]
-                        ]
+                    , viewFollowButton model 
+                    -- , button [class "btn btn-sm btn-outline-secondary"] 
+                    --     [ i [class "ion-plus-round"][]
+                    --     , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
+                    --     , span [class "counter"] [text "(10)"]
+                    --     ]
                     , text (nbsp ++ nbsp ++ nbsp ++ nbsp)
                     , viewLoveButton model 
                     ]
@@ -232,24 +297,26 @@ view model =
             , hr [] [] 
             , div [class "post-actions"]
                 [div [class "post-meta"] 
-                    [ a [href "profile.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
+                    [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
                     , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
                     , div [class "info"]
-                        [ a [href "profile.html", class "author"] [text "Eric Simons"]
+                        [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
                         , span [class "date"] [text "January 20th"]
                         ]
                     , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
-                    , button [class "btn btn-sm btn-outline-secondary"]
-                        [ i [class "ion-plus-round"] []
-                        , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
-                        , span [class "counter"] [text "(10)"]
-                        ]
+                    , viewFollowButton model
+                    -- , button [class "btn btn-sm btn-outline-secondary"]
+                    --     [ i [class "ion-plus-round"] []
+                    --     , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
+                    --     , span [class "counter"] [text "(10)"]
+                    --     ]
                     , text (nbsp ++ nbsp ++ nbsp)
-                    , button [class "btn btn-sm btn-outline-primary"] 
-                        [i [class "ion-heart"] []
-                        , text (nbsp ++ nbsp ++ "  Favorite Post ")
-                        , span [class "counter"] [text "(29)"]
-                        ]
+                    , viewLoveButton model
+                    -- , button [class "btn btn-sm btn-outline-primary"] 
+                    --     [i [class "ion-heart"] []
+                    --     , text (nbsp ++ nbsp ++ "  Favorite Post ")
+                    --     , span [class "counter"] [text "(29)"]
+                    --     ]
                     ]
                 ]
             , viewComments model 
@@ -310,8 +377,10 @@ view model =
             ]
         ]
     ]
+
 type Msg 
     = ToggleLike 
+    | ToggleFollow 
     | UpdateComment String
     | SaveComment 
 
