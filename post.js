@@ -4461,6 +4461,8 @@ var $author$project$Post$initialModel = {
 	date: 'January 20th',
 	followed: false,
 	heading: 'How to build webapps that scale',
+	hover1: false,
+	hover2: false,
 	liked: false,
 	newComment: '',
 	numfollowers: 10,
@@ -5233,8 +5235,16 @@ var $author$project$Post$update = F2(
 				return _Utils_update(
 					model,
 					{newComment: comment});
-			default:
+			case 'SaveComment':
 				return $author$project$Post$saveNewComment(model);
+			case 'BrightenLove':
+				return _Utils_update(
+					model,
+					{hover1: !model.hover1});
+			default:
+				return _Utils_update(
+					model,
+					{hover2: !model.hover2});
 		}
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
@@ -5554,6 +5564,7 @@ var $author$project$Post$viewComments = function (model) {
 					]))
 			]));
 };
+var $author$project$Post$BrightenFollow = {$: 'BrightenFollow'};
 var $author$project$Post$ToggleFollow = {$: 'ToggleFollow'};
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -5571,20 +5582,37 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $elm$html$Html$Events$onMouseLeave = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseleave',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Events$onMouseOver = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseover',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Post$viewFollowButton = function (model) {
+	var brighter = model.hover2 ? A2($elm$html$Html$Attributes$style, 'opacity', '1') : A2($elm$html$Html$Attributes$style, 'opacity', '.8');
 	var buttonClass = model.followed ? _List_fromArray(
 		[
 			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary'),
 			A2($elm$html$Html$Attributes$style, 'background-color', 'skyblue'),
 			A2($elm$html$Html$Attributes$style, 'color', '#fff'),
 			A2($elm$html$Html$Attributes$style, 'border-color', 'black'),
-			$elm$html$Html$Events$onClick($author$project$Post$ToggleFollow)
+			$elm$html$Html$Events$onClick($author$project$Post$ToggleFollow),
+			$elm$html$Html$Events$onMouseOver($author$project$Post$BrightenFollow),
+			brighter,
+			$elm$html$Html$Events$onMouseLeave($author$project$Post$BrightenFollow)
 		]) : _List_fromArray(
 		[
 			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary'),
-			$elm$html$Html$Events$onClick($author$project$Post$ToggleFollow)
+			$elm$html$Html$Events$onClick($author$project$Post$ToggleFollow),
+			brighter
 		]);
 	return A2(
 		$elm$html$Html$button,
@@ -5612,19 +5640,25 @@ var $author$project$Post$viewFollowButton = function (model) {
 					]))
 			]));
 };
+var $author$project$Post$BrightenLove = {$: 'BrightenLove'};
 var $author$project$Post$ToggleLike = {$: 'ToggleLike'};
 var $author$project$Post$viewLoveButton = function (model) {
+	var brighter = model.hover1 ? A2($elm$html$Html$Attributes$style, 'opacity', '1') : A2($elm$html$Html$Attributes$style, 'opacity', '.8');
 	var buttonClass = model.liked ? _List_fromArray(
 		[
 			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-primary'),
 			A2($elm$html$Html$Attributes$style, 'background-color', '#d00'),
 			A2($elm$html$Html$Attributes$style, 'color', '#fff'),
 			A2($elm$html$Html$Attributes$style, 'border-color', 'black'),
-			$elm$html$Html$Events$onClick($author$project$Post$ToggleLike)
+			$elm$html$Html$Events$onClick($author$project$Post$ToggleLike),
+			$elm$html$Html$Events$onMouseOver($author$project$Post$BrightenLove),
+			brighter,
+			$elm$html$Html$Events$onMouseLeave($author$project$Post$BrightenLove)
 		]) : _List_fromArray(
 		[
 			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-primary'),
-			$elm$html$Html$Events$onClick($author$project$Post$ToggleLike)
+			$elm$html$Html$Events$onClick($author$project$Post$ToggleLike),
+			brighter
 		]);
 	return A2(
 		$elm$html$Html$button,

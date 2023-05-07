@@ -6,7 +6,7 @@ import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, s
 
 import Exts.Html exposing (nbsp)
 
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html.Events exposing (onClick, onMouseLeave, onMouseOver, onInput, onSubmit) 
 
 import Browser
 
@@ -26,6 +26,8 @@ type alias Model =
     , numlikes : Int 
     , followed : Bool 
     , numfollowers : Int 
+    , hover1 : Bool
+    , hover2 : Bool 
     }
 
 initialModel : Model 
@@ -42,6 +44,8 @@ initialModel =
     , numlikes = 29
     , followed = False 
     , numfollowers = 10
+    , hover1 = False
+    , hover2 = False 
     }
     
 -- Update --
@@ -66,16 +70,23 @@ update message model =
         ToggleFollow -> if model.followed then {model | followed = not model.followed, numfollowers = model.numfollowers - 1} else {model | followed = not model.followed, numfollowers = model.numfollowers + 1}
         UpdateComment comment -> {model | newComment = comment}
         SaveComment -> saveNewComment model 
+        BrightenLove -> {model | hover1 = not model.hover1}
+        BrightenFollow -> {model | hover2 = not model.hover2}
 
 -- View --
 viewFollowButton : Model -> Html Msg 
 viewFollowButton model =
     let 
+        brighter =
+            if model.hover2 then
+                style "opacity" "1"
+            else 
+                style "opacity" ".8"
         buttonClass =
             if model.followed then 
-                [class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow] 
+                [class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow, onMouseOver BrightenFollow, brighter, onMouseLeave BrightenFollow] 
             else 
-                [class "btn btn-sm btn-outline-secondary", onClick ToggleFollow] 
+                [class "btn btn-sm btn-outline-secondary", onClick ToggleFollow, brighter] 
     in
     button buttonClass
         [ i [class "ion-plus-round"][]
@@ -86,11 +97,17 @@ viewFollowButton model =
 viewLoveButton : Model -> Html Msg 
 viewLoveButton model =
     let 
+        -- lighten = style "background-colour" "rgba(0,0,0,0.5)"
+        brighter =
+            if model.hover1 then
+                style "opacity" "1"
+            else 
+                style "opacity" ".8"
         buttonClass =
             if model.liked then 
-                [class "btn btn-sm btn-outline-primary", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike] 
+                [class "btn btn-sm btn-outline-primary", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike, onMouseOver BrightenLove, brighter, onMouseLeave BrightenLove] 
             else 
-                [class "btn btn-sm btn-outline-primary", onClick ToggleLike] 
+                [class "btn btn-sm btn-outline-primary", onClick ToggleLike, brighter]
     in
     button buttonClass
            [ i [class "ion-heart"] []
@@ -125,6 +142,19 @@ viewCommentList comments = --display a list of comments (if there are)
         _ ->
             div []
                 (List.map viewComment comments)
+
+-- onEnter : msg -> Attribute msg
+-- onEnter msg =
+--     keyCode
+--         |> Decode.andThen
+--             (\key ->
+--                 if key == 13 then
+--                     Decode.succeed msg
+--                 else
+--                     Decode.fail "Not enter"
+--             )
+--         |> on "keyup"
+
 viewComments : Model -> Html Msg
 viewComments model = --display all the comments and a place for adding a new comment 
      div [class "row"]
@@ -132,7 +162,7 @@ viewComments model = --display all the comments and a place for adding a new com
               [ viewCommentList model.comments
               , form [class "card comment-form", onSubmit SaveComment] 
                     [ div [class "card-block"] 
-                       [textarea [class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment] []] --add enter on enter and shift enter to move to next row :)
+                       [textarea [class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment] []] --add enter on enter and shift enter to move to next row :) (otherwise input) onEnter UpdateComment
                     , div [class "card-footer"] 
                         [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
                         , button [class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment)] [text " Post Comment"]
@@ -140,50 +170,6 @@ viewComments model = --display all the comments and a place for adding a new com
                     ]
               ]  
         ]
-
-            -- div [class "row"] 
-            --     [div [class "col-md-8 col-md-offset-2"] 
-            --         [ div [class "card"] --function to do these 2
-            --             [ div [class "card-block"] 
-            --                 [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
-            --                 ]
-            --             , div [class "card-footer"] 
-            --                 [ a [href "profile.html", class "comment-author"] 
-            --                     [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-            --                 , text (nbsp ++ nbsp ++ nbsp)
-            --                 , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
-            --                 , text nbsp
-            --                 , span [class "date-posted"] [text "Dec 29th"]
-            --                 ]
-            --             ]
-            --         , div [class "card"]  
-            --             [div [class "card-block"] 
-            --                 [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
-            --                 ]
-            --             , div [class "card-footer"] 
-            --                 [ a [href "profile.html", class "comment-author"] 
-            --                     [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-            --                 , text (nbsp ++ nbsp ++ nbsp)
-            --                 , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
-            --                 , text nbsp
-            --                 , span [class "date-posted"] [text "Dec 29th"]
-            --                 , span [class "mod-options"] 
-            --                     [ i [class "ion-edit"] []
-            --                     , text nbsp
-            --                     , i [class "ion-trash-a"] []
-            --                     ]
-            --                 ]
-            --             ]
-            --         , form [class "card comment-form"] 
-            --             [ div [class "card-block"] 
-            --                 [textarea [class "form-control", placeholder "Write a comment...", rows 3] []]
-            --             , div [class "card-footer"] 
-            --                 [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
-            --                 , button [class "btn btn-sm btn-primary"] [text " Post Comment"]
-            --                 ]
-            --             ]
-            --         ]
-            --     ]
 
 view : Model -> Html Msg
 view model =
@@ -383,6 +369,8 @@ type Msg
     | ToggleFollow 
     | UpdateComment String
     | SaveComment 
+    | BrightenLove
+    | BrightenFollow 
 
 main : Program () Model Msg
 main =

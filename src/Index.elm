@@ -4,13 +4,12 @@ import Browser
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, src, style)
+import Html.Attributes exposing (id, class, href, src, style)
 
 import Exts.Html exposing (nbsp)
 import Json.Decode exposing (int)
 import Response exposing (mapModel)
 import Html.Events exposing (onClick)
-
 
 --Model--
 type alias Model =
@@ -33,6 +32,7 @@ type alias PostPreview =
     , articlepreview : String
     , numlikes : Int
     , liked : Bool
+    , id : String 
     }
 
 postPreview1 : PostPreview 
@@ -47,6 +47,7 @@ postPreview1 =
                         the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
     , numlikes = 29
     , liked = False
+    , id = "Num1"
     }
 
 postPreview2 : PostPreview 
@@ -61,6 +62,7 @@ postPreview2 =
                         the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
     , numlikes = 32
     , liked = False
+    , id = "Num2"
     }
 
 --Update--
@@ -93,7 +95,7 @@ viewLoveButton postPreview =
     let 
         buttonClass =
             if postPreview.liked then 
-                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike] 
+                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike, id postPreview.id] 
             else 
                 [class "btn btn-outline-primary btn-sm pull-xs-right", onClick ToggleLike] 
     in

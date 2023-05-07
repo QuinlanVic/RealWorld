@@ -9,7 +9,9 @@ import Post exposing (initialModel)
 
 import Browser
 
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onMouseLeave, onMouseOver)
+import Post exposing (Msg(..))
+
 
 -- Model --
 type alias Model = --put Posts inside? (List Post)
@@ -19,6 +21,7 @@ type alias Model = --put Posts inside? (List Post)
     , numfollowers : Int
     , followed : Bool
     , postsMade : List PostPreview 
+    , hover : Bool
     }
 
 initialModel : Model 
@@ -29,6 +32,7 @@ initialModel =
     , numfollowers = 10
     , followed = False 
     , postsMade = [postPreview1, postPreview2]
+    , hover = False
     }
 
 type alias PostPreview =
@@ -80,16 +84,23 @@ update message model =
     case message of
         ToggleLike -> {model | postsMade = List.map updatePostPreviewLikes model.postsMade} --need lazy execution
         ToggleFollow -> if model.followed then {model | followed = not model.followed, numfollowers = model.numfollowers - 1} else {model | followed = not model.followed, numfollowers = model.numfollowers + 1}
+        BrightenFollow -> {model | hover = not model.hover}
 
 -- View --
 viewFollowButton : Model -> Html Msg 
 viewFollowButton model = --use from Post
     let 
+        brighter =
+            if model.hover then
+                style "opacity" "1"
+            else 
+                style "opacity" ".8"
+
         buttonClass =
             if model.followed then 
-                [class "btn btn-sm btn-outline-secondary action-btn", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow] 
+                [class "btn btn-sm btn-outline-secondary action-btn", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow, onMouseOver BrightenFollow, brighter, onMouseLeave BrightenFollow] 
             else 
-                [class "btn btn-sm btn-outline-secondary action-btn", onClick ToggleFollow] 
+                [class "btn btn-sm btn-outline-secondary action-btn", onClick ToggleFollow, brighter] 
     in
     button buttonClass
         [ i [class "ion-plus-round"][]
@@ -250,7 +261,7 @@ view model =
 type Msg 
     = ToggleLike 
     | ToggleFollow 
-
+    | BrightenFollow
 
 main : Program () Model Msg
 main =

@@ -8,6 +8,9 @@ import Exts.Html exposing (nbsp)
 
 import Html.Events exposing (onClick, onInput)
 import Browser
+import Post exposing (Model)
+
+import Validate
 
 --Model--
 type alias User =
@@ -15,6 +18,9 @@ type alias User =
     , password : String
     , loggedIn : Bool 
     }
+
+-- type alias Error =
+--     (FormField, String)
 
 initialModel : User
 initialModel =
@@ -100,6 +106,17 @@ type Msg
     | SavePassword String
     | Login 
     -- | Error String 
+
+-- type FormField 
+--     = Email
+--     | Password
+
+-- validate : User -> List Error
+-- validate =
+--     Validate.all
+--         [ .email >> Validate.ifBlank (Email, "Please enter an email :)")
+--         , .password >> Validate.ifBlank (Password, "Please enter your password :)")
+--         ]
 
 
 main : Program () User Msg 

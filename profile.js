@@ -4458,6 +4458,7 @@ var $author$project$Profile$initialModel = {
 	authorimage: '',
 	authorname: '',
 	followed: false,
+	hover: false,
 	numfollowers: 10,
 	postsMade: _List_fromArray(
 		[$author$project$Profile$postPreview1, $author$project$Profile$postPreview2])
@@ -5201,18 +5202,23 @@ var $author$project$Profile$updatePostPreviewLikes = function (postpreview) {
 };
 var $author$project$Profile$update = F2(
 	function (message, model) {
-		if (message.$ === 'ToggleLike') {
-			return _Utils_update(
-				model,
-				{
-					postsMade: A2($elm$core$List$map, $author$project$Profile$updatePostPreviewLikes, model.postsMade)
-				});
-		} else {
-			return model.followed ? _Utils_update(
-				model,
-				{followed: !model.followed, numfollowers: model.numfollowers - 1}) : _Utils_update(
-				model,
-				{followed: !model.followed, numfollowers: model.numfollowers + 1});
+		switch (message.$) {
+			case 'ToggleLike':
+				return _Utils_update(
+					model,
+					{
+						postsMade: A2($elm$core$List$map, $author$project$Profile$updatePostPreviewLikes, model.postsMade)
+					});
+			case 'ToggleFollow':
+				return model.followed ? _Utils_update(
+					model,
+					{followed: !model.followed, numfollowers: model.numfollowers - 1}) : _Utils_update(
+					model,
+					{followed: !model.followed, numfollowers: model.numfollowers + 1});
+			default:
+				return _Utils_update(
+					model,
+					{hover: !model.hover});
 		}
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
@@ -5250,6 +5256,7 @@ var $elm$html$Html$Attributes$src = function (url) {
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$Profile$BrightenFollow = {$: 'BrightenFollow'};
 var $author$project$Profile$ToggleFollow = {$: 'ToggleFollow'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
@@ -5269,20 +5276,37 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $elm$html$Html$Events$onMouseLeave = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseleave',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Events$onMouseOver = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseover',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Profile$viewFollowButton = function (model) {
+	var brighter = model.hover ? A2($elm$html$Html$Attributes$style, 'opacity', '1') : A2($elm$html$Html$Attributes$style, 'opacity', '.8');
 	var buttonClass = model.followed ? _List_fromArray(
 		[
 			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary action-btn'),
 			A2($elm$html$Html$Attributes$style, 'background-color', 'skyblue'),
 			A2($elm$html$Html$Attributes$style, 'color', '#fff'),
 			A2($elm$html$Html$Attributes$style, 'border-color', 'black'),
-			$elm$html$Html$Events$onClick($author$project$Profile$ToggleFollow)
+			$elm$html$Html$Events$onClick($author$project$Profile$ToggleFollow),
+			$elm$html$Html$Events$onMouseOver($author$project$Profile$BrightenFollow),
+			brighter,
+			$elm$html$Html$Events$onMouseLeave($author$project$Profile$BrightenFollow)
 		]) : _List_fromArray(
 		[
 			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary action-btn'),
-			$elm$html$Html$Events$onClick($author$project$Profile$ToggleFollow)
+			$elm$html$Html$Events$onClick($author$project$Profile$ToggleFollow),
+			brighter
 		]);
 	return A2(
 		$elm$html$Html$button,
