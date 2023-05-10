@@ -5302,6 +5302,8 @@ var $elm$html$Html$Attributes$rows = function (n) {
 		$elm$core$String$fromInt(n));
 };
 var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
@@ -5361,7 +5363,8 @@ var $author$project$Editor$view = function (post) {
 												_List_fromArray(
 													[
 														$elm$html$Html$Attributes$class('nav-link'),
-														$elm$html$Html$Attributes$href('editorelm.html')
+														$elm$html$Html$Attributes$href('editorelm.html'),
+														A2($elm$html$Html$Attributes$style, 'color', 'black')
 													]),
 												_List_fromArray(
 													[
@@ -5373,6 +5376,26 @@ var $author$project$Editor$view = function (post) {
 															]),
 														_List_Nil),
 														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + 'New Post')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('nav-item')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('nav-link'),
+														$elm$html$Html$Attributes$href('loginelm.html')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Log in')
 													]))
 											])),
 										A2(
