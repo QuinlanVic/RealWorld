@@ -100,9 +100,9 @@ view user =
                                 ]
                             , button [class "btn btn-lg btn-primary pull-xs-right", onClick UpdateSettings] [text "Update Settings"]
                             ]
+                        , hr [] []
+                        , button [class "btn btn-outline-danger", onClick LogOut] [text "Or click here to logout."] --needs to be inside form for events to work!
                         ]
-                    , hr [] []
-                    , button [class "btn btn-outline-danger", onClick LogOut] [text "Or click here to logout."]
                     ]
                 ]
             ]

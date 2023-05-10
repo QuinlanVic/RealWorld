@@ -5636,19 +5636,19 @@ var $author$project$Settings$view = function (user) {
 																	[
 																		$elm$html$Html$text('Update Settings')
 																	]))
+															])),
+														A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+														A2(
+														$elm$html$Html$button,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('btn btn-outline-danger'),
+																$elm$html$Html$Events$onClick($author$project$Settings$LogOut)
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text('Or click here to logout.')
 															]))
-													])),
-												A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-												A2(
-												$elm$html$Html$button,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('btn btn-outline-danger'),
-														$elm$html$Html$Events$onClick($author$project$Settings$LogOut)
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Or click here to logout.')
 													]))
 											]))
 									]))
