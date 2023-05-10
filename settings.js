@@ -4371,7 +4371,7 @@ function _Browser_load(url)
 	}));
 }
 var $elm$core$Basics$False = {$: 'False'};
-var $author$project$Settings$initialModel = {bio: '', email: '', name: '', password: '', updated: false, urlpic: ''};
+var $author$project$Settings$initialModel = {bio: '', email: '', loggedOut: false, name: '', password: '', updated: false, urlpic: ''};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -5209,12 +5209,17 @@ var $author$project$Settings$update = F2(
 				return _Utils_update(
 					userset,
 					{password: password});
-			default:
+			case 'UpdateSettings':
 				return _Utils_update(
 					userset,
 					{updated: true});
+			default:
+				return _Utils_update(
+					userset,
+					{loggedOut: true});
 		}
 	});
+var $author$project$Settings$LogOut = {$: 'LogOut'};
 var $author$project$Settings$SaveBio = function (a) {
 	return {$: 'SaveBio', a: a};
 };
@@ -5247,6 +5252,7 @@ var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$footer = _VirtualDom_node('footer');
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -5316,8 +5322,6 @@ var $elm$html$Html$Attributes$rows = function (n) {
 		$elm$core$String$fromInt(n));
 };
 var $elm$html$Html$span = _VirtualDom_node('span');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
@@ -5364,6 +5368,26 @@ var $author$project$Settings$view = function (user) {
 									]),
 								_List_fromArray(
 									[
+										A2(
+										$elm$html$Html$li,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('nav-item')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('nav-link'),
+														$elm$html$Html$Attributes$href('indexelm.html')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Home :)')
+													]))
+											])),
 										A2(
 										$elm$html$Html$li,
 										_List_fromArray(
@@ -5435,7 +5459,7 @@ var $author$project$Settings$view = function (user) {
 										$elm$html$Html$li,
 										_List_fromArray(
 											[
-												$elm$html$Html$Attributes$class('nav-item')
+												$elm$html$Html$Attributes$class('nav-item active')
 											]),
 										_List_fromArray(
 											[
@@ -5444,8 +5468,7 @@ var $author$project$Settings$view = function (user) {
 												_List_fromArray(
 													[
 														$elm$html$Html$Attributes$class('nav-link'),
-														$elm$html$Html$Attributes$href('settingselm.html'),
-														A2($elm$html$Html$Attributes$style, 'color', 'black')
+														$elm$html$Html$Attributes$href('settingselm.html')
 													]),
 												_List_fromArray(
 													[
@@ -5504,110 +5527,128 @@ var $author$project$Settings$view = function (user) {
 													[
 														A2(
 														$elm$html$Html$fieldset,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('form-group')
-															]),
+														_List_Nil,
 														_List_fromArray(
 															[
 																A2(
-																$elm$html$Html$input,
+																$elm$html$Html$fieldset,
 																_List_fromArray(
 																	[
-																		$elm$html$Html$Attributes$class('form-control'),
-																		$elm$html$Html$Attributes$type_('text'),
-																		$elm$html$Html$Attributes$placeholder('URL of profile picture'),
-																		$elm$html$Html$Events$onInput($author$project$Settings$SavePic)
+																		$elm$html$Html$Attributes$class('form-group')
 																	]),
-																_List_Nil)
-															])),
-														A2(
-														$elm$html$Html$fieldset,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('form-group')
-															]),
-														_List_fromArray(
-															[
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$input,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$class('form-control'),
+																				$elm$html$Html$Attributes$type_('text'),
+																				$elm$html$Html$Attributes$placeholder('URL of profile picture'),
+																				$elm$html$Html$Events$onInput($author$project$Settings$SavePic)
+																			]),
+																		_List_Nil)
+																	])),
 																A2(
-																$elm$html$Html$input,
+																$elm$html$Html$fieldset,
 																_List_fromArray(
 																	[
-																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																		$elm$html$Html$Attributes$type_('text'),
-																		$elm$html$Html$Attributes$placeholder('Your Name'),
-																		$elm$html$Html$Events$onInput($author$project$Settings$SaveName)
+																		$elm$html$Html$Attributes$class('form-group')
 																	]),
-																_List_Nil)
-															])),
-														A2(
-														$elm$html$Html$fieldset,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('form-group')
-															]),
-														_List_fromArray(
-															[
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$input,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																				$elm$html$Html$Attributes$type_('text'),
+																				$elm$html$Html$Attributes$placeholder('Your Name'),
+																				$elm$html$Html$Events$onInput($author$project$Settings$SaveName)
+																			]),
+																		_List_Nil)
+																	])),
 																A2(
-																$elm$html$Html$textarea,
+																$elm$html$Html$fieldset,
 																_List_fromArray(
 																	[
-																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																		$elm$html$Html$Attributes$rows(8),
-																		$elm$html$Html$Attributes$placeholder('Short bio about you'),
-																		$elm$html$Html$Events$onInput($author$project$Settings$SaveBio)
+																		$elm$html$Html$Attributes$class('form-group')
 																	]),
-																_List_Nil)
-															])),
-														A2(
-														$elm$html$Html$fieldset,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('form-group')
-															]),
-														_List_fromArray(
-															[
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$textarea,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																				$elm$html$Html$Attributes$rows(8),
+																				$elm$html$Html$Attributes$placeholder('Short bio about you'),
+																				$elm$html$Html$Events$onInput($author$project$Settings$SaveBio)
+																			]),
+																		_List_Nil)
+																	])),
 																A2(
-																$elm$html$Html$input,
+																$elm$html$Html$fieldset,
 																_List_fromArray(
 																	[
-																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																		$elm$html$Html$Attributes$type_('text'),
-																		$elm$html$Html$Attributes$placeholder('Email'),
-																		$elm$html$Html$Events$onInput($author$project$Settings$SaveEmail)
+																		$elm$html$Html$Attributes$class('form-group')
 																	]),
-																_List_Nil)
-															])),
-														A2(
-														$elm$html$Html$fieldset,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('form-group')
-															]),
-														_List_fromArray(
-															[
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$input,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																				$elm$html$Html$Attributes$type_('text'),
+																				$elm$html$Html$Attributes$placeholder('Email'),
+																				$elm$html$Html$Events$onInput($author$project$Settings$SaveEmail)
+																			]),
+																		_List_Nil)
+																	])),
 																A2(
-																$elm$html$Html$input,
+																$elm$html$Html$fieldset,
 																_List_fromArray(
 																	[
-																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																		$elm$html$Html$Attributes$type_('password'),
-																		$elm$html$Html$Attributes$placeholder('Password'),
-																		$elm$html$Html$Events$onInput($author$project$Settings$SavePassword)
+																		$elm$html$Html$Attributes$class('form-group')
 																	]),
-																_List_Nil)
-															])),
-														A2(
-														$elm$html$Html$button,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('btn btn-lg btn-primary pull-xs-right'),
-																$elm$html$Html$Events$onClick($author$project$Settings$UpdateSettings)
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Update Settings')
+																_List_fromArray(
+																	[
+																		A2(
+																		$elm$html$Html$input,
+																		_List_fromArray(
+																			[
+																				$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																				$elm$html$Html$Attributes$type_('password'),
+																				$elm$html$Html$Attributes$placeholder('Password'),
+																				$elm$html$Html$Events$onInput($author$project$Settings$SavePassword)
+																			]),
+																		_List_Nil)
+																	])),
+																A2(
+																$elm$html$Html$button,
+																_List_fromArray(
+																	[
+																		$elm$html$Html$Attributes$class('btn btn-lg btn-primary pull-xs-right'),
+																		$elm$html$Html$Events$onClick($author$project$Settings$UpdateSettings)
+																	]),
+																_List_fromArray(
+																	[
+																		$elm$html$Html$text('Update Settings')
+																	]))
 															]))
+													])),
+												A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('btn btn-outline-danger'),
+														$elm$html$Html$Events$onClick($author$project$Settings$LogOut)
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Or click here to logout.')
 													]))
 											]))
 									]))

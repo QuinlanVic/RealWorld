@@ -26,9 +26,9 @@ type alias Model = --put Posts inside? (List Post)
 
 initialModel : Model 
 initialModel =
-    { authorimage = "" 
-    , authorname = ""
-    , authorbio = ""
+    { authorimage = "http://i.imgur.com/Qr71crq.jpg" 
+    , authorname = "Eric Simons"
+    , authorbio = " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
     , numfollowers = 10
     , followed = False 
     , postsMade = [postPreview1, postPreview2]
@@ -84,23 +84,16 @@ update message model =
     case message of
         ToggleLike -> {model | postsMade = List.map updatePostPreviewLikes model.postsMade} --need lazy execution
         ToggleFollow -> if model.followed then {model | followed = not model.followed, numfollowers = model.numfollowers - 1} else {model | followed = not model.followed, numfollowers = model.numfollowers + 1}
-        BrightenFollow -> {model | hover = not model.hover}
 
 -- View --
 viewFollowButton : Model -> Html Msg 
 viewFollowButton model = --use from Post
     let 
-        brighter =
-            if model.hover then
-                style "opacity" "1"
-            else 
-                style "opacity" ".8"
-
         buttonClass =
             if model.followed then 
-                [class "btn btn-sm btn-outline-secondary action-btn", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow, onMouseOver BrightenFollow, brighter, onMouseLeave BrightenFollow] 
+                [class "btn btn-sm btn-outline-secondary action-btn", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow] 
             else 
-                [class "btn btn-sm btn-outline-secondary action-btn", onClick ToggleFollow, brighter] 
+                [class "btn btn-sm btn-outline-secondary action-btn", onClick ToggleFollow] 
     in
     button buttonClass
         [ i [class "ion-plus-round"][]
@@ -154,13 +147,11 @@ view model =
         [div [class "container"] 
             [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
-                [ li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
+                [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
+                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
                 , li [class "nav-item"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
                 , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
-                -- <!--           <li class="nav-item active">
-                --<a class="nav-link" href="index.html">Home</a>
-                --</li> -->
                 ]
             ]
         ]
@@ -169,9 +160,9 @@ view model =
              [ div [class "container"] 
                 [div [class "row"]
                     [div [class "col-md-10 col-md-offset-1"] 
-                        [ img [src "http://i.imgur.com/Qr71crq.jpg", class "user-img"] []
-                        , h4 [] [text "Eric Simons"]
-                        , p [] [text " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"]
+                        [ img [src model.authorimage, class "user-img"] []
+                        , h4 [] [text model.authorname]
+                        , p [] [text model.authorbio]
                         , text nbsp
                         , viewFollowButton model 
                         -- , button [class "btn btn-sm btn-outline-secondary action-btn"] 
@@ -262,7 +253,6 @@ view model =
 type Msg 
     = ToggleLike 
     | ToggleFollow 
-    | BrightenFollow
 
 main : Program () Model Msg
 main =

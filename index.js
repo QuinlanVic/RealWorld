@@ -5454,6 +5454,26 @@ var $author$project$Index$view = function (model) {
 										$elm$html$Html$li,
 										_List_fromArray(
 											[
+												$elm$html$Html$Attributes$class('nav-item active')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('nav-link'),
+														$elm$html$Html$Attributes$href('indexelm.html')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Home :)')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_fromArray(
+											[
 												$elm$html$Html$Attributes$class('nav-item')
 											]),
 										_List_fromArray(

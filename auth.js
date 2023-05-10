@@ -5295,8 +5295,6 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$html$Html$span = _VirtualDom_node('span');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
@@ -5355,6 +5353,26 @@ var $author$project$Auth$view = function (user) {
 												_List_fromArray(
 													[
 														$elm$html$Html$Attributes$class('nav-link'),
+														$elm$html$Html$Attributes$href('indexelm.html')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Home :)')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('nav-item')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('nav-link'),
 														$elm$html$Html$Attributes$href('editorelm.html')
 													]),
 												_List_fromArray(
@@ -5393,7 +5411,7 @@ var $author$project$Auth$view = function (user) {
 										$elm$html$Html$li,
 										_List_fromArray(
 											[
-												$elm$html$Html$Attributes$class('nav-item')
+												$elm$html$Html$Attributes$class('nav-item active')
 											]),
 										_List_fromArray(
 											[
@@ -5402,8 +5420,7 @@ var $author$project$Auth$view = function (user) {
 												_List_fromArray(
 													[
 														$elm$html$Html$Attributes$class('nav-link'),
-														$elm$html$Html$Attributes$href('authelm.html'),
-														A2($elm$html$Html$Attributes$style, 'color', 'black')
+														$elm$html$Html$Attributes$href('authelm.html')
 													]),
 												_List_fromArray(
 													[

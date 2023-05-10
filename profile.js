@@ -4454,9 +4454,9 @@ var $elm$core$Basics$False = {$: 'False'};
 var $author$project$Profile$postPreview1 = {articlepreview: 'In my demo, the holy grail layout is nested inside a document, so there\'s no body or main tags like shown above. Regardless, we\'re interested in the class names \r\n                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and \r\n                        the trivial order in which they appear in the markup. Let\'s break this down to paint a clear picture of what\'s happening...', articletitle: 'How to build webapps that scale', authorimage: 'http://i.imgur.com/Qr71crq.jpg', authorname: 'Eric Simons', authorpage: 'profileelm.html', date: 'January 20th', liked: false, numlikes: 29};
 var $author$project$Profile$postPreview2 = {articlepreview: 'In my demo, the holy grail layout is nested inside a document, so there\'s no body or main tags like shown above. Regardless, we\'re interested in the class names \r\n                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and \r\n                        the trivial order in which they appear in the markup. Let\'s break this down to paint a clear picture of what\'s happening...', articletitle: 'The song you won\'t ever stop singing. No matter how hard you try.', authorimage: 'http://i.imgur.com/N4VcUeJ.jpg', authorname: 'Albert Pai', authorpage: 'profileelm.html', date: 'January 20th', liked: false, numlikes: 32};
 var $author$project$Profile$initialModel = {
-	authorbio: '',
-	authorimage: '',
-	authorname: '',
+	authorbio: ' Cofounder @GoThinkster, lived in Aol\'s HQ for a few months, kinda looks like Peeta from the Hunger Games',
+	authorimage: 'http://i.imgur.com/Qr71crq.jpg',
+	authorname: 'Eric Simons',
 	followed: false,
 	hover: false,
 	numfollowers: 10,
@@ -5202,23 +5202,18 @@ var $author$project$Profile$updatePostPreviewLikes = function (postpreview) {
 };
 var $author$project$Profile$update = F2(
 	function (message, model) {
-		switch (message.$) {
-			case 'ToggleLike':
-				return _Utils_update(
-					model,
-					{
-						postsMade: A2($elm$core$List$map, $author$project$Profile$updatePostPreviewLikes, model.postsMade)
-					});
-			case 'ToggleFollow':
-				return model.followed ? _Utils_update(
-					model,
-					{followed: !model.followed, numfollowers: model.numfollowers - 1}) : _Utils_update(
-					model,
-					{followed: !model.followed, numfollowers: model.numfollowers + 1});
-			default:
-				return _Utils_update(
-					model,
-					{hover: !model.hover});
+		if (message.$ === 'ToggleLike') {
+			return _Utils_update(
+				model,
+				{
+					postsMade: A2($elm$core$List$map, $author$project$Profile$updatePostPreviewLikes, model.postsMade)
+				});
+		} else {
+			return model.followed ? _Utils_update(
+				model,
+				{followed: !model.followed, numfollowers: model.numfollowers - 1}) : _Utils_update(
+				model,
+				{followed: !model.followed, numfollowers: model.numfollowers + 1});
 		}
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
@@ -5256,7 +5251,6 @@ var $elm$html$Html$Attributes$src = function (url) {
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Profile$BrightenFollow = {$: 'BrightenFollow'};
 var $author$project$Profile$ToggleFollow = {$: 'ToggleFollow'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
@@ -5276,37 +5270,20 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$html$Html$Events$onMouseLeave = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'mouseleave',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$html$Html$Events$onMouseOver = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'mouseover',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Profile$viewFollowButton = function (model) {
-	var brighter = model.hover ? A2($elm$html$Html$Attributes$style, 'opacity', '1') : A2($elm$html$Html$Attributes$style, 'opacity', '.8');
 	var buttonClass = model.followed ? _List_fromArray(
 		[
 			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary action-btn'),
 			A2($elm$html$Html$Attributes$style, 'background-color', 'skyblue'),
 			A2($elm$html$Html$Attributes$style, 'color', '#fff'),
 			A2($elm$html$Html$Attributes$style, 'border-color', 'black'),
-			$elm$html$Html$Events$onClick($author$project$Profile$ToggleFollow),
-			$elm$html$Html$Events$onMouseOver($author$project$Profile$BrightenFollow),
-			brighter,
-			$elm$html$Html$Events$onMouseLeave($author$project$Profile$BrightenFollow)
+			$elm$html$Html$Events$onClick($author$project$Profile$ToggleFollow)
 		]) : _List_fromArray(
 		[
 			$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary action-btn'),
-			$elm$html$Html$Events$onClick($author$project$Profile$ToggleFollow),
-			brighter
+			$elm$html$Html$Events$onClick($author$project$Profile$ToggleFollow)
 		]);
 	return A2(
 		$elm$html$Html$button,
@@ -5524,6 +5501,26 @@ var $author$project$Profile$view = function (model) {
 												_List_fromArray(
 													[
 														$elm$html$Html$Attributes$class('nav-link'),
+														$elm$html$Html$Attributes$href('indexelm.html')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Home :)')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('nav-item')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('nav-link'),
 														$elm$html$Html$Attributes$href('editorelm.html')
 													]),
 												_List_fromArray(
@@ -5645,7 +5642,7 @@ var $author$project$Profile$view = function (model) {
 														$elm$html$Html$img,
 														_List_fromArray(
 															[
-																$elm$html$Html$Attributes$src('http://i.imgur.com/Qr71crq.jpg'),
+																$elm$html$Html$Attributes$src(model.authorimage),
 																$elm$html$Html$Attributes$class('user-img')
 															]),
 														_List_Nil),
@@ -5654,14 +5651,14 @@ var $author$project$Profile$view = function (model) {
 														_List_Nil,
 														_List_fromArray(
 															[
-																$elm$html$Html$text('Eric Simons')
+																$elm$html$Html$text(model.authorname)
 															])),
 														A2(
 														$elm$html$Html$p,
 														_List_Nil,
 														_List_fromArray(
 															[
-																$elm$html$Html$text(' Cofounder @GoThinkster, lived in Aol\'s HQ for a few months, kinda looks like Peeta from the Hunger Games')
+																$elm$html$Html$text(model.authorbio)
 															])),
 														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
 														$author$project$Profile$viewFollowButton(model)

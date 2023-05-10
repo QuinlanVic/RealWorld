@@ -18,6 +18,7 @@ type alias UserSettings =
     , email : String
     , password : String
     , updated : Bool
+    , loggedOut : Bool
     }
 
 initialModel : UserSettings
@@ -28,6 +29,7 @@ initialModel =
     , email = ""
     , password = ""
     , updated = False 
+    , loggedOut = False 
     }    
 
 --Update--
@@ -38,8 +40,9 @@ update message userset =
         SaveName name -> { userset | name = name }
         SaveBio bio -> { userset | bio = bio }
         SaveEmail email -> { userset | email = email }
-        SavePassword password -> {userset | password = password }
+        SavePassword password -> { userset | password = password }
         UpdateSettings -> { userset | updated = True }
+        LogOut -> { userset | loggedOut = True }
 
 --View--
 -- getType : String -> String -> Msg
@@ -62,13 +65,11 @@ view user =
         [div [class "container"] 
             [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
-                [ li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
+                [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
+                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
                 , li [class "nav-item"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
-                , li [class "nav-item"] [a [class "nav-link", href "settingselm.html", style "color" "black"] [text "Settings"]]
-                -- <!--           <li class="nav-item active">
-                --<a class="nav-link" href="index.html">Home</a>
-                --</li> -->
+                , li [class "nav-item active"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
                 ]
             ]
         ]
@@ -78,26 +79,30 @@ view user =
                 [div [class "col-md-6 col-md-offset-3 col-xs-12"] 
                     [ h1 [class "text-xs-center"] [text "Your Settings"]
                     , form [] 
-                        [ fieldset [class "form-group"] 
-                            [input [class "form-control", type_ "text", placeholder "URL of profile picture", onInput SavePic] [] --<!--<input type="file" id="file"> -->
+                        [ fieldset []
+                            [ fieldset [class "form-group"] 
+                                [input [class "form-control", type_ "text", placeholder "URL of profile picture", onInput SavePic] [] --<!--<input type="file" id="file"> -->
+                                ]
+                            -- , viewForm "text" "Your Name"
+                            , fieldset [class "form-group"] 
+                                [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []
+                                ]
+                            , fieldset [class "form-group"] 
+                                [textarea [class "form-control form-control-lg", rows 8, placeholder "Short bio about you", onInput SaveBio] []
+                                ]
+                            -- , viewForm "text" "Email"
+                            , fieldset [class "form-group"] 
+                                [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []
+                                ]
+                            -- , viewForm "password" "Password"
+                            , fieldset [class "form-group"]
+                                [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []
+                                ]
+                            , button [class "btn btn-lg btn-primary pull-xs-right", onClick UpdateSettings] [text "Update Settings"]
                             ]
-                        -- , viewForm "text" "Your Name"
-                        , fieldset [class "form-group"] 
-                            [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []
-                            ]
-                        , fieldset [class "form-group"] 
-                            [textarea [class "form-control form-control-lg", rows 8, placeholder "Short bio about you", onInput SaveBio] []
-                            ]
-                        -- , viewForm "text" "Email"
-                        , fieldset [class "form-group"] 
-                            [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []
-                            ]
-                        -- , viewForm "password" "Password"
-                        , fieldset [class "form-group"]
-                            [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []
-                            ]
-                        , button [class "btn btn-lg btn-primary pull-xs-right", onClick UpdateSettings] [text "Update Settings"]
                         ]
+                    , hr [] []
+                    , button [class "btn btn-outline-danger", onClick LogOut] [text "Or click here to logout."]
                     ]
                 ]
             ]
@@ -122,6 +127,7 @@ type Msg
     | SaveEmail String
     | SavePassword String
     | UpdateSettings  
+    | LogOut 
 
 main : Program () UserSettings Msg 
 main = 
