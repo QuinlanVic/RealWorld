@@ -1,4 +1,4 @@
-module Auth exposing (main)
+module Auth exposing (main, userDecoder)
 
 import Html exposing (..)
 
@@ -9,17 +9,32 @@ import Exts.Html exposing (nbsp)
 import Html.Events exposing (onClick, onInput)
 import Browser
 
+import Json.Decode exposing (Decoder, bool, int, list, string, succeed) 
+
+import Json.Decode.Pipeline exposing (hardcoded, required)
+
 --Model--
 type alias User =
-    { name : String
+    { username : String
     , email : String
     , password : String
     , signedUp : Bool 
     }
 
+--userDecoder used for JSON decoding users when they register/sign-up
+userDecoder : Decoder User 
+userDecoder =
+    succeed User
+        |> required "username" string
+        |> required "email" string
+        |> required "password" string
+        |> hardcoded False 
+        --tell JSON decoder to use a static value as an argument in the underlying decoder function instead
+        --of extracting a property from the JSON object
+
 initialModel : User
 initialModel =
-    { name = ""
+    { username = ""
     , email = ""
     , password = ""
     , signedUp = False
@@ -29,7 +44,7 @@ initialModel =
 update : Msg -> User -> User 
 update message user = --what to do (update) with each message type
     case message of
-        SaveName name -> { user | name = name } --update record syntax
+        SaveName username -> { user | username = username } --update record syntax
         SaveEmail email -> { user | email = email }
         SavePassword password -> {user | password = password }
         Signup -> { user | signedUp = True }
