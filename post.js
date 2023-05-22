@@ -5273,7 +5273,6 @@ var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id'
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
-var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$html$Html$Attributes$src = function (url) {
@@ -5421,10 +5420,7 @@ var $author$project$Post$viewComment = function (comment) {
 									]),
 								_List_Nil)
 							])),
-						$elm$html$Html$text(
-						_Utils_ap(
-							$krisajenkins$elm_exts$Exts$Html$nbsp,
-							_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
+						$elm$html$Html$text(' ' + (' ' + ' ')),
 						A2(
 						$elm$html$Html$a,
 						_List_fromArray(
@@ -5436,7 +5432,7 @@ var $author$project$Post$viewComment = function (comment) {
 							[
 								$elm$html$Html$text('Jacob Schmidt')
 							])),
-						$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+						$elm$html$Html$text(' '),
 						A2(
 						$elm$html$Html$span,
 						_List_fromArray(
@@ -5462,7 +5458,7 @@ var $author$project$Post$viewComment = function (comment) {
 										$elm$html$Html$Attributes$class('ion-edit')
 									]),
 								_List_Nil),
-								$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+								$elm$html$Html$text(' '),
 								A2(
 								$elm$html$Html$i,
 								_List_fromArray(
@@ -5626,7 +5622,7 @@ var $author$project$Post$viewFollowButton = function (model) {
 						$elm$html$Html$Attributes$class('ion-plus-round')
 					]),
 				_List_Nil),
-				$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
+				$elm$html$Html$text(' ' + (' ' + '  Follow Eric Simons ')),
 				A2(
 				$elm$html$Html$span,
 				_List_fromArray(
@@ -5672,7 +5668,7 @@ var $author$project$Post$viewLoveButton = function (model) {
 						$elm$html$Html$Attributes$class('ion-heart')
 					]),
 				_List_Nil),
-				$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Favorite Post ')),
+				$elm$html$Html$text(' ' + (' ' + '  Favorite Post ')),
 				A2(
 				$elm$html$Html$span,
 				_List_fromArray(
@@ -5771,7 +5767,7 @@ var $author$project$Post$view = function (model) {
 																$elm$html$Html$Attributes$class('ion-compose')
 															]),
 														_List_Nil),
-														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + 'New Post')
+														$elm$html$Html$text(' ' + 'New Post')
 													]))
 											])),
 										A2(
@@ -5892,7 +5888,7 @@ var $author$project$Post$view = function (model) {
 															]),
 														_List_Nil)
 													])),
-												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+												$elm$html$Html$text(' '),
 												A2(
 												$elm$html$Html$div,
 												_List_fromArray(
@@ -5923,14 +5919,9 @@ var $author$project$Post$view = function (model) {
 																$elm$html$Html$text('January 20th')
 															]))
 													])),
-												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+												$elm$html$Html$text(' '),
 												$author$project$Post$viewFollowButton(model),
-												$elm$html$Html$text(
-												_Utils_ap(
-													$krisajenkins$elm_exts$Exts$Html$nbsp,
-													_Utils_ap(
-														$krisajenkins$elm_exts$Exts$Html$nbsp,
-														_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp)))),
+												$elm$html$Html$text(' ' + (' ' + (' ' + ' '))),
 												$author$project$Post$viewLoveButton(model)
 											]))
 									]))
@@ -6241,7 +6232,7 @@ var $author$project$Post$view = function (model) {
 															]),
 														_List_Nil)
 													])),
-												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+												$elm$html$Html$text(' '),
 												A2(
 												$elm$html$Html$div,
 												_List_fromArray(
@@ -6272,12 +6263,9 @@ var $author$project$Post$view = function (model) {
 																$elm$html$Html$text('January 20th')
 															]))
 													])),
-												$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+												$elm$html$Html$text(' '),
 												$author$project$Post$viewFollowButton(model),
-												$elm$html$Html$text(
-												_Utils_ap(
-													$krisajenkins$elm_exts$Exts$Html$nbsp,
-													_Utils_ap($krisajenkins$elm_exts$Exts$Html$nbsp, $krisajenkins$elm_exts$Exts$Html$nbsp))),
+												$elm$html$Html$text(' ' + (' ' + ' ')),
 												$author$project$Post$viewLoveButton(model)
 											]))
 									])),
@@ -6308,7 +6296,7 @@ var $author$project$Post$view = function (model) {
 									[
 										$elm$html$Html$text('conduit')
 									])),
-								$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+								$elm$html$Html$text(' '),
 								A2(
 								$elm$html$Html$span,
 								_List_fromArray(

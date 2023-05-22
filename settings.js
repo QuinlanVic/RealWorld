@@ -5263,7 +5263,6 @@ var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
-var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5412,7 +5411,7 @@ var $author$project$Settings$view = function (user) {
 																$elm$html$Html$Attributes$class('ion-compose')
 															]),
 														_List_Nil),
-														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + 'New Post')
+														$elm$html$Html$text(' ' + 'New Post')
 													]))
 											])),
 										A2(
@@ -5678,7 +5677,7 @@ var $author$project$Settings$view = function (user) {
 									[
 										$elm$html$Html$text('conduit')
 									])),
-								$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+								$elm$html$Html$text(' '),
 								A2(
 								$elm$html$Html$span,
 								_List_fromArray(

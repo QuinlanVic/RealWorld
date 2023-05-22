@@ -6,7 +6,7 @@ import Html exposing (..)
 
 import Html.Attributes exposing (id, class, href, src, style)
 
-import Exts.Html exposing (nbsp)
+-- import Exts.Html exposing (nbsp)
 import Json.Decode exposing (int)
 import Response exposing (mapModel)
 import Html.Events exposing (onClick)
@@ -109,7 +109,7 @@ viewPostPreview postPreview =
     div [class "post-preview"] 
         [ div [class "post-meta"] 
                 [ a [href postPreview.authorpage] [img [src postPreview.authorimage] []]
-                , text nbsp
+                , text " "
                 , div [class "info"] 
                     [ a [href postPreview.authorpage, class "author"] [text postPreview.authorname]
                     , span [class "date"] [text postPreview.date] 
@@ -136,7 +136,7 @@ view model =
             [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
                 [ li [class "nav-item active"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
-                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
+                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (" " ++ "New Post")]] --&nbsp; in Elm?
                 , li [class "nav-item"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
                 , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
@@ -218,22 +218,22 @@ view model =
                         , div [class "tag-list"] 
                             [ viewTag " programming"
                             --   a [href "#", class "label label-pill label-default"] [text " programming"]
-                            , text nbsp --spaces inbetween the labels
+                            , text " " --spaces inbetween the labels
                             , viewTag " javascript"
                             -- , a [href "#", class "label label-pill label-default"] [text " javascript"]
-                            , text nbsp
+                            , text " "
                             , viewTag " angularjs"
                             -- , a [href "#", class "label label-pill label-default"] [text " angularjs"]
-                            , text nbsp
+                            , text " "
                             , viewTag " react"
                             -- , a [href "#", class "label label-pill label-default"] [text " react"]
-                            , text nbsp
+                            , text " "
                             , viewTag " mean"
                             -- , a [href "#", class "label label-pill label-default"] [text " mean"]
-                            , text nbsp
+                            , text " "
                             , viewTag " node"
                             -- , a [href "#", class "label label-pill label-default"] [text " node"]
-                            , text nbsp
+                            , text " "
                             , viewTag " rails"
                             -- , a [href "#", class "label label-pill label-default"] [text " rails"]
                             ]
@@ -245,7 +245,7 @@ view model =
     , footer []
         [ div [class "container"]
             [ a [href "/", class "logo-font"] [text "conduit"]
-            , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
+            , text " " --helps make spacing perfect even though it's not exactly included in the og html version
             , span [class "attribution"] 
                 [ text "An interactive learning project from "
                 , a [href "https:..thinkster.io"] [text "Thinkster"]

@@ -5239,7 +5239,6 @@ var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
-var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$html$Html$Attributes$src = function (url) {
@@ -5297,7 +5296,7 @@ var $author$project$Profile$viewFollowButton = function (model) {
 						$elm$html$Html$Attributes$class('ion-plus-round')
 					]),
 				_List_Nil),
-				$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + ($krisajenkins$elm_exts$Exts$Html$nbsp + '  Follow Eric Simons ')),
+				$elm$html$Html$text(' ' + ('  ' + '  Follow Eric Simons ')),
 				A2(
 				$elm$html$Html$span,
 				_List_fromArray(
@@ -5375,7 +5374,7 @@ var $author$project$Profile$viewPostPreview = function (post) {
 									]),
 								_List_Nil)
 							])),
-						$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+						$elm$html$Html$text(' '),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -5532,7 +5531,7 @@ var $author$project$Profile$view = function (model) {
 																$elm$html$Html$Attributes$class('ion-compose')
 															]),
 														_List_Nil),
-														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + 'New Post')
+														$elm$html$Html$text(' ' + 'New Post')
 													]))
 											])),
 										A2(
@@ -5660,7 +5659,7 @@ var $author$project$Profile$view = function (model) {
 															[
 																$elm$html$Html$text(model.authorbio)
 															])),
-														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+														$elm$html$Html$text(' '),
 														$author$project$Profile$viewFollowButton(model)
 													]))
 											]))
@@ -5777,7 +5776,7 @@ var $author$project$Profile$view = function (model) {
 									[
 										$elm$html$Html$text('conduit')
 									])),
-								$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+								$elm$html$Html$text(' '),
 								A2(
 								$elm$html$Html$span,
 								_List_fromArray(

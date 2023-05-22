@@ -5226,7 +5226,6 @@ var $elm$html$Html$Attributes$href = function (url) {
 var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
-var $krisajenkins$elm_exts$Exts$Html$nbsp = ' ';
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -5324,7 +5323,7 @@ var $author$project$Index$viewPostPreview = function (postPreview) {
 									]),
 								_List_Nil)
 							])),
-						$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+						$elm$html$Html$text(' '),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -5494,7 +5493,7 @@ var $author$project$Index$view = function (model) {
 																$elm$html$Html$Attributes$class('ion-compose')
 															]),
 														_List_Nil),
-														$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp + 'New Post')
+														$elm$html$Html$text(' ' + 'New Post')
 													]))
 											])),
 										A2(
@@ -5719,17 +5718,17 @@ var $author$project$Index$view = function (model) {
 														_List_fromArray(
 															[
 																$author$project$Index$viewTag(' programming'),
-																$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																$elm$html$Html$text(' '),
 																$author$project$Index$viewTag(' javascript'),
-																$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																$elm$html$Html$text(' '),
 																$author$project$Index$viewTag(' angularjs'),
-																$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																$elm$html$Html$text(' '),
 																$author$project$Index$viewTag(' react'),
-																$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																$elm$html$Html$text(' '),
 																$author$project$Index$viewTag(' mean'),
-																$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																$elm$html$Html$text(' '),
 																$author$project$Index$viewTag(' node'),
-																$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+																$elm$html$Html$text(' '),
 																$author$project$Index$viewTag(' rails')
 															]))
 													]))
@@ -5761,7 +5760,7 @@ var $author$project$Index$view = function (model) {
 									[
 										$elm$html$Html$text('conduit')
 									])),
-								$elm$html$Html$text($krisajenkins$elm_exts$Exts$Html$nbsp),
+								$elm$html$Html$text(' '),
 								A2(
 								$elm$html$Html$span,
 								_List_fromArray(

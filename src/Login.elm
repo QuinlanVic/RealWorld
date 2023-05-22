@@ -4,14 +4,9 @@ import Html exposing (..)
 
 import Html.Attributes exposing (class, href, placeholder, style, type_)
 
-import Exts.Html exposing (nbsp)
-
 import Html.Events exposing (onClick, onInput)
 import Browser
 import Post exposing (Model)
-
-import Validate
-import Exts.Html.Bootstrap.Glyphicons exposing (Glyphicon(..))
 
 --Model--
 type alias User =
@@ -61,7 +56,7 @@ view user =
             [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
                 [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
-                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
+                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (" " ++ "New Post")]] --&nbsp; in Elm?
                 , li [class "nav-item active"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
                 , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
@@ -89,7 +84,7 @@ view user =
     , footer []
         [ div [class "container"]
             [ a [href "/", class "logo-font"] [text "conduit"]
-            , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
+            , text " " --helps make spacing perfect even though it's not exactly included in the og html version
             , span [class "attribution"] 
                 [ text "An interactive learning project from "
                 , a [href "https:..thinkster.io"] [text "Thinkster"]

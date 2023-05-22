@@ -4,7 +4,7 @@ import Html exposing (..)
 
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
 
-import Exts.Html exposing (nbsp)
+-- import Exts.Html exposing (nbsp)
 
 import Html.Events exposing (onClick, onMouseLeave, onMouseOver, onInput, onSubmit) 
 
@@ -90,7 +90,7 @@ viewFollowButton model =
     in
     button buttonClass
         [ i [class "ion-plus-round"][]
-        , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
+        , text (" " ++ " " ++ "  Follow Eric Simons ")
         , span [class "counter"] [text ("(" ++ String.fromInt model.numfollowers ++ ")")]
         ]
 
@@ -111,7 +111,7 @@ viewLoveButton model =
     in
     button buttonClass
            [ i [class "ion-heart"] []
-           , text (nbsp ++ nbsp ++ "  Favorite Post ")
+           , text (" " ++ " " ++ "  Favorite Post ")
            , span [class "counter"] [text ("(" ++ String.fromInt model.numlikes ++ ")")]]
 
 viewComment : String -> Html Msg
@@ -123,13 +123,13 @@ viewComment comment = --display a comment
         , div [class "card-footer"] 
             [ a [href "profileelm.html", class "comment-author"] 
                 [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-            , text (nbsp ++ nbsp ++ nbsp)
+            , text (" " ++ " " ++ " ")
             , a [href "profileelm.html", class "comment-author"] [text "Jacob Schmidt"]
-            , text nbsp
+            , text " "
             , span [class "date-posted"] [text "Dec 29th"]
             , span [class "mod-options"] 
                 [ i [class "ion-edit"] []
-                , text nbsp
+                , text " "
                 , i [class "ion-trash-a"] []
                 ]
             ]
@@ -179,7 +179,7 @@ view model =
             [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
                 [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
-                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (nbsp ++ "New Post")]] --&nbsp; in Elm?
+                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (" " ++ "New Post")]] --&nbsp; in Elm?
                 , li [class "nav-item"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
                 , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
@@ -196,19 +196,19 @@ view model =
                 , div [class "post-meta"] 
                     [ a [href "profileelm.html"] 
                         [img [src "http://i.imgur.com/Qr71crq.jpg"][]]
-                    , text (nbsp) --helps make spacing perfect even though it's not exactly included in the og html version
+                    , text (" ") --helps make spacing perfect even though it's not exactly included in the og html version
                     , div [class "info"] 
                         [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
                         , span [class "date"] [text "January 20th"]
                         ]
-                    , text (nbsp) --helps make spacing perfect even though it's not exactly included in the og html version
+                    , text (" ") --helps make spacing perfect even though it's not exactly included in the og html version
                     , viewFollowButton model 
                     -- , button [class "btn btn-sm btn-outline-secondary"] 
                     --     [ i [class "ion-plus-round"][]
                     --     , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
                     --     , span [class "counter"] [text "(10)"]
                     --     ]
-                    , text (nbsp ++ nbsp ++ nbsp ++ nbsp)
+                    , text (" " ++ " " ++ " " ++ " ")
                     , viewLoveButton model 
                     ]
                 ]
@@ -286,19 +286,19 @@ view model =
             , div [class "post-actions"]
                 [div [class "post-meta"] 
                     [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
-                    , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
+                    , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                     , div [class "info"]
                         [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
                         , span [class "date"] [text "January 20th"]
                         ]
-                    , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
+                    , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                     , viewFollowButton model
                     -- , button [class "btn btn-sm btn-outline-secondary"]
                     --     [ i [class "ion-plus-round"] []
                     --     , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
                     --     , span [class "counter"] [text "(10)"]
                     --     ]
-                    , text (nbsp ++ nbsp ++ nbsp)
+                    , text (" " ++ " " ++ " ")
                     , viewLoveButton model
                     -- , button [class "btn btn-sm btn-outline-primary"] 
                     --     [i [class "ion-heart"] []
@@ -356,7 +356,7 @@ view model =
     , footer []
         [ div [class "container"]
             [ a [href "/", class "logo-font"] [text "conduit"]
-            , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
+            , text " " --helps make spacing perfect even though it's not exactly included in the og html version
             , span [class "attribution"] 
                 [ text "An interactive learning project from "
                 , a [href "https:..thinkster.io"] [text "Thinkster"]

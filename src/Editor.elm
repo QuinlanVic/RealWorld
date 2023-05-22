@@ -1,6 +1,6 @@
 module Editor exposing (main)
 
-import Exts.Html exposing (nbsp)
+-- import Exts.Html exposing (nbsp)
 
 import Html exposing (..)
 
@@ -45,7 +45,7 @@ view post =
                 , ul [ class "nav navbar-nav pull-xs-right" ]
                     --could make a function for doing all of this
                     [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
-                    , li [ class "nav-item active" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (nbsp ++ "New Post") ] ] --&nbsp; in Elm?
+                    , li [ class "nav-item active" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
                     , li [class "nav-item"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
                     , li [ class "nav-item" ] [ a [ class "nav-link", href "authelm.html" ] [ text "Sign up" ] ]
                     , li [ class "nav-item" ] [ a [ class "nav-link", href "settingselm.html" ] [ text "Settings" ] ]
@@ -65,9 +65,9 @@ view post =
                                 [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] [] --, onInput SaveTags (have to do it for a list of strings (split into strings to be passed into list))
                                 , div [ class "tag-list" ]
                                     [ span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " programming" ] --function
-                                    , text nbsp
+                                    , text " "
                                     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " javascript" ]
-                                    , text nbsp
+                                    , text " "
                                     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " webdev" ]
                                     ]
                                 ]
@@ -80,7 +80,7 @@ view post =
         , footer []
             [ div [ class "container" ]
                 [ a [ href "/", class "logo-font" ] [ text "conduit" ]
-                , text nbsp --helps make spacing perfect even though it's not exactly included in the og html version
+                , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
                     , a [ href "https:..thinkster.io" ] [ text "Thinkster" ]
