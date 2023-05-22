@@ -8,31 +8,69 @@ import Exts.Html exposing (nbsp)
 
 import Html.Events exposing (onClick, onInput)
 import Browser
+import Http
 
 import Json.Decode exposing (Decoder, bool, int, list, string, succeed) 
 
 import Json.Decode.Pipeline exposing (hardcoded, required)
 
+import Json.Encode as Encode
+import Json.Decode exposing (null)
+
 --Model--
-type alias User =
+type alias Model =
     { username : String
     , email : String
     , password : String
     , signedUp : Bool 
     }
 
---userDecoder used for JSON decoding users when they register/sign-up
+type alias User =
+    { email : String
+    , token : String
+    , username : String
+    , bio : String
+    , image : string 
+    }
+
+-- saveUser : User -> Cmd Msg
+-- saveUser user = 
+--     let
+--         body =
+--             Http.jsonBody <|
+--                 Encode.object
+--                     [ ( "username", Encode.string user.username )
+--                     , ( "email", Encode.string user.username )
+--                     , ( "password", Encode.string user.password )
+--                     ]
+
+--         decoder =
+--             accountDecoder
+--                 |> Json.map (always ())
+--     in
+--     Http.request
+--         { method = "POST"
+--         , headers = []
+--         , url = accountUrl
+--         , body = body
+--         , expect = Http.expectJson SavedAccount decoder
+--         , timeout = Nothing
+--         , tracker = Nothing
+--         }
+
+--userDecoder used for JSON decoding users returned when they register/sign-up
 userDecoder : Decoder User 
 userDecoder =
     succeed User
-        |> required "username" string
         |> required "email" string
-        |> required "password" string
-        |> hardcoded False 
+        |> required "token" string
+        |> required "username" string
+        |> required "bio" string 
+        |> required "image" string 
         --tell JSON decoder to use a static value as an argument in the underlying decoder function instead
         --of extracting a property from the JSON object
 
-initialModel : User
+initialModel : Model
 initialModel =
     { username = ""
     , email = ""
@@ -40,15 +78,31 @@ initialModel =
     , signedUp = False
     }
 
+init : () -> (Model, Cmd Msg)
+init () =
+    (initialModel, Cmd.none)
+
+fetchUser : Cmd Msg
+fetchUser =
+    Http.get
+        { url = baseUrl ++ "/api/users"
+        , expect = Http.expectJson LoadUser userDecoder 
+        }
+
 --Update--
-update : Msg -> User -> User 
+update : Msg -> Model -> (Model, Cmd Msg)
 update message user = --what to do (update) with each message type
-    case message of
-        SaveName username -> { user | username = username } --update record syntax
-        SaveEmail email -> { user | email = email }
-        SavePassword password -> {user | password = password }
-        Signup -> { user | signedUp = True }
+    case message of --update record syntax
+        SaveName username -> ({ user | username = username }, Cmd.none)
+        SaveEmail email -> ({ user | email = email }, Cmd.none)
+        SavePassword password -> ({user | password = password }, Cmd.none)
+        Signup -> ({ user | signedUp = True }, Cmd.none)
+        LoadUser _ -> (user, fetchUser)
         -- Error errormsg -> user 
+
+subscriptions : User -> Sub Msg
+subscriptions user =
+    Sub.none
         
 --View--
 -- getType : String -> String -> Msg
@@ -64,8 +118,11 @@ update message user = --what to do (update) with each message type
 --     fieldset [class "form-group"] 
 --         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder, onInput (getType textType)] []
 --         ]
-    
-view : User -> Html Msg
+
+baseUrl : String
+baseUrl = "http://localhost:3000"    
+
+view : Model -> Html Msg
 view user =
     div[]
     [ nav[class "navbar navbar-light"]
@@ -119,13 +176,15 @@ type Msg
     | SaveEmail String
     | SavePassword String
     | Signup 
+    | LoadUser (Result Http.Error User)
     -- | Error String 
 
 
-main : Program () User Msg 
+main : Program () Model Msg 
 main =
-    Browser.sandbox
-        { init = initialModel
+    Browser.element
+        { init = init 
         , view = view
         , update = update 
+        , subscriptions = subscriptions
         }
