@@ -100,7 +100,7 @@ update message user = --what to do (update) with each message type
         LoadUser _ -> (user, fetchUser)
         -- Error errormsg -> user 
 
-subscriptions : User -> Sub Msg
+subscriptions : Model -> Sub Msg
 subscriptions user =
     Sub.none
         
