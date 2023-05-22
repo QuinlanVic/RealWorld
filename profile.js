@@ -5296,7 +5296,7 @@ var $author$project$Profile$viewFollowButton = function (model) {
 						$elm$html$Html$Attributes$class('ion-plus-round')
 					]),
 				_List_Nil),
-				$elm$html$Html$text(' ' + ('  ' + '  Follow Eric Simons ')),
+				$elm$html$Html$text(' \u00A0 Follow Eric Simons '),
 				A2(
 				$elm$html$Html$span,
 				_List_fromArray(

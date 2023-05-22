@@ -26,8 +26,6 @@ type alias Model =
     , numlikes : Int 
     , followed : Bool 
     , numfollowers : Int 
-    , hover1 : Bool
-    , hover2 : Bool 
     }
 
 initialModel : Model 
@@ -44,8 +42,6 @@ initialModel =
     , numlikes = 29
     , followed = False 
     , numfollowers = 10
-    , hover1 = False
-    , hover2 = False 
     }
     
 -- Update --
@@ -70,48 +66,35 @@ update message model =
         ToggleFollow -> if model.followed then {model | followed = not model.followed, numfollowers = model.numfollowers - 1} else {model | followed = not model.followed, numfollowers = model.numfollowers + 1}
         UpdateComment comment -> {model | newComment = comment}
         SaveComment -> saveNewComment model 
-        BrightenLove -> {model | hover1 = not model.hover1}
-        BrightenFollow -> {model | hover2 = not model.hover2}
 
 -- View --
 viewFollowButton : Model -> Html Msg 
 viewFollowButton model =
     let 
-        brighter =
-            if model.hover2 then
-                style "opacity" "1"
-            else 
-                style "opacity" ".8"
         buttonClass =
             if model.followed then 
-                [class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow, onMouseOver BrightenFollow, brighter, onMouseLeave BrightenFollow] 
+                [class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow] 
             else 
-                [class "btn btn-sm btn-outline-secondary", onClick ToggleFollow, brighter] 
+                [class "btn btn-sm btn-outline-secondary", onClick ToggleFollow] 
     in
     button buttonClass
         [ i [class "ion-plus-round"][]
-        , text (" " ++ " " ++ "  Follow Eric Simons ")
+        , text (" \u{00A0} Follow Eric Simons ")
         , span [class "counter"] [text ("(" ++ String.fromInt model.numfollowers ++ ")")]
         ]
 
 viewLoveButton : Model -> Html Msg 
 viewLoveButton model =
     let 
-        -- lighten = style "background-colour" "rgba(0,0,0,0.5)"
-        brighter =
-            if model.hover1 then
-                style "opacity" "1"
-            else 
-                style "opacity" ".8"
         buttonClass =
             if model.liked then 
-                [class "btn btn-sm btn-outline-primary", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike, onMouseOver BrightenLove, brighter, onMouseLeave BrightenLove] 
+                [class "btn btn-sm btn-outline-primary", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike] 
             else 
-                [class "btn btn-sm btn-outline-primary", onClick ToggleLike, brighter]
+                [class "btn btn-sm btn-outline-primary", onClick ToggleLike]
     in
     button buttonClass
            [ i [class "ion-heart"] []
-           , text (" " ++ " " ++ "  Favorite Post ")
+           , text (" \u{00A0} Favorite Post ")
            , span [class "counter"] [text ("(" ++ String.fromInt model.numlikes ++ ")")]]
 
 viewComment : String -> Html Msg
@@ -123,7 +106,7 @@ viewComment comment = --display a comment
         , div [class "card-footer"] 
             [ a [href "profileelm.html", class "comment-author"] 
                 [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-            , text (" " ++ " " ++ " ")
+            , text (" \u{00A0} ")
             , a [href "profileelm.html", class "comment-author"] [text "Jacob Schmidt"]
             , text " "
             , span [class "date-posted"] [text "Dec 29th"]
@@ -208,7 +191,7 @@ view model =
                     --     , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
                     --     , span [class "counter"] [text "(10)"]
                     --     ]
-                    , text (" " ++ " " ++ " " ++ " ")
+                    , text (" \u{00A0}\u{00A0} ")
                     , viewLoveButton model 
                     ]
                 ]
@@ -298,7 +281,7 @@ view model =
                     --     , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
                     --     , span [class "counter"] [text "(10)"]
                     --     ]
-                    , text (" " ++ " " ++ " ")
+                    , text (" \u{00A0} ")
                     , viewLoveButton model
                     -- , button [class "btn btn-sm btn-outline-primary"] 
                     --     [i [class "ion-heart"] []
@@ -371,8 +354,6 @@ type Msg
     | ToggleFollow 
     | UpdateComment String
     | SaveComment 
-    | BrightenLove
-    | BrightenFollow 
 
 main : Program () Model Msg
 main =

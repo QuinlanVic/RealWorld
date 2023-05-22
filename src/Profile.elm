@@ -97,7 +97,7 @@ viewFollowButton model = --use from Post
     in
     button buttonClass
         [ i [class "ion-plus-round"][]
-        , text (" " ++ "  " ++ "  Follow Eric Simons ")
+        , text " \u{00A0} Follow Eric Simons "
         , span [class "counter"] [text ("(" ++ String.fromInt model.numfollowers ++ ")")]
         ]
 
