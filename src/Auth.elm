@@ -61,6 +61,14 @@ type alias User =
 --         , tracker = Nothing
 --         }
 
+encodeUser : User -> Encode.Value
+encodeUser user =
+    Encode.object
+        [ ( "username", Encode.string user.username ) 
+        , ( "email", Encode.string user.email )
+        -- , ( "password", Encode.string user.password )   
+        ]
+
 --userDecoder used for JSON decoding users returned when they register/sign-up
 userDecoder : Decoder User 
 userDecoder =
