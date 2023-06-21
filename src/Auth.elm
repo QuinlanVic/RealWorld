@@ -21,52 +21,56 @@ import Json.Encode as Encode
 import Json.Decode exposing (null)
 
 --Model--
-type alias Model =
-    { username : String
-    , email : String
-    , password : String
-    , signedUp : Bool 
-    }
+-- type alias Model =
+--     { username : String
+--     , email : String
+--     , password : String
+--     , signedUp : Bool 
+--     }
 
 type alias User =
     { email : String
     , token : String
     , username : String
     , bio : String
-    , image : String 
+    , image : String
+    , password : String 
+    , signedUp : Bool 
+    , errmsg : String 
     }
 
--- saveUser : User -> Cmd Msg
--- saveUser user = 
---     let
---         body =
---             Http.jsonBody <|
---                 Encode.object
---                     [ ( "username", Encode.string user.username )
---                     , ( "email", Encode.string user.username )
---                     , ( "password", Encode.string user.password )
---                     ]
+baseUrl : String
+baseUrl = "http://localhost:3000"    
 
---         decoder =
---             accountDecoder
---                 |> Json.map (always ())
---     in
---     Http.request
---         { method = "POST"
---         , headers = []
---         , url = accountUrl
---         , body = body
---         , expect = Http.expectJson SavedAccount decoder
---         , timeout = Nothing
---         , tracker = Nothing
---         }
+saveUser : User -> Cmd Msg
+saveUser user = 
+    let
+        body =
+            Http.jsonBody <| encodeUser <| user
+
+        request =
+            Http.post
+                { url = baseUrl ++ "api/users"
+                , body = body
+                , expect = Http.expectJson userDecoder 
+                }
+    in 
+    Http.send LoadUser request 
+
+getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
+getUserCompleted user result =
+    case result of  
+        Ok getUser ->
+            ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image} |> Debug.log "got the user", Cmd.none)  
+        Err error ->
+            ()
 
 encodeUser : User -> Encode.Value
 encodeUser user =
     Encode.object
         [ ( "username", Encode.string user.username ) 
         , ( "email", Encode.string user.email )
-        -- , ( "password", Encode.string user.password )   
+        , ( "password", Encode.string user.password )   
         ]
 
 --userDecoder used for JSON decoding users returned when they register/sign-up
@@ -78,18 +82,25 @@ userDecoder =
         |> required "username" string
         |> required "bio" string 
         |> required "image" string 
+        |> hardcoded ""
+        |> hardcoded True  
+        |> hardcoded ""
         -- hardcoded tells JSON decoder to use a static value as an argument in the underlying decoder function instead
         --of extracting a property from the JSON object
 
-initialModel : Model
+initialModel : User
 initialModel =
-    { username = ""
-    , email = ""
-    , password = ""
-    , signedUp = False
+    { email = ""
+    , token = ""
+    , username = ""
+    , bio = ""
+    , image = ""
+    , password = "" 
+    , signedUp = False 
+    , errmsg = ""  
     }
 
-init : () -> (Model, Cmd Msg)
+init : () -> (User, Cmd Msg)
 init () =
     (initialModel, Cmd.none)
 
@@ -101,18 +112,18 @@ fetchUser =
         }
 
 --Update--
-update : Msg -> Model -> (Model, Cmd Msg)
-update message model = --what to do (update) with each message type
+update : Msg -> User -> (User, Cmd Msg)
+update message user = --what to do (update) with each message type
     case message of --update record syntax
-        SaveName username -> ({ model | username = username }, Cmd.none)
-        SaveEmail email -> ({ model | email = email }, Cmd.none)
-        SavePassword password -> ({model | password = password }, Cmd.none)
-        Signup -> ({ model | signedUp = True }, Cmd.none)
-        LoadUser _ -> (model, fetchUser)
-        -- Error errormsg -> model 
+        SaveName username -> ({ user | username = username }, Cmd.none)
+        SaveEmail email -> ({ user | email = email }, Cmd.none)
+        SavePassword password -> ({user | password = password }, Cmd.none)
+        Signup -> ({ user | signedUp = True }, saveUser user) 
+        LoadUser result -> getUserCompleted user result 
+        -- Error errormsg -> user 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : User -> Sub Msg
+subscriptions user =
     Sub.none
         
 --View--
@@ -130,11 +141,8 @@ subscriptions model =
 --         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder, onInput (getType textType)] []
 --         ]
 
-baseUrl : String
-baseUrl = "http://localhost:3000"    
-
-view : Model -> Html Msg
-view model =
+view : User -> Html Msg
+view user =
     div[]
     [ nav[class "navbar navbar-light"]
         [div [class "container"] 
@@ -190,8 +198,7 @@ type Msg
     | LoadUser (Result Http.Error User)
     -- | Error String 
 
-
-main : Program () Model Msg 
+main : Program () User Msg 
 main =
     Browser.element
         { init = init 
