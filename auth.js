@@ -5373,7 +5373,7 @@ var $author$project$Auth$getUserCompleted = F2(
 var $author$project$Auth$LoadUser = function (a) {
 	return {$: 'LoadUser', a: a};
 };
-var $author$project$Auth$baseUrl = 'localhost:3000/';
+var $author$project$Auth$baseUrl = 'http://127.0.0.1:8010/proxy/';
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
