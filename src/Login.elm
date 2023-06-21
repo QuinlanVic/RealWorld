@@ -8,6 +8,16 @@ import Html.Events exposing (onClick, onInput)
 import Browser
 import Post exposing (Model)
 
+import Http
+
+import Json.Decode exposing (Decoder, bool, int, list, string, succeed) 
+
+import Json.Decode.Pipeline exposing (hardcoded, required)   
+
+import Json.Encode as Encode
+
+import Json.Decode exposing (null)
+
 --Model--
 type alias User =
     { email : String
@@ -15,8 +25,38 @@ type alias User =
     , loggedIn : Bool 
     }
 
+baseUrl : String
+baseUrl = "http://127.0.0.1:8010/proxy/"    
+
+encodeUser : User -> Encode.Value
+encodeUser user = --used to encode user sent to the server via POST request body (for registering)
+    Encode.object
+        [ ( "email", Encode.string user.email )
+        , ( "password", Encode.string user.password )   
+        ]
+
+-- userDecoder : Decoder User 
+-- userDecoder =
+--     succeed User
+--         |> required "email" string
+--         |> required "token" string
+--         |> required "username" string
+--         |> required "bio" string 
+--         |> required "image" string 
+--         |> hardcoded ""
+--         |> hardcoded True  
+--         |> hardcoded ""
+
 -- type alias Error =
 --     (FormField, String)
+
+-- getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
+-- getUserCompleted user result =
+--     case result of  
+--         Ok getUser ->
+--             ({user | token = getUser.token, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)  
+--         Err error ->
+--             ({user | errmsg = (Debug.toString error) }, Cmd.none)
 
 initialModel : User
 initialModel =
@@ -25,14 +65,30 @@ initialModel =
     , loggedIn = False
     }
 
+init : () -> (User, Cmd Msg)
+init () =
+    (initialModel, Cmd.none)
+
+-- fetchUser : Cmd Msg
+-- fetchUser =
+--     Http.get 
+--         { url = baseUrl ++ "api/users"
+--         , expect = Http.expectJson LoadUser userDecoder 
+--         }
+
 --Update--
-update : Msg -> User -> User 
+update : Msg -> User -> (User, Cmd Msg)
 update message user = --what to do (update) with each message type
     case message of
-        SaveEmail email -> { user | email = email }
-        SavePassword password -> {user | password = password }
-        Login -> { user | loggedIn = True }
+        SaveEmail email -> ({ user | email = email }, Cmd.none)
+        SavePassword password -> ({user | password = password }, Cmd.none)
+        Login -> ({ user | loggedIn = True }, Cmd.none)
+        -- LoadUser result -> getUserCompleted user result 
         -- Error errormsg -> user 
+
+subscriptions : User -> Sub Msg
+subscriptions user =
+    Sub.none
         
 --View--
 -- getType : String -> String -> Msg
@@ -100,6 +156,7 @@ type Msg
     = SaveEmail String
     | SavePassword String
     | Login 
+    -- | LoadUser (Result Http.Error User) 
     -- | Error String 
 
 -- type FormField 
@@ -116,8 +173,9 @@ type Msg
 
 main : Program () User Msg 
 main =
-    Browser.sandbox
-        { init = initialModel
+    Browser.element 
+        { init = init
         , view = view
         , update = update 
+        , subscriptions = subscriptions 
         }
