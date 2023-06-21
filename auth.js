@@ -5334,7 +5334,7 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Auth$initialModel = {email: '', password: '', signedUp: false, username: ''};
+var $author$project$Auth$initialModel = {bio: '', email: '', errmsg: '', image: '', password: '', signedUp: false, token: '', username: ''};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Auth$init = function (_v0) {
@@ -5342,13 +5342,67 @@ var $author$project$Auth$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Auth$subscriptions = function (model) {
+var $author$project$Auth$subscriptions = function (user) {
 	return $elm$core$Platform$Sub$none;
 };
+var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$Auth$getUserCompleted = F2(
+	function (user, result) {
+		if (result.$ === 'Ok') {
+			var getUser = result.a;
+			return _Utils_Tuple2(
+				A2(
+					$elm$core$Debug$log,
+					'got the user',
+					_Utils_update(
+						user,
+						{errmsg: '', password: '', token: getUser.token})),
+				$elm$core$Platform$Cmd$none);
+		} else {
+			var error = result.a;
+			return _Utils_Tuple2(
+				_Utils_update(
+					user,
+					{
+						errmsg: $elm$core$Debug$toString(error)
+					}),
+				$elm$core$Platform$Cmd$none);
+		}
+	});
 var $author$project$Auth$LoadUser = function (a) {
 	return {$: 'LoadUser', a: a};
 };
-var $author$project$Auth$baseUrl = 'http://localhost:3000';
+var $author$project$Auth$baseUrl = 'localhost:3000/';
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Auth$encodeUser = function (user) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'username',
+				$elm$json$Json$Encode$string(user.username)),
+				_Utils_Tuple2(
+				'email',
+				$elm$json$Json$Encode$string(user.email)),
+				_Utils_Tuple2(
+				'password',
+				$elm$json$Json$Encode$string(user.password))
+			]));
+};
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -5963,7 +6017,12 @@ var $elm$http$Http$expectJson = F2(
 						A2($elm$json$Json$Decode$decodeString, decoder, string));
 				}));
 	});
-var $elm$http$Http$emptyBody = _Http_emptyBody;
+var $elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2($elm$json$Json$Encode$encode, 0, value));
+};
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -6132,15 +6191,16 @@ var $elm$http$Http$request = function (r) {
 		$elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
-var $elm$http$Http$get = function (r) {
+var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
+		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Auth$User = F5(
-	function (email, token, username, bio, image) {
-		return {bio: bio, email: email, image: image, token: token, username: username};
+var $author$project$Auth$User = F8(
+	function (email, token, username, bio, image, password, signedUp, errmsg) {
+		return {bio: bio, email: email, errmsg: errmsg, image: image, password: password, signedUp: signedUp, token: token, username: username};
 	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2($elm$core$Basics$composeR, $elm$json$Json$Decode$succeed, $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 	function (key, valDecoder, decoder) {
@@ -6150,64 +6210,79 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 			decoder);
 	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Auth$userDecoder = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'image',
-	$elm$json$Json$Decode$string,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'bio',
-		$elm$json$Json$Decode$string,
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'username',
-			$elm$json$Json$Decode$string,
+var $author$project$Auth$userDecoder = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	'',
+	A2(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+		true,
+		A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+			'',
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'token',
+				'image',
 				$elm$json$Json$Decode$string,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'email',
+					'bio',
 					$elm$json$Json$Decode$string,
-					$elm$json$Json$Decode$succeed($author$project$Auth$User))))));
-var $author$project$Auth$fetchUser = $elm$http$Http$get(
-	{
-		expect: A2($elm$http$Http$expectJson, $author$project$Auth$LoadUser, $author$project$Auth$userDecoder),
-		url: $author$project$Auth$baseUrl + '/api/users'
-	});
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'username',
+						$elm$json$Json$Decode$string,
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'token',
+							$elm$json$Json$Decode$string,
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'email',
+								$elm$json$Json$Decode$string,
+								$elm$json$Json$Decode$succeed($author$project$Auth$User)))))))));
+var $author$project$Auth$saveUser = function (user) {
+	var body = $elm$http$Http$jsonBody(
+		$author$project$Auth$encodeUser(user));
+	return $elm$http$Http$post(
+		{
+			body: body,
+			expect: A2($elm$http$Http$expectJson, $author$project$Auth$LoadUser, $author$project$Auth$userDecoder),
+			url: $author$project$Auth$baseUrl + 'api/users'
+		});
+};
 var $author$project$Auth$update = F2(
-	function (message, model) {
+	function (message, user) {
 		switch (message.$) {
 			case 'SaveName':
 				var username = message.a;
 				return _Utils_Tuple2(
 					_Utils_update(
-						model,
+						user,
 						{username: username}),
 					$elm$core$Platform$Cmd$none);
 			case 'SaveEmail':
 				var email = message.a;
 				return _Utils_Tuple2(
 					_Utils_update(
-						model,
+						user,
 						{email: email}),
 					$elm$core$Platform$Cmd$none);
 			case 'SavePassword':
 				var password = message.a;
 				return _Utils_Tuple2(
 					_Utils_update(
-						model,
+						user,
 						{password: password}),
 					$elm$core$Platform$Cmd$none);
 			case 'Signup':
 				return _Utils_Tuple2(
 					_Utils_update(
-						model,
+						user,
 						{signedUp: true}),
-					$elm$core$Platform$Cmd$none);
+					$author$project$Auth$saveUser(user));
 			default:
-				return _Utils_Tuple2(model, $author$project$Auth$fetchUser);
+				var result = message.a;
+				return A2($author$project$Auth$getUserCompleted, user, result);
 		}
 	});
 var $author$project$Auth$SaveEmail = function (a) {
@@ -6222,7 +6297,6 @@ var $author$project$Auth$SavePassword = function (a) {
 var $author$project$Auth$Signup = {$: 'Signup'};
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6236,6 +6310,7 @@ var $elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var $elm$html$Html$footer = _VirtualDom_node('footer');
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -6243,6 +6318,7 @@ var $elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var $elm$html$Html$i = _VirtualDom_node('i');
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
@@ -6301,7 +6377,198 @@ var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Auth$view = function (model) {
+var $author$project$Auth$view = function (user) {
+	var loggedIn = ($elm$core$String$length(user.token) > 0) ? true : false;
+	var mainStuff = function () {
+		var showError = $elm$core$String$isEmpty(user.errmsg) ? 'hidden' : '';
+		var greeting = 'Hello, ' + (user.username + '!');
+		return loggedIn ? A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$id('greeting')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$h3,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-center')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(greeting)
+						])),
+					A2(
+					$elm$html$Html$p,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-center')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('You have super-secret access to protected quotes.')
+						]))
+				])) : A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('auth-page')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('container page')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('col-md-6 col-md-offset-3 col-xs-12')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$h1,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('text-xs-center')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Sign up')
+												])),
+											A2(
+											$elm$html$Html$p,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('text-xs-center')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$a,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$href('loginelm.html')
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Have an account?')
+														]))
+												])),
+											A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class(showError)
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$div,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('alert alert-danger')
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text(user.errmsg)
+														]))
+												])),
+											A2(
+											$elm$html$Html$form,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$fieldset,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																	$elm$html$Html$Attributes$type_('text'),
+																	$elm$html$Html$Attributes$placeholder('Your Name'),
+																	$elm$html$Html$Events$onInput($author$project$Auth$SaveName)
+																]),
+															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$fieldset,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																	$elm$html$Html$Attributes$type_('text'),
+																	$elm$html$Html$Attributes$placeholder('Email'),
+																	$elm$html$Html$Events$onInput($author$project$Auth$SaveEmail)
+																]),
+															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$fieldset,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$input,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
+																	$elm$html$Html$Attributes$type_('password'),
+																	$elm$html$Html$Attributes$placeholder('Password'),
+																	$elm$html$Html$Events$onInput($author$project$Auth$SavePassword)
+																]),
+															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$button,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('btn btn-lg btn-primary pull-xs-right'),
+															$elm$html$Html$Events$onClick($author$project$Auth$Signup)
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('Sign up')
+														]))
+												]))
+										]))
+								]))
+						]))
+				]));
+	}();
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
@@ -6452,145 +6719,7 @@ var $author$project$Auth$view = function (model) {
 									]))
 							]))
 					])),
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('auth-page')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('container page')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('row')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('col-md-6 col-md-offset-3 col-xs-12')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$h1,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('text-xs-center')
-													]),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Sign up')
-													])),
-												A2(
-												$elm$html$Html$p,
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('text-xs-center')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$a,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$href('loginelm.html')
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Have an account?')
-															]))
-													])),
-												A2(
-												$elm$html$Html$form,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$fieldset,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('form-group')
-															]),
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																		$elm$html$Html$Attributes$type_('text'),
-																		$elm$html$Html$Attributes$placeholder('Your Name'),
-																		$elm$html$Html$Events$onInput($author$project$Auth$SaveName)
-																	]),
-																_List_Nil)
-															])),
-														A2(
-														$elm$html$Html$fieldset,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('form-group')
-															]),
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																		$elm$html$Html$Attributes$type_('text'),
-																		$elm$html$Html$Attributes$placeholder('Email'),
-																		$elm$html$Html$Events$onInput($author$project$Auth$SaveEmail)
-																	]),
-																_List_Nil)
-															])),
-														A2(
-														$elm$html$Html$fieldset,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('form-group')
-															]),
-														_List_fromArray(
-															[
-																A2(
-																$elm$html$Html$input,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																		$elm$html$Html$Attributes$type_('password'),
-																		$elm$html$Html$Attributes$placeholder('Password'),
-																		$elm$html$Html$Events$onInput($author$project$Auth$SavePassword)
-																	]),
-																_List_Nil)
-															])),
-														A2(
-														$elm$html$Html$button,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('btn btn-lg btn-primary pull-xs-right'),
-																$elm$html$Html$Events$onClick($author$project$Auth$Signup)
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Sign up')
-															]))
-													]))
-											]))
-									]))
-							]))
-					])),
+				mainStuff,
 				A2(
 				$elm$html$Html$footer,
 				_List_Nil,

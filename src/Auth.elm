@@ -2,7 +2,7 @@ module Auth exposing (main, userDecoder)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, placeholder, style, type_)
+import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 
 -- import Exts.Html exposing (nbsp)
 
@@ -29,44 +29,41 @@ import Json.Decode exposing (null)
 --     }
 
 type alias User =
-    { email : String
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
     , token : String
     , username : String
     , bio : String
     , image : String
-    , password : String 
-    , signedUp : Bool 
-    , errmsg : String 
+    , password : String --user's password
+    , signedUp : Bool --bool saying if they've signed up or not (maybe used later)
+    , errmsg : String --display any API errors from authentication
     }
 
 baseUrl : String
-baseUrl = "http://localhost:3000"    
+baseUrl = "localhost:3000/"    
 
 saveUser : User -> Cmd Msg
 saveUser user = 
     let
         body =
-            Http.jsonBody <| encodeUser <| user
-
-        request =
-            Http.post
-                { url = baseUrl ++ "api/users"
-                , body = body
-                , expect = Http.expectJson userDecoder 
-                }
+            Http.jsonBody <| encodeUser <| user       
     in 
-    Http.send LoadUser request 
+    Http.post
+        { body = body 
+        , expect = Http.expectJson LoadUser (userDecoder)     
+        , url = baseUrl ++ "api/users"
+        }
 
 getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
 getUserCompleted user result =
     case result of  
         Ok getUser ->
-            ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image} |> Debug.log "got the user", Cmd.none)  
+            ({user | token = getUser.token, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)  
         Err error ->
-            ()
+            ({user | errmsg = (Debug.toString error) }, Cmd.none)
 
 encodeUser : User -> Encode.Value
-encodeUser user =
+encodeUser user = --used to encode user sent to the server via POST request body (for registering)
     Encode.object
         [ ( "username", Encode.string user.username ) 
         , ( "email", Encode.string user.email )
@@ -107,7 +104,7 @@ init () =
 fetchUser : Cmd Msg
 fetchUser =
     Http.get 
-        { url = baseUrl ++ "/api/users"
+        { url = baseUrl ++ "api/users"
         , expect = Http.expectJson LoadUser userDecoder 
         }
 
@@ -143,51 +140,104 @@ subscriptions user =
 
 view : User -> Html Msg
 view user =
-    div[]
-    [ nav[class "navbar navbar-light"]
-        [div [class "container"] 
-            [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
-            ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
-                [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
-                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (" " ++ "New Post")]] --&nbsp; in Elm?
-                , li [class "nav-item"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
-                , li [class "nav-item active"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
-                , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
+    let
+        -- Is the user logged in?
+        loggedIn : Bool
+        loggedIn =
+            if String.length user.token > 0 then
+                True
+            else
+                False
+        mainStuff = 
+            let
+                showError : String 
+                showError =
+                    if String.isEmpty user.errmsg then
+                        "hidden"
+                    else 
+                        "" 
+
+                greeting : String
+                greeting =
+                    "Hello, " ++ user.username ++ "!"
+                
+            in
+                if loggedIn then 
+                    div [ id "greeting" ] 
+                        [ h3 [ class "text-center" ] [ text greeting ]
+                        , p [ class "text-center" ] [ text "You have super-secret access to protected quotes." ]
+                        ]
+                else 
+                    div[class "auth-page"]
+                        [ div[class "container page"]
+                            [div [class "row"]
+                                [div[class "col-md-6 col-md-offset-3 col-xs-12"]
+                                    [h1 [class "text-xs-center"] [text "Sign up"],
+                                    p [class "text-xs-center"] [a [href "loginelm.html"] [text "Have an account?"]]  
+                                    , div [ class showError ]
+                                        [ div [ class "alert alert-danger" ] [ text user.errmsg ]
+                                        ]      
+                                    , form []
+                                    -- [ viewForm "text" "Your Name"
+                                    -- , viewForm "text" "Email"
+                                    -- , viewForm "password" "Password"
+                                    [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []] --another function for this
+                                    , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []]
+                                    , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []]
+                                    , button [class "btn btn-lg btn-primary pull-xs-right", onClick Signup] [text "Sign up"]
+                                    ]
+                                    ]
+                                ]
+                            ]
+                        ]
+            
+    in
+        div[]
+        [ nav[class "navbar navbar-light"]
+            [div [class "container"] 
+                [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
+                ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
+                    [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
+                    , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (" " ++ "New Post")]] --&nbsp; in Elm?
+                    , li [class "nav-item"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
+                    , li [class "nav-item active"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
+                    , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
+                    ]
+                ]
+            ]
+        , mainStuff --testing
+        -- div[class "auth-page"]
+        --     [ div[class "container page"]
+        --         [div [class "row"]
+        --             [div[class "col-md-6 col-md-offset-3 col-xs-12"]
+        --                 [h1 [class "text-xs-center"] [text "Sign up"],
+        --                 p [class "text-xs-center"] [a [href "loginelm.html"] [text "Have an account?"]]        
+        --                 , form []
+        --                 -- [ viewForm "text" "Your Name"
+        --                 -- , viewForm "text" "Email"
+        --                 -- , viewForm "password" "Password"
+        --                 [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []] --another function for this
+        --                 , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []]
+        --                 , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []]
+        --                 , button [class "btn btn-lg btn-primary pull-xs-right", onClick Signup] [text "Sign up"]
+        --                 ]
+        --                 ]
+        --             ]
+        --         ]
+        --     ]
+        , footer []
+            [ div [class "container"]
+                [ a [href "/", class "logo-font"] [text "conduit"]
+                , text " " --helps make spacing perfect even though it's not exactly included in the og html version
+                , span [class "attribution"] 
+                    [ text "An interactive learning project from "
+                    , a [href "https:..thinkster.io"] [text "Thinkster"]
+                    , text ". Code & design licensed under MIT."
+                    ] 
                 ]
             ]
         ]
-    , div[class "auth-page"]
-        [ div[class "container page"]
-            [div [class "row"]
-                [div[class "col-md-6 col-md-offset-3 col-xs-12"]
-                    [h1 [class "text-xs-center"] [text "Sign up"],
-                    p [class "text-xs-center"] [a [href "loginelm.html"] [text "Have an account?"]]        
-                    , form []
-                    -- [ viewForm "text" "Your Name"
-                    -- , viewForm "text" "Email"
-                    -- , viewForm "password" "Password"
-                    [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []] --another function for this
-                    , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []]
-                    , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []]
-                    , button [class "btn btn-lg btn-primary pull-xs-right", onClick Signup] [text "Sign up"]
-                    ]
-                    ]
-                ]
-            ]
-        ]
-    , footer []
-        [ div [class "container"]
-            [ a [href "/", class "logo-font"] [text "conduit"]
-            , text " " --helps make spacing perfect even though it's not exactly included in the og html version
-            , span [class "attribution"] 
-                [ text "An interactive learning project from "
-                , a [href "https:..thinkster.io"] [text "Thinkster"]
-                , text ". Code & design licensed under MIT."
-                ] 
-            ]
-        ]
-    ]
---div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
+    --div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
 
 --messages for defining what the update is to do upon interactivity
 type Msg 
