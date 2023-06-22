@@ -5345,31 +5345,6 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Auth$subscriptions = function (user) {
 	return $elm$core$Platform$Sub$none;
 };
-var $elm$core$Debug$log = _Debug_log;
-var $elm$core$Debug$toString = _Debug_toString;
-var $author$project$Auth$getUserCompleted = F2(
-	function (user, result) {
-		if (result.$ === 'Ok') {
-			var getUser = result.a;
-			return _Utils_Tuple2(
-				A2(
-					$elm$core$Debug$log,
-					'got the user',
-					_Utils_update(
-						user,
-						{errmsg: '', password: '', token: getUser.token})),
-				$elm$core$Platform$Cmd$none);
-		} else {
-			var error = result.a;
-			return _Utils_Tuple2(
-				_Utils_update(
-					user,
-					{
-						errmsg: $elm$core$Debug$toString(error)
-					}),
-				$elm$core$Platform$Cmd$none);
-		}
-	});
 var $author$project$Auth$LoadUser = function (a) {
 	return {$: 'LoadUser', a: a};
 };
@@ -6281,8 +6256,17 @@ var $author$project$Auth$update = F2(
 						{signedUp: true}),
 					$author$project$Auth$saveUser(user));
 			default:
-				var result = message.a;
-				return A2($author$project$Auth$getUserCompleted, user, result);
+				if (message.a.$ === 'Ok') {
+					var getUser = message.a.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							getUser,
+							{errmsg: '', password: '', signedUp: true}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var error = message.a.a;
+					return _Utils_Tuple2(user, $elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var $author$project$Auth$SaveEmail = function (a) {
@@ -6527,7 +6511,7 @@ var $author$project$Auth$view = function (user) {
 															_List_fromArray(
 																[
 																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
-																	$elm$html$Html$Attributes$type_('text'),
+																	$elm$html$Html$Attributes$type_('email'),
 																	$elm$html$Html$Attributes$placeholder('Email'),
 																	$elm$html$Html$Events$onInput($author$project$Auth$SaveEmail)
 																]),
