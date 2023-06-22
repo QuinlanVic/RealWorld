@@ -53,21 +53,14 @@ saveUser user =
         , expect = Http.expectJson LoadUser (userDecoder) -- wrap JSON received in LoadUser Msg    
         , url = baseUrl ++ "api/users"
         }
--- email : String --all of these fields are contained in the response from the server (besides last 3)
---     , token : String
---     , username : String
---     , bio : String
---     , image : String
---     , password : String --user's password
---     , signedUp : Bool --bool saying if they've signed up or not (maybe used later)
---     , errmsg : String --display any API errors from authentication
--- getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
--- getUserCompleted user result =
---     case result of  
---         Ok getUser -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
---             ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)   
---         Err error ->
---             ({user | errmsg = (Debug.toString error) }, Cmd.none)
+
+getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
+getUserCompleted user result =
+    case result of  
+        Ok getUser -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+            ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)   
+        Err error ->
+            ({user | errmsg = (Debug.toString error) }, Cmd.none)
 
 encodeUser : User -> Encode.Value
 encodeUser user = --used to encode user sent to the server via POST request body (for registering)
@@ -108,12 +101,12 @@ init : () -> (User, Cmd Msg)
 init () =
     (initialModel, Cmd.none)
 
-fetchUser : Cmd Msg
-fetchUser =
-    Http.get 
-        { url = baseUrl ++ "api/users"
-        , expect = Http.expectJson LoadUser userDecoder -- wrap JSON received in LoadUser Msg
-        }
+-- fetchUser : Cmd Msg
+-- fetchUser =
+--     Http.get 
+--         { url = baseUrl ++ "api/users"
+--         , expect = Http.expectJson LoadUser userDecoder -- wrap JSON received in LoadUser Msg
+--         }
 
 --Update--
 update : Msg -> User -> (User, Cmd Msg)
@@ -123,13 +116,13 @@ update message user = --what to do (update) with each message type
         SaveEmail email -> ({ user | email = email }, Cmd.none)
         SavePassword password -> ({user | password = password }, Cmd.none)
         Signup -> ({ user | signedUp = True }, saveUser user)  
-        LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none) 
-            -- ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none) 
-            ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = "noerror"}, Cmd.none)  
-        LoadUser (Err error) ->
-            ({user | errmsg = Debug.toString error}, Cmd.none) 
-        -- LoadUser result -> getUserCompleted user result 
+        -- LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+        --     -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none) 
+        --     -- ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none) 
+        --     ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = "noerror"}, Cmd.none)  
+        -- LoadUser (Err error) ->
+            -- ({user | errmsg = Debug.toString error}, Cmd.none) 
+        LoadUser result -> getUserCompleted user result 
         -- Error errormsg -> user 
 
 subscriptions : User -> Sub Msg
@@ -223,7 +216,7 @@ view user =
         --                 -- , viewForm "text" "Email"
         --                 -- , viewForm "password" "Password"
         --                 [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []] --another function for this
-        --                 , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []]
+        --                 , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail] []]
         --                 , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []]
         --                 , button [class "btn btn-lg btn-primary pull-xs-right", onClick Signup] [text "Sign up"]
         --                 ]

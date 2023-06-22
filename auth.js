@@ -5345,6 +5345,31 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Auth$subscriptions = function (user) {
 	return $elm$core$Platform$Sub$none;
 };
+var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$Auth$getUserCompleted = F2(
+	function (user, result) {
+		if (result.$ === 'Ok') {
+			var getUser = result.a;
+			return _Utils_Tuple2(
+				A2(
+					$elm$core$Debug$log,
+					'got the user',
+					_Utils_update(
+						getUser,
+						{errmsg: '', password: '', signedUp: true})),
+				$elm$core$Platform$Cmd$none);
+		} else {
+			var error = result.a;
+			return _Utils_Tuple2(
+				_Utils_update(
+					user,
+					{
+						errmsg: $elm$core$Debug$toString(error)
+					}),
+				$elm$core$Platform$Cmd$none);
+		}
+	});
 var $author$project$Auth$LoadUser = function (a) {
 	return {$: 'LoadUser', a: a};
 };
@@ -6225,7 +6250,6 @@ var $author$project$Auth$saveUser = function (user) {
 			url: $author$project$Auth$baseUrl + 'api/users'
 		});
 };
-var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Auth$update = F2(
 	function (message, user) {
 		switch (message.$) {
@@ -6257,23 +6281,8 @@ var $author$project$Auth$update = F2(
 						{signedUp: true}),
 					$author$project$Auth$saveUser(user));
 			default:
-				if (message.a.$ === 'Ok') {
-					var getUser = message.a.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							user,
-							{bio: getUser.bio, email: getUser.email, errmsg: 'noerror', image: getUser.image, password: '', token: getUser.token, username: getUser.username}),
-						$elm$core$Platform$Cmd$none);
-				} else {
-					var error = message.a.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							user,
-							{
-								errmsg: $elm$core$Debug$toString(error)
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
+				var result = message.a;
+				return A2($author$project$Auth$getUserCompleted, user, result);
 		}
 	});
 var $author$project$Auth$SaveEmail = function (a) {

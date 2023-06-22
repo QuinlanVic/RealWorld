@@ -68,13 +68,13 @@ userDecoder =
 -- type alias Error =
 --     (FormField, String)
 
--- getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
--- getUserCompleted user result =
---     case result of  
---         Ok getUser ->
---             ({user | token = getUser.token, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)  
---         Err error ->
---             ({user | errmsg = (Debug.toString error) }, Cmd.none)
+getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
+getUserCompleted user result =
+    case result of  
+        Ok getUser ->
+            ({user | token = getUser.token, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)  
+        Err error ->
+            ({user | errmsg = (Debug.toString error) }, Cmd.none)
 
 initialModel : User
 initialModel =
@@ -106,13 +106,13 @@ update message user = --what to do (update) with each message type
         SaveEmail email -> ({ user | email = email }, Cmd.none)
         SavePassword password -> ({user | password = password }, Cmd.none)
         Login -> ({ user | loggedIn = True }, saveUser user) 
-        LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none) 
-            -- ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none) 
-            ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)  
-        LoadUser (Err error) ->
-            (user, Cmd.none)
-        -- LoadUser result -> getUserCompleted user result 
+        -- LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+        --     -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none) 
+        --     -- ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none) 
+        --     ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)  
+        -- LoadUser (Err error) ->
+        --     (user, Cmd.none)
+        LoadUser result -> getUserCompleted user result 
         -- Error errormsg -> user 
 
 subscriptions : User -> Sub Msg
@@ -141,7 +141,7 @@ view user =
             [ a [class "navbar-brand", href "indexelm.html"] [text "conduit"],
             ul [class "nav navbar-nav pull-xs-right"] --could make a function for doing all of this
                 [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
-                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (" " ++ "New Post")]] --&nbsp; in Elm?
+                , li [class "nav-item"] [a [class "nav-link", href "editorelm.html"] [i [class "ion-compose"][], text (" " ++ "New Post")]]
                 , li [class "nav-item active"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
                 , li [class "nav-item"] [a [class "nav-link", href "authelm.html"] [text "Sign up"]]
                 , li [class "nav-item"] [a [class "nav-link", href "settingselm.html"] [text "Settings"]]
@@ -153,12 +153,15 @@ view user =
             [div [class "row"]
                 [div[class "col-md-6 col-md-offset-3 col-xs-12"]
                     [h1 [class "text-xs-center"] [text "Log in"],
-                    p [class "text-xs-center"] [a [href "authelm.html"] [text "Don't have an account?"]]        
+                    p [class "text-xs-center"] [a [href "authelm.html"] [text "Don't have an account?"]]   
+                    -- , div [ class showError ]
+                    --     [ div [ class "alert alert-danger" ] [ text user.errmsg ]
+                    --     ]       
                     , form []
                     -- [ viewForm "text" "Your Name"
                     -- , viewForm "text" "Email"
                     -- , viewForm "password" "Password"
-                    [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail] []]
+                    [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail] []]
                     , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []]
                     , button [class "btn btn-lg btn-primary pull-xs-right", onClick Login] [text "Log In"]
                     ]
