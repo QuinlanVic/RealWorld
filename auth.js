@@ -6242,7 +6242,13 @@ var $author$project$Auth$userDecoder = A2(
 								$elm$json$Json$Decode$succeed($author$project$Auth$User)))))))));
 var $author$project$Auth$saveUser = function (user) {
 	var body = $elm$http$Http$jsonBody(
-		$author$project$Auth$encodeUser(user));
+		$elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'user',
+					$author$project$Auth$encodeUser(user))
+				])));
 	return $elm$http$Http$post(
 		{
 			body: body,
