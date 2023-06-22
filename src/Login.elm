@@ -20,13 +20,30 @@ import Json.Decode exposing (null)
 
 --Model--
 type alias User =
-    { email : String
-    , password : String
-    , loggedIn : Bool 
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    , token : String
+    , username : String
+    , bio : String
+    , image : String
+    , password : String --user's password
+    , loggedIn : Bool --bool saying if they've signed up or not (maybe used later)
+    , errmsg : String --display any API errors from authentication
     }
 
 baseUrl : String
 baseUrl = "http://127.0.0.1:8010/proxy/"    
+
+saveUser : User -> Cmd Msg
+saveUser user = 
+    let
+        body =
+            Http.jsonBody <| encodeUser <| user       
+    in 
+    Http.post
+        { body = body 
+        , expect = Http.expectJson LoadUser (userDecoder) -- wrap JSON received in LoadUser Msg    
+        , url = baseUrl ++ "api/users/login"
+        }
 
 encodeUser : User -> Encode.Value
 encodeUser user = --used to encode user sent to the server via POST request body (for registering)
@@ -35,17 +52,18 @@ encodeUser user = --used to encode user sent to the server via POST request body
         , ( "password", Encode.string user.password )   
         ]
 
--- userDecoder : Decoder User 
--- userDecoder =
---     succeed User
---         |> required "email" string
---         |> required "token" string
---         |> required "username" string
---         |> required "bio" string 
---         |> required "image" string 
---         |> hardcoded ""
---         |> hardcoded True  
---         |> hardcoded ""
+--userDecoder used for JSON decoding users returned when they register/sign-up
+userDecoder : Decoder User 
+userDecoder =
+    succeed User
+        |> required "email" string
+        |> required "token" string
+        |> required "username" string
+        |> required "bio" string 
+        |> required "image" string 
+        |> hardcoded ""
+        |> hardcoded True  
+        |> hardcoded ""
 
 -- type alias Error =
 --     (FormField, String)
@@ -61,20 +79,25 @@ encodeUser user = --used to encode user sent to the server via POST request body
 initialModel : User
 initialModel =
     { email = ""
-    , password = ""
-    , loggedIn = False
+    , token = ""
+    , username = ""
+    , bio = ""
+    , image = ""
+    , password = "" 
+    , loggedIn = False 
+    , errmsg = ""  
     }
 
 init : () -> (User, Cmd Msg)
 init () =
     (initialModel, Cmd.none)
 
--- fetchUser : Cmd Msg
--- fetchUser =
---     Http.get 
---         { url = baseUrl ++ "api/users"
---         , expect = Http.expectJson LoadUser userDecoder 
---         }
+fetchUser : Cmd Msg
+fetchUser =
+    Http.get 
+        { url = baseUrl ++ "api/users"
+        , expect = Http.expectJson LoadUser userDecoder 
+        }
 
 --Update--
 update : Msg -> User -> (User, Cmd Msg)
@@ -82,7 +105,13 @@ update message user = --what to do (update) with each message type
     case message of
         SaveEmail email -> ({ user | email = email }, Cmd.none)
         SavePassword password -> ({user | password = password }, Cmd.none)
-        Login -> ({ user | loggedIn = True }, Cmd.none)
+        Login -> ({ user | loggedIn = True }, saveUser user) 
+        LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+            -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none) 
+            -- ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none) 
+            ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)  
+        LoadUser (Err error) ->
+            (user, Cmd.none)
         -- LoadUser result -> getUserCompleted user result 
         -- Error errormsg -> user 
 
@@ -156,20 +185,8 @@ type Msg
     = SaveEmail String
     | SavePassword String
     | Login 
-    -- | LoadUser (Result Http.Error User) 
+    | LoadUser (Result Http.Error User) 
     -- | Error String 
-
--- type FormField 
---     = Email
---     | Password
-
--- validate : User -> List Error
--- validate =
---     Validate.all
---         [ .email >> Validate.ifBlank (Email, "Please enter an email :)")
---         , .password >> Validate.ifBlank (Password, "Please enter your password :)")
---         ]
-
 
 main : Program () User Msg 
 main =

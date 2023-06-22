@@ -40,7 +40,7 @@ type alias User =
     }
 
 baseUrl : String
-baseUrl = "http://127.0.0.1:8010/proxy/"    
+baseUrl = "http://localhost:8010/proxy/"    
 
 saveUser : User -> Cmd Msg
 saveUser user = 
@@ -124,11 +124,11 @@ update message user = --what to do (update) with each message type
         SavePassword password -> ({user | password = password }, Cmd.none)
         Signup -> ({ user | signedUp = True }, saveUser user)  
         LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none) 
+            -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none) 
             -- ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none) 
-            -- ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)  
+            ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = ""}, Cmd.none)  
         LoadUser (Err error) ->
-            (user, Cmd.none)
+            ({user | errmsg = Debug.toString error}, Cmd.none) 
         -- LoadUser result -> getUserCompleted user result 
         -- Error errormsg -> user 
 

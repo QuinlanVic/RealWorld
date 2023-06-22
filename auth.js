@@ -5348,7 +5348,7 @@ var $author$project$Auth$subscriptions = function (user) {
 var $author$project$Auth$LoadUser = function (a) {
 	return {$: 'LoadUser', a: a};
 };
-var $author$project$Auth$baseUrl = 'http://127.0.0.1:8010/proxy/';
+var $author$project$Auth$baseUrl = 'http://localhost:8010/proxy/';
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -6225,6 +6225,7 @@ var $author$project$Auth$saveUser = function (user) {
 			url: $author$project$Auth$baseUrl + 'api/users'
 		});
 };
+var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Auth$update = F2(
 	function (message, user) {
 		switch (message.$) {
@@ -6260,12 +6261,18 @@ var $author$project$Auth$update = F2(
 					var getUser = message.a.a;
 					return _Utils_Tuple2(
 						_Utils_update(
-							getUser,
-							{errmsg: '', password: '', signedUp: true}),
+							user,
+							{bio: getUser.bio, email: getUser.email, errmsg: '', image: getUser.image, password: '', token: getUser.token, username: getUser.username}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					var error = message.a.a;
-					return _Utils_Tuple2(user, $elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(
+						_Utils_update(
+							user,
+							{
+								errmsg: $elm$core$Debug$toString(error)
+							}),
+						$elm$core$Platform$Cmd$none);
 				}
 		}
 	});
