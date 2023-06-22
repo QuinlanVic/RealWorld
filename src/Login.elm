@@ -37,7 +37,7 @@ saveUser : User -> Cmd Msg
 saveUser user = 
     let
         body =
-            Http.jsonBody <| encodeUser <| user       
+            Http.jsonBody <| Encode.object [("user", (encodeUser <| user))]           
     in 
     Http.post
         { body = body 
