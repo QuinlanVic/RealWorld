@@ -6262,7 +6262,7 @@ var $author$project$Auth$update = F2(
 					return _Utils_Tuple2(
 						_Utils_update(
 							user,
-							{bio: getUser.bio, email: getUser.email, errmsg: '', image: getUser.image, password: '', token: getUser.token, username: getUser.username}),
+							{bio: getUser.bio, email: getUser.email, errmsg: 'noerror', image: getUser.image, password: '', token: getUser.token, username: getUser.username}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					var error = message.a.a;
@@ -6369,11 +6369,10 @@ var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Auth$view = function (user) {
-	var loggedIn = ($elm$core$String$length(user.token) > 0) ? true : false;
 	var mainStuff = function () {
 		var showError = $elm$core$String$isEmpty(user.errmsg) ? 'hidden' : '';
 		var greeting = 'Hello, ' + (user.username + '!');
-		return loggedIn ? A2(
+		return (user.errmsg === 'noerror') ? A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[

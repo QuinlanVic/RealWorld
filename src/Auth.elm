@@ -126,7 +126,7 @@ update message user = --what to do (update) with each message type
         LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
             -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none) 
             -- ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none) 
-            ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = ""}, Cmd.none)  
+            ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = "noerror"}, Cmd.none)  
         LoadUser (Err error) ->
             ({user | errmsg = Debug.toString error}, Cmd.none) 
         -- LoadUser result -> getUserCompleted user result 
@@ -154,13 +154,6 @@ subscriptions user =
 view : User -> Html Msg
 view user =
     let
-        -- Is the user logged in?
-        loggedIn : Bool
-        loggedIn =
-            if String.length user.token > 0 then
-                True
-            else
-                False
         mainStuff = 
             let
                 showError : String 
@@ -175,7 +168,7 @@ view user =
                     "Hello, " ++ user.username ++ "!"
                 
             in
-                if loggedIn then 
+                if user.errmsg == "noerror" then --testing
                     div [ id "greeting" ] 
                         [ h3 [ class "text-center" ] [ text greeting ]
                         , p [ class "text-center" ] [ text "You have super-secret access to protected quotes." ]
