@@ -40,7 +40,7 @@ type alias User =
     }
 
 baseUrl : String
-baseUrl = "http://localhost:8010/proxy/"    
+baseUrl = "http://localhost:3000/"    
 
 saveUser : User -> Cmd Msg
 saveUser user = 
@@ -49,9 +49,9 @@ saveUser user =
             Http.jsonBody <| Encode.object [("user", (encodeUser <| user))]      
     in 
     Http.post
-        { body = body 
+        { body = body
         , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg    
-        , url = baseUrl ++ "api/users"
+        , url = Debug.log "MOO" (baseUrl ++ "api/users")
         }
 
 getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
@@ -255,3 +255,6 @@ main =
         , update = update 
         , subscriptions = subscriptions
         }
+
+-- elm-live src/Auth.elm --open --start-page=authelm.html -- --output=auth.js
+-- elm make src/Auth.elm --output auth.js

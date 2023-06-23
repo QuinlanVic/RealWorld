@@ -5382,7 +5382,7 @@ var $author$project$Auth$getUserCompleted = F2(
 var $author$project$Auth$LoadUser = function (a) {
 	return {$: 'LoadUser', a: a};
 };
-var $author$project$Auth$baseUrl = 'http://localhost:8010/proxy/';
+var $author$project$Auth$baseUrl = 'http://localhost:3000/';
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -6275,7 +6275,7 @@ var $author$project$Auth$saveUser = function (user) {
 				$elm$http$Http$expectJson,
 				$author$project$Auth$LoadUser,
 				A2($elm$json$Json$Decode$field, 'user', $author$project$Auth$userDecoder)),
-			url: $author$project$Auth$baseUrl + 'api/users'
+			url: A2($elm$core$Debug$log, 'MOO', $author$project$Auth$baseUrl + 'api/users')
 		});
 };
 var $author$project$Auth$update = F2(
