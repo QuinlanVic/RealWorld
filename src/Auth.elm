@@ -12,7 +12,7 @@ import Browser
 
 import Http
 
-import Json.Decode exposing (Decoder, bool, int, list, string, succeed) 
+import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed) 
 
 import Json.Decode.Pipeline exposing (hardcoded, required)  
 
@@ -32,8 +32,8 @@ type alias User =
     { email : String --all of these fields are contained in the response from the server (besides last 3)
     , token : String
     , username : String
-    , bio : String
-    , image : String
+    , bio : Maybe String
+    , image : Maybe String
     , password : String --user's password
     , signedUp : Bool --bool saying if they've signed up or not (maybe used later)
     , errmsg : String --display any API errors from authentication
@@ -50,7 +50,7 @@ saveUser user =
     in 
     Http.post
         { body = body 
-        , expect = Http.expectJson LoadUser (userDecoder) -- wrap JSON received in LoadUser Msg    
+        , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg    
         , url = baseUrl ++ "api/users"
         }
 
@@ -77,8 +77,8 @@ userDecoder =
         |> required "email" string
         |> required "token" string
         |> required "username" string
-        |> required "bio" string 
-        |> required "image" string 
+        |> required "bio" (nullable string)
+        |> required "image" (nullable string)
         |> hardcoded ""
         |> hardcoded True  
         |> hardcoded ""
@@ -90,8 +90,8 @@ initialModel =
     { email = ""
     , token = ""
     , username = ""
-    , bio = ""
-    , image = ""
+    , bio = Just ""
+    , image = Just ""
     , password = "" 
     , signedUp = False 
     , errmsg = ""  

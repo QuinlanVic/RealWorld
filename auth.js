@@ -5334,7 +5334,16 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Auth$initialModel = {bio: '', email: '', errmsg: '', image: '', password: '', signedUp: false, token: '', username: ''};
+var $author$project$Auth$initialModel = {
+	bio: $elm$core$Maybe$Just(''),
+	email: '',
+	errmsg: '',
+	image: $elm$core$Maybe$Just(''),
+	password: '',
+	signedUp: false,
+	token: '',
+	username: ''
+};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Auth$init = function (_v0) {
@@ -6017,6 +6026,7 @@ var $elm$http$Http$expectJson = F2(
 						A2($elm$json$Json$Decode$decodeString, decoder, string));
 				}));
 	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$http$Http$jsonBody = function (value) {
 	return A2(
 		_Http_pair,
@@ -6201,7 +6211,16 @@ var $author$project$Auth$User = F8(
 	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2($elm$core$Basics$composeR, $elm$json$Json$Decode$succeed, $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
-var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$nullable = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
+			]));
+};
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 	function (key, valDecoder, decoder) {
 		return A2(
@@ -6222,11 +6241,11 @@ var $author$project$Auth$userDecoder = A2(
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 				'image',
-				$elm$json$Json$Decode$string,
+				$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 					'bio',
-					$elm$json$Json$Decode$string,
+					$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 						'username',
@@ -6252,7 +6271,10 @@ var $author$project$Auth$saveUser = function (user) {
 	return $elm$http$Http$post(
 		{
 			body: body,
-			expect: A2($elm$http$Http$expectJson, $author$project$Auth$LoadUser, $author$project$Auth$userDecoder),
+			expect: A2(
+				$elm$http$Http$expectJson,
+				$author$project$Auth$LoadUser,
+				A2($elm$json$Json$Decode$field, 'user', $author$project$Auth$userDecoder)),
 			url: $author$project$Auth$baseUrl + 'api/users'
 		});
 };

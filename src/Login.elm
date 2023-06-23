@@ -10,7 +10,7 @@ import Post exposing (Model)
 
 import Http
 
-import Json.Decode exposing (Decoder, bool, int, list, string, succeed) 
+import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed) 
 
 import Json.Decode.Pipeline exposing (hardcoded, required)   
 
@@ -19,6 +19,9 @@ import Json.Encode as Encode
 import Json.Decode exposing (null)
 
 --Model--
+-- type alias Model =
+--     { user : Maybe User 
+--     }
 type alias User =
     { email : String --all of these fields are contained in the response from the server (besides last 3)
     , token : String
@@ -59,11 +62,12 @@ userDecoder =
         |> required "email" string
         |> required "token" string
         |> required "username" string
-        |> required "bio" string 
-        |> required "image" string 
+        |> required "bio" string  
+        |> required "image" string    
         |> hardcoded ""
-        |> hardcoded True  
-        |> hardcoded ""
+        |> hardcoded True     
+        |> hardcoded ""  
+        |> field "user"
 
 -- type alias Error =
 --     (FormField, String)
