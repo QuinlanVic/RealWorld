@@ -72,11 +72,7 @@ encodeUser user =
         , ( "password", Encode.string user.password )
         ]
 
-
-
 --userDecoder used for JSON decoding users returned when they register/sign-up
-
-
 userDecoder : Decoder User
 userDecoder =
     succeed User
@@ -88,12 +84,8 @@ userDecoder =
         |> hardcoded ""
         |> hardcoded True
         |> hardcoded ""
-
-
-
 -- hardcoded tells JSON decoder to use a static value as an argument in the underlying decoder function instead
 --of extracting a property from the JSON object
-
 
 initialModel : User
 initialModel =
@@ -112,17 +104,14 @@ init : () -> ( User, Cmd Msg )
 init () =
     ( initialModel, Cmd.none )
 
-
-
 -- fetchUser : Cmd Msg
 -- fetchUser =
 --     Http.get
 --         { url = baseUrl ++ "api/users"
 --         , expect = Http.expectJson LoadUser userDecoder -- wrap JSON received in LoadUser Msg
 --         }
+
 --Update--
-
-
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
     --what to do (update) with each message type
@@ -148,17 +137,11 @@ update message user =
         -- ({user | errmsg = Debug.toString error}, Cmd.none)
         LoadUser result ->
             getUserCompleted user result
-
-
-
 -- Error errormsg -> user
-
 
 subscriptions : User -> Sub Msg
 subscriptions user =
     Sub.none
-
-
 
 --View--
 -- getType : String -> String -> Msg
@@ -174,7 +157,6 @@ subscriptions user =
 --         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder, onInput (getType textType)] []
 --         ]
 
-
 view : User -> Html Msg
 view user =
     let
@@ -184,10 +166,8 @@ view user =
                 showError =
                     if String.isEmpty user.errmsg then
                         "hidden"
-
                     else
                         ""
-
                 greeting : String
                 greeting =
                     "Hello, " ++ user.username ++ "!"
@@ -198,7 +178,6 @@ view user =
                     [ h3 [ class "text-center" ] [ text greeting ]
                     , p [ class "text-center" ] [ text "You have super-secret access to protected quotes." ]
                     ]
-
             else
                 div [ class "auth-page" ]
                     [ div [ class "container page" ]
@@ -238,7 +217,6 @@ view user =
                 ]
             ]
         , mainStuff --testing
-
         -- div[class "auth-page"]
         --     [ div[class "container page"]
         --         [div [class "row"]
@@ -271,11 +249,8 @@ view user =
             ]
         ]
 
-
-
 --div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
 --messages for defining what the update is to do upon interactivity
-
 
 type Msg
     = SaveName String
@@ -283,11 +258,7 @@ type Msg
     | SavePassword String
     | Signup
     | LoadUser (Result Http.Error User)
-
-
-
 -- | Error String
-
 
 main : Program () User Msg
 main =
@@ -297,8 +268,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
-
 
 -- elm-live src/Auth.elm --open --start-page=authelm.html -- --output=auth.js
 -- elm make src/Auth.elm --output auth.js
