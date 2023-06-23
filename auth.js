@@ -6584,6 +6584,7 @@ var $author$project$Auth$view = function (user) {
 													_List_fromArray(
 														[
 															$elm$html$Html$Attributes$class('btn btn-lg btn-primary pull-xs-right'),
+															$elm$html$Html$Attributes$type_('button'),
 															$elm$html$Html$Events$onClick($author$project$Auth$Signup)
 														]),
 													_List_fromArray(
