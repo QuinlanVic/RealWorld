@@ -2,7 +2,7 @@
     "type": "application",
     "source-directories": [
         "src",
-        "C:\\Users\\g20c0846\\AppData\\Roaming\\npm\\node_modules\\elm-test\\elm\\src",
+        "..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\AppData\\Roaming\\npm\\node_modules\\elm-test\\elm\\src",
         "..\\..\\..\\..\\..\\src"
     ],
     "elm-version": "0.19.1",

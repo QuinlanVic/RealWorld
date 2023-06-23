@@ -73,9 +73,9 @@ viewFollowButton model =
     let 
         buttonClass =
             if model.followed then 
-                [class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow] 
+                [class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleFollow] 
             else 
-                [class "btn btn-sm btn-outline-secondary", onClick ToggleFollow] 
+                [class "btn btn-sm btn-outline-secondary", type_ "button", onClick ToggleFollow] 
     in
     button buttonClass
         [ i [class "ion-plus-round"][]
@@ -88,9 +88,9 @@ viewLoveButton model =
     let 
         buttonClass =
             if model.liked then 
-                [class "btn btn-sm btn-outline-primary", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike] 
+                [class "btn btn-sm btn-outline-primary", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike] 
             else 
-                [class "btn btn-sm btn-outline-primary", onClick ToggleLike]
+                [class "btn btn-sm btn-outline-primary", type_ "button", onClick ToggleLike]
     in
     button buttonClass
            [ i [class "ion-heart"] []
@@ -148,7 +148,7 @@ viewComments model = --display all the comments and a place for adding a new com
                        [textarea [class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment] []] --add enter on enter and shift enter to move to next row :) (otherwise input) onEnter UpdateComment
                     , div [class "card-footer"] 
                         [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
-                        , button [class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment)] [text " Post Comment"]
+                        , button [class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button"] [text " Post Comment"]
                         ]
                     ]
               ]  

@@ -2,7 +2,7 @@ module Profile exposing (..)
 
 import Html exposing (..)
 
-import Html.Attributes exposing (class, href, src, style)
+import Html.Attributes exposing (class, href, src, style, type_)
 
 -- import Exts.Html exposing (nbsp)
 import Post exposing (initialModel)
@@ -91,9 +91,9 @@ viewFollowButton model = --use from Post
     let 
         buttonClass =
             if model.followed then 
-                [class "btn btn-sm btn-outline-secondary action-btn", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", onClick ToggleFollow] 
+                [class "btn btn-sm btn-outline-secondary action-btn", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleFollow] 
             else 
-                [class "btn btn-sm btn-outline-secondary action-btn", onClick ToggleFollow] 
+                [class "btn btn-sm btn-outline-secondary action-btn", type_ "button", onClick ToggleFollow] 
     in
     button buttonClass
         [ i [class "ion-plus-round"][]
@@ -106,9 +106,9 @@ viewLoveButton postPreview = --use from Post
     let 
         buttonClass =
             if postPreview.liked then 
-                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike] 
+                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike] 
             else 
-                [class "btn btn-outline-primary btn-sm pull-xs-right", onClick ToggleLike] 
+                [class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button",  onClick ToggleLike] 
     in
     button buttonClass
            [i [class "ion-heart"] []

@@ -88,7 +88,7 @@ postDecoder =
     |> required "title" string
     |> required "description" string
     |> required "body" string
-    |> required "tagList" list string  
+    |> required "tagList" (list string)
     |> required "createdAt" string 
     |> required "updatedAt" string
     |> required "favorited" bool
@@ -163,7 +163,7 @@ view post =
                                     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " webdev" ]
                                     ]
                                 ]
-                            , button [ class "btn btn-lg btn-primary pull-xs-right", onClick CreatePost ] [ text "Create Post" ]
+                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick CreatePost ] [ text "Create Post" ]
                             ]
                         ]
                     ]

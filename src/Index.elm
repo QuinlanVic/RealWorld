@@ -4,7 +4,7 @@ import Browser
 
 import Html exposing (..)
 
-import Html.Attributes exposing (id, class, href, src, style)
+import Html.Attributes exposing (id, class, href, src, style, type_)
 
 -- import Exts.Html exposing (nbsp)
 import Json.Decode exposing (int)
@@ -95,9 +95,9 @@ viewLoveButton postPreview =
     let 
         buttonClass =
             if postPreview.liked then 
-                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", onClick ToggleLike, id postPreview.id] 
+                [class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike, id postPreview.id] 
             else 
-                [class "btn btn-outline-primary btn-sm pull-xs-right", onClick ToggleLike] 
+                [class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick ToggleLike] 
     in
     button buttonClass
            [i [class "ion-heart"] []

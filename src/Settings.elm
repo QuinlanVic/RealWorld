@@ -98,10 +98,10 @@ view user =
                             , fieldset [class "form-group"]
                                 [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []
                                 ]
-                            , button [class "btn btn-lg btn-primary pull-xs-right", onClick UpdateSettings] [text "Update Settings"]
+                            , button [class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick UpdateSettings] [text "Update Settings"]
                             ]
                         , hr [] []
-                        , button [class "btn btn-outline-danger", onClick LogOut] [text "Or click here to logout."] --needs to be inside form for events to work!
+                        , button [class "btn btn-outline-danger", type_ "button", onClick LogOut] [text "Or click here to logout."] --needs to be inside form for events to work!
                         ]
                     ]
                 ]
