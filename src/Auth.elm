@@ -12,6 +12,8 @@ import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Regex exposing (Regex, contains, fromString) 
 
+-- import Route exposing (Route)
+
 --Model--
 -- type alias Model =
 --     { username : String
@@ -141,7 +143,7 @@ validatePassword : String -> Maybe String
 validatePassword pswd =
     if String.isEmpty pswd then 
         Just "Password is required"
-    else if String.length pswd < 6 then 
+    else if String.length (pswd) < 6 then 
         Just "Password must be at least 6 characters long"
     else 
         Nothing 
@@ -163,19 +165,11 @@ update message user =
             ( { user | password = password, passwordError = validatePassword password }, Cmd.none )
 
         Signup ->
-            let --trim the input fields before updating it and then ensure that these fields are valid
+            let --trim the input fields and then ensure that these fields are valid
                 trimmedUser = {user | username = String.trim user.username, email = String.trim user.email, password = String.trim user.password}
-                updatedTrimmedUser = { trimmedUser | signedUp = True, usernameError = user.usernameError, emailError = user.emailError, passwordError = user.passwordError }
+                validatedUser = {trimmedUser | usernameError = validateUsername trimmedUser.username, emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password}
             in
-            
-            ( updatedTrimmedUser, saveUser updatedTrimmedUser )
-
-        -- LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-        --     -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none)
-        --     -- ({getUser | signedUp = True, password = "", errmsg = ""} |> Debug.log "got the user", Cmd.none)
-        --     ({user | email = getUser.email, token = getUser.token, username = getUser.username, bio = getUser.bio, image = getUser.image, password = "", errmsg = "noerror"}, Cmd.none)
-        -- LoadUser (Err error) ->
-        -- ({user | errmsg = Debug.toString error}, Cmd.none)
+            ( validatedUser, saveUser validatedUser )
         LoadUser result ->
             getUserCompleted user result
 -- Error errormsg -> user
@@ -296,8 +290,6 @@ view user =
             ]
         ]
 
-
-
 --div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
 --messages for defining what the update is to do upon interactivity
 
@@ -317,8 +309,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
-
 
 -- elm-live src/Auth.elm --open --start-page=authelm.html -- --output=auth.js
 -- elm make src/Auth.elm --output auth.js

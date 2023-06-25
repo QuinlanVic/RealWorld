@@ -6480,12 +6480,16 @@ var $author$project$Auth$update = F2(
 						password: $elm$core$String$trim(user.password),
 						username: $elm$core$String$trim(user.username)
 					});
-				var updatedTrimmedUser = _Utils_update(
+				var validatedUser = _Utils_update(
 					trimmedUser,
-					{emailError: user.emailError, passwordError: user.passwordError, signedUp: true, usernameError: user.usernameError});
+					{
+						emailError: $author$project$Auth$validateEmail(trimmedUser.email),
+						passwordError: $author$project$Auth$validatePassword(trimmedUser.password),
+						usernameError: $author$project$Auth$validateUsername(trimmedUser.username)
+					});
 				return _Utils_Tuple2(
-					updatedTrimmedUser,
-					$author$project$Auth$saveUser(updatedTrimmedUser));
+					validatedUser,
+					$author$project$Auth$saveUser(validatedUser));
 			default:
 				var result = message.a;
 				return A2($author$project$Auth$getUserCompleted, user, result);
