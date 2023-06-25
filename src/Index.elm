@@ -7,9 +7,13 @@ import Html exposing (..)
 import Html.Attributes exposing (id, class, href, src, style, type_)
 
 -- import Exts.Html exposing (nbsp)
-import Json.Decode exposing (int)
+import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed) 
+import Json.Decode.Pipeline exposing (custom, hardcoded, required)  
 import Response exposing (mapModel)
 import Html.Events exposing (onClick)
+import Http
+import Auth exposing (baseUrl)
+import Editor exposing (Article, articleDecoder) 
 
 --Model--
 type alias Model =
@@ -22,6 +26,17 @@ initialModel =
     { postPreviews = [postPreview1, postPreview2]
     , tags =  [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
     }
+
+fetchArticles : Cmd Msg
+fetchArticles =
+    Http.get
+        { url = baseUrl ++ "api/articles"
+        , expect = Http.expectJson LoadArticles (field "article" articleDecoder) 
+        }
+
+init : () -> (Model, Cmd Msg)
+init () =
+    (initialModel, fetchArticles)
 
 type alias PostPreview =
     { authorpage : String
@@ -70,12 +85,17 @@ updatePostPreviewLikes : PostPreview -> PostPreview
 updatePostPreviewLikes postpreview = --very inefficient
     if postpreview.liked then {postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes - 1} else {postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes + 1}
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ToggleLike -> {model | postPreviews = List.map updatePostPreviewLikes model.postPreviews} --need lazy execution
+        ToggleLike -> ({model | postPreviews = List.map updatePostPreviewLikes model.postPreviews}, Cmd.none) --need lazy execution
+        LoadArticles articles -> (model, Cmd.none)
         -- Like -> {model | liked = True}
         -- Unlike -> {model | liked = False}
+
+subscriptions : Model -> Sub Msg
+subscriptions articles = 
+    Sub.none 
 
 --View--
 viewTag : String -> Html msg
@@ -258,13 +278,15 @@ view model =
 
 type Msg 
     = ToggleLike 
+    | LoadArticles (Result Http.Error Article)
 
 
 main : Program () Model Msg
 main = 
-    Browser.sandbox
-            { init = initialModel
-            , view = view
-            , update = update 
-            }
+    Browser.element
+        { init = init
+        , view = view
+        , update = update 
+        , subscriptions = subscriptions 
+        }
     

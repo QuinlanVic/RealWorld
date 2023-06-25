@@ -1,4 +1,4 @@
-module Editor exposing (main)
+module Editor exposing (Article, Author, articleDecoder, main)
 
 -- import Exts.Html exposing (nbsp)
 
@@ -12,15 +12,11 @@ import Browser
 
 import Http 
 
-import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed) 
+import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed) 
 
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)  
 
 import Json.Encode as Encode
-
-import Json.Decode exposing (null)
-import Platform.Cmd as Cmd
-
 
 -- Model --
 type alias Author = --inside article 9what we need to fetch
@@ -48,28 +44,28 @@ type alias Article = --whole article
 baseUrl : String
 baseUrl = "http://localhost:3000/"    
 
-savePost : Article -> Cmd Msg
-savePost article = 
+saveArticle : Article -> Cmd Msg
+saveArticle article = 
     let
         body =
-            Http.jsonBody <| Encode.object [( "article", encodePost <| article) ]
+            Http.jsonBody <| Encode.object [( "article", encodeArticle <| article) ]
     in 
     Http.post 
         { body = body  
-        , expect = Http.expectJson LoadArticle (field "article" postDecoder) -- wrap JSON received in LoadArtifcle Msg    
+        , expect = Http.expectJson LoadArticle (field "article" articleDecoder) -- wrap JSON received in LoadArtifcle Msg    
         , url = baseUrl ++ "api/articles"
         }
 
-getPostCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
-getPostCompleted article result =
+getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
+getArticleCompleted article result =
     case result of  
         Ok getArticle -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
             (getArticle |> Debug.log "got the article", Cmd.none)    
         Err error ->
             (article, Cmd.none) 
 
-encodePost : Article -> Encode.Value
-encodePost article = --used to encode Article sent to the server via Article request body (for registering)
+encodeArticle : Article -> Encode.Value
+encodeArticle article = --used to encode Article sent to the server via Article request body (for registering)
     Encode.object
         [ ( "title", Encode.string article.title ) 
         , ( "description", Encode.string article.description )
@@ -85,8 +81,8 @@ authorDecoder =
         |> required "image" string
         |> required "following" bool
 
-postDecoder : Decoder Article
-postDecoder = 
+articleDecoder : Decoder Article
+articleDecoder = 
     succeed Article 
     |> required "slug" string
     |> required "title" string
@@ -136,8 +132,8 @@ update message article =
         SaveDescription description -> ({article | description = description}, Cmd.none)
         SaveBody body -> ({ article | body = body }, Cmd.none)
         SaveTags tagList -> ({article | tagList = tagList }, Cmd.none)
-        LoadArticle result -> getPostCompleted article result 
-        CreateArticle -> ({ article | created = True }, savePost article) 
+        LoadArticle result -> getArticleCompleted article result 
+        CreateArticle -> ({ article | created = True }, saveArticle article) 
 
 subscriptions : Article -> Sub Msg
 subscriptions article = 
