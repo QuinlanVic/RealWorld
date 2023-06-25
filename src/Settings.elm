@@ -32,6 +32,13 @@ initialModel =
     , loggedOut = False 
     }    
 
+-- fetchUser : Cmd Msg
+-- fetchUser =
+--     Http.get
+--         { url = baseUrl ++ "api/users"
+--         , expect = Http.expectJson LoadUser userDecoder -- wrap JSON received in LoadUser Msg
+--         }
+
 --Update--
 update : Msg -> UserSettings -> UserSettings  
 update message userset =

@@ -4545,7 +4545,108 @@ function _Http_track(router, xhr, tracker)
 			size: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
-}var $elm$core$Basics$EQ = {$: 'EQ'};
+}
+
+// CREATE
+
+var _Regex_never = /.^/;
+
+var _Regex_fromStringWith = F2(function(options, string)
+{
+	var flags = 'g';
+	if (options.multiline) { flags += 'm'; }
+	if (options.caseInsensitive) { flags += 'i'; }
+
+	try
+	{
+		return $elm$core$Maybe$Just(new RegExp(string, flags));
+	}
+	catch(error)
+	{
+		return $elm$core$Maybe$Nothing;
+	}
+});
+
+
+// USE
+
+var _Regex_contains = F2(function(re, string)
+{
+	return string.match(re) !== null;
+});
+
+
+var _Regex_findAtMost = F3(function(n, re, str)
+{
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex == re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch
+				? $elm$core$Maybe$Just(submatch)
+				: $elm$core$Maybe$Nothing;
+		}
+		out.push(A4($elm$regex$Regex$Match, result[0], result.index, number, _List_fromArray(subs)));
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _List_fromArray(out);
+});
+
+
+var _Regex_replaceAtMost = F4(function(n, re, replacer, string)
+{
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch
+				? $elm$core$Maybe$Just(submatch)
+				: $elm$core$Maybe$Nothing;
+		}
+		return replacer(A4($elm$regex$Regex$Match, match, arguments[arguments.length - 2], count, _List_fromArray(submatches)));
+	}
+	return string.replace(re, jsReplacer);
+});
+
+var _Regex_splitAtMost = F3(function(n, re, str)
+{
+	var string = str;
+	var out = [];
+	var start = re.lastIndex;
+	var restoreLastIndex = re.lastIndex;
+	while (n--)
+	{
+		var result = re.exec(string);
+		if (!result) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	re.lastIndex = restoreLastIndex;
+	return _List_fromArray(out);
+});
+
+var _Regex_infinity = Infinity;
+var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
 var $elm$core$List$cons = _List_cons;
@@ -5337,12 +5438,15 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Auth$initialModel = {
 	bio: $elm$core$Maybe$Just(''),
 	email: '',
+	emailError: $elm$core$Maybe$Just(''),
 	errmsg: '',
 	image: $elm$core$Maybe$Just(''),
 	password: '',
+	passwordError: $elm$core$Maybe$Just(''),
 	signedUp: false,
 	token: '',
-	username: ''
+	username: '',
+	usernameError: $elm$core$Maybe$Just('')
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -5354,19 +5458,15 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Auth$subscriptions = function (user) {
 	return $elm$core$Platform$Sub$none;
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Auth$getUserCompleted = F2(
 	function (user, result) {
 		if (result.$ === 'Ok') {
 			var getUser = result.a;
 			return _Utils_Tuple2(
-				A2(
-					$elm$core$Debug$log,
-					'got the user',
-					_Utils_update(
-						getUser,
-						{errmsg: '', password: '', signedUp: true})),
+				_Utils_update(
+					getUser,
+					{errmsg: '', password: '', signedUp: true}),
 				$elm$core$Platform$Cmd$none);
 		} else {
 			var error = result.a;
@@ -6205,10 +6305,29 @@ var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
 		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Auth$User = F8(
-	function (email, token, username, bio, image, password, signedUp, errmsg) {
-		return {bio: bio, email: email, errmsg: errmsg, image: image, password: password, signedUp: signedUp, token: token, username: username};
-	});
+var $author$project$Auth$User = function (email) {
+	return function (token) {
+		return function (username) {
+			return function (bio) {
+				return function (image) {
+					return function (password) {
+						return function (signedUp) {
+							return function (errmsg) {
+								return function (usernameError) {
+									return function (emailError) {
+										return function (passwordError) {
+											return {bio: bio, email: email, emailError: emailError, errmsg: errmsg, image: image, password: password, passwordError: passwordError, signedUp: signedUp, token: token, username: username, usernameError: usernameError};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2($elm$core$Basics$composeR, $elm$json$Json$Decode$succeed, $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
 var $elm$json$Json$Decode$null = _Json_decodeNull;
@@ -6231,34 +6350,43 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Auth$userDecoder = A2(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-	'',
+	$elm$core$Maybe$Just(''),
 	A2(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-		true,
+		$elm$core$Maybe$Just(''),
 		A2(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-			'',
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'image',
-				$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
-				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'bio',
-					$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'username',
-						$elm$json$Json$Decode$string,
+			$elm$core$Maybe$Just(''),
+			A2(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+				'',
+				A2(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+					true,
+					A2(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+						'',
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'token',
-							$elm$json$Json$Decode$string,
+							'image',
+							$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
 							A3(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'email',
-								$elm$json$Json$Decode$string,
-								$elm$json$Json$Decode$succeed($author$project$Auth$User)))))))));
+								'bio',
+								$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+									'username',
+									$elm$json$Json$Decode$string,
+									A3(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+										'token',
+										$elm$json$Json$Decode$string,
+										A3(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+											'email',
+											$elm$json$Json$Decode$string,
+											$elm$json$Json$Decode$succeed($author$project$Auth$User))))))))))));
 var $author$project$Auth$saveUser = function (user) {
 	var body = $elm$http$Http$jsonBody(
 		$elm$json$Json$Encode$object(
@@ -6275,8 +6403,41 @@ var $author$project$Auth$saveUser = function (user) {
 				$elm$http$Http$expectJson,
 				$author$project$Auth$LoadUser,
 				A2($elm$json$Json$Decode$field, 'user', $author$project$Auth$userDecoder)),
-			url: A2($elm$core$Debug$log, 'MOO', $author$project$Auth$baseUrl + 'api/users')
+			url: $author$project$Auth$baseUrl + 'api/users'
 		});
+};
+var $elm$core$String$trim = _String_trim;
+var $elm$regex$Regex$Match = F4(
+	function (match, index, number, submatches) {
+		return {index: index, match: match, number: number, submatches: submatches};
+	});
+var $elm$regex$Regex$contains = _Regex_contains;
+var $elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
+var $elm$regex$Regex$fromString = function (string) {
+	return A2(
+		$elm$regex$Regex$fromStringWith,
+		{caseInsensitive: false, multiline: false},
+		string);
+};
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Auth$validateEmail = function (email) {
+	if ($elm$core$String$isEmpty(email)) {
+		return $elm$core$Maybe$Just('Email is required');
+	} else {
+		var emailRegexResult = $elm$regex$Regex$fromString('[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}');
+		if (emailRegexResult.$ === 'Just') {
+			var emailRegex = emailRegexResult.a;
+			return (!A2($elm$regex$Regex$contains, emailRegex, email)) ? $elm$core$Maybe$Just('Invalid Email Format') : $elm$core$Maybe$Nothing;
+		} else {
+			return $elm$core$Maybe$Just('Invalid email pattern');
+		}
+	}
+};
+var $author$project$Auth$validatePassword = function (pswd) {
+	return $elm$core$String$isEmpty(pswd) ? $elm$core$Maybe$Just('Password is required') : (($elm$core$String$length(pswd) < 6) ? $elm$core$Maybe$Just('Password must be at least 6 characters long') : $elm$core$Maybe$Nothing);
+};
+var $author$project$Auth$validateUsername = function (username) {
+	return $elm$core$String$isEmpty(username) ? $elm$core$Maybe$Just('Username is required') : $elm$core$Maybe$Nothing;
 };
 var $author$project$Auth$update = F2(
 	function (message, user) {
@@ -6286,28 +6447,45 @@ var $author$project$Auth$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						user,
-						{username: username}),
+						{
+							username: username,
+							usernameError: $author$project$Auth$validateUsername(username)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'SaveEmail':
 				var email = message.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						user,
-						{email: email}),
+						{
+							email: email,
+							emailError: $author$project$Auth$validateEmail(email)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'SavePassword':
 				var password = message.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						user,
-						{password: password}),
+						{
+							password: password,
+							passwordError: $author$project$Auth$validatePassword(password)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Signup':
+				var trimmedUser = _Utils_update(
+					user,
+					{
+						email: $elm$core$String$trim(user.email),
+						password: $elm$core$String$trim(user.password),
+						username: $elm$core$String$trim(user.username)
+					});
+				var updatedTrimmedUser = _Utils_update(
+					trimmedUser,
+					{emailError: user.emailError, passwordError: user.passwordError, signedUp: true, usernameError: user.usernameError});
 				return _Utils_Tuple2(
-					_Utils_update(
-						user,
-						{signedUp: true}),
-					$author$project$Auth$saveUser(user));
+					updatedTrimmedUser,
+					$author$project$Auth$saveUser(updatedTrimmedUser));
 			default:
 				var result = message.a;
 				return A2($author$project$Auth$getUserCompleted, user, result);
@@ -6405,11 +6583,21 @@ var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $author$project$Auth$view = function (user) {
 	var mainStuff = function () {
-		var showError = $elm$core$String$isEmpty(user.errmsg) ? 'hidden' : '';
+		var loggedIn = ($elm$core$String$length(user.token) > 0) ? true : false;
 		var greeting = 'Hello, ' + (user.username + '!');
-		return (user.errmsg === 'noerror') ? A2(
+		return loggedIn ? A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
@@ -6435,7 +6623,7 @@ var $author$project$Auth$view = function (user) {
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('You have super-secret access to protected quotes.')
+							$elm$html$Html$text('You have successfully signed up!')
 						]))
 				])) : A2(
 			$elm$html$Html$div,
@@ -6502,7 +6690,7 @@ var $author$project$Auth$view = function (user) {
 											$elm$html$Html$div,
 											_List_fromArray(
 												[
-													$elm$html$Html$Attributes$class(showError)
+													$elm$html$Html$Attributes$class('showError')
 												]),
 											_List_fromArray(
 												[
@@ -6537,9 +6725,18 @@ var $author$project$Auth$view = function (user) {
 																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
 																	$elm$html$Html$Attributes$type_('text'),
 																	$elm$html$Html$Attributes$placeholder('Your Name'),
-																	$elm$html$Html$Events$onInput($author$project$Auth$SaveName)
+																	$elm$html$Html$Events$onInput($author$project$Auth$SaveName),
+																	$elm$html$Html$Attributes$value(user.username)
 																]),
 															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$div,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text(
+															A2($elm$core$Maybe$withDefault, '', user.usernameError))
 														])),
 													A2(
 													$elm$html$Html$fieldset,
@@ -6556,9 +6753,18 @@ var $author$project$Auth$view = function (user) {
 																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
 																	$elm$html$Html$Attributes$type_('email'),
 																	$elm$html$Html$Attributes$placeholder('Email'),
-																	$elm$html$Html$Events$onInput($author$project$Auth$SaveEmail)
+																	$elm$html$Html$Events$onInput($author$project$Auth$SaveEmail),
+																	$elm$html$Html$Attributes$value(user.email)
 																]),
 															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$div,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text(
+															A2($elm$core$Maybe$withDefault, '', user.emailError))
 														])),
 													A2(
 													$elm$html$Html$fieldset,
@@ -6575,9 +6781,18 @@ var $author$project$Auth$view = function (user) {
 																	$elm$html$Html$Attributes$class('form-control form-control-lg'),
 																	$elm$html$Html$Attributes$type_('password'),
 																	$elm$html$Html$Attributes$placeholder('Password'),
-																	$elm$html$Html$Events$onInput($author$project$Auth$SavePassword)
+																	$elm$html$Html$Events$onInput($author$project$Auth$SavePassword),
+																	$elm$html$Html$Attributes$value(user.password)
 																]),
 															_List_Nil)
+														])),
+													A2(
+													$elm$html$Html$div,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text(
+															A2($elm$core$Maybe$withDefault, '', user.passwordError))
 														])),
 													A2(
 													$elm$html$Html$button,

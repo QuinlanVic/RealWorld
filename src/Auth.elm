@@ -4,14 +4,13 @@ module Auth exposing (main, userDecoder)
 
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, style, type_)
+import Html.Attributes exposing (class, href, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
-
-
+import Regex exposing (Regex, contains, fromString) 
 
 --Model--
 -- type alias Model =
@@ -20,7 +19,6 @@ import Json.Encode as Encode
 --     , password : String
 --     , signedUp : Bool
 --     }
-
 
 type alias User =
     { email : String --all of these fields are contained in the response from the server (besides last 3)
@@ -31,6 +29,9 @@ type alias User =
     , password : String --user's password
     , signedUp : Bool --bool saying if they've signed up or not (maybe used later)
     , errmsg : String --display any API errors from authentication
+    , usernameError : Maybe String 
+    , emailError : Maybe String 
+    , passwordError : Maybe String 
     }
 
 
@@ -48,7 +49,7 @@ saveUser user =
     Http.post
         { body = body
         , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
-        , url = Debug.log "MOO" (baseUrl ++ "api/users")
+        , url = baseUrl ++ "api/users"
         }
 
 
@@ -57,7 +58,7 @@ getUserCompleted user result =
     case result of
         Ok getUser ->
             --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( { getUser | signedUp = True, password = "", errmsg = "" } |> Debug.log "got the user", Cmd.none )
+            ( { getUser | signedUp = True, password = "", errmsg = "" }, Cmd.none )
 
         Err error ->
             ( { user | errmsg = Debug.toString error }, Cmd.none )
@@ -72,11 +73,7 @@ encodeUser user =
         , ( "password", Encode.string user.password )
         ]
 
-
-
 --userDecoder used for JSON decoding users returned when they register/sign-up
-
-
 userDecoder : Decoder User
 userDecoder =
     succeed User
@@ -88,9 +85,9 @@ userDecoder =
         |> hardcoded ""
         |> hardcoded True
         |> hardcoded ""
-
-
-
+        |> hardcoded (Just "")
+        |> hardcoded (Just "")
+        |> hardcoded (Just "")
 -- hardcoded tells JSON decoder to use a static value as an argument in the underlying decoder function instead
 --of extracting a property from the JSON object
 
@@ -105,6 +102,9 @@ initialModel =
     , password = ""
     , signedUp = False
     , errmsg = ""
+    , usernameError = Just ""
+    , emailError = Just ""
+    , passwordError = Just ""
     }
 
 
@@ -112,33 +112,63 @@ init : () -> ( User, Cmd Msg )
 init () =
     ( initialModel, Cmd.none )
 
+validateUsername : String -> Maybe String 
+validateUsername username =
+    if String.isEmpty username then
+        Just "Username is required"
+    else 
+        Nothing 
+
+validateEmail : String -> Maybe String 
+validateEmail email =
+    if String.isEmpty email then
+        Just "Email is required"
+    else 
+        let
+            emailRegexResult : Maybe Regex 
+            emailRegexResult = fromString "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+        in
+        case emailRegexResult of 
+            Just emailRegex ->
+                if not (Regex.contains emailRegex email) then
+                    Just "Invalid Email Format" 
+                else 
+                    Nothing 
+            Nothing ->
+                Just "Invalid email pattern" 
+
+validatePassword : String -> Maybe String 
+validatePassword pswd =
+    if String.isEmpty pswd then 
+        Just "Password is required"
+    else if String.length pswd < 6 then 
+        Just "Password must be at least 6 characters long"
+    else 
+        Nothing 
 
 
--- fetchUser : Cmd Msg
--- fetchUser =
---     Http.get
---         { url = baseUrl ++ "api/users"
---         , expect = Http.expectJson LoadUser userDecoder -- wrap JSON received in LoadUser Msg
---         }
 --Update--
-
-
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
     --what to do (update) with each message type
     case message of
         --update record syntax
         SaveName username ->
-            ( { user | username = username }, Cmd.none )
+            ( { user | username = username, usernameError = validateUsername username }, Cmd.none )
 
         SaveEmail email ->
-            ( { user | email = email }, Cmd.none )
+            ( { user | email = email, emailError = validateEmail email }, Cmd.none )
 
         SavePassword password ->
-            ( { user | password = password }, Cmd.none )
+            ( { user | password = password, passwordError = validatePassword password }, Cmd.none )
 
         Signup ->
-            ( { user | signedUp = True }, saveUser user )
+            let --trim the input fields before updating it and then ensure that these fields are valid
+                trimmedUser = {user | username = String.trim user.username, email = String.trim user.email, password = String.trim user.password}
+                updatedTrimmedUser = { trimmedUser | signedUp = True, usernameError = user.usernameError, emailError = user.emailError, passwordError = user.passwordError }
+            in
+            
+            ( updatedTrimmedUser, saveUser updatedTrimmedUser )
 
         -- LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
         --     -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none)
@@ -148,17 +178,11 @@ update message user =
         -- ({user | errmsg = Debug.toString error}, Cmd.none)
         LoadUser result ->
             getUserCompleted user result
-
-
-
 -- Error errormsg -> user
-
 
 subscriptions : User -> Sub Msg
 subscriptions user =
     Sub.none
-
-
 
 --View--
 -- getType : String -> String -> Msg
@@ -180,25 +204,23 @@ view user =
     let
         mainStuff =
             let
-                showError : String
-                showError =
-                    if String.isEmpty user.errmsg then
-                        "hidden"
-
-                    else
-                        ""
+                loggedIn : Bool 
+                loggedIn =  
+                    if String.length user.token > 0 then 
+                        True
+                    else 
+                        False 
 
                 greeting : String
                 greeting =
                     "Hello, " ++ user.username ++ "!"
             in
-            if user.errmsg == "noerror" then
+            if loggedIn then
                 --testing
                 div [ id "greeting" ]
                     [ h3 [ class "text-center" ] [ text greeting ]
-                    , p [ class "text-center" ] [ text "You have super-secret access to protected quotes." ]
+                    , p [ class "text-center" ] [ text "You have successfully signed up!" ]
                     ]
-
             else
                 div [ class "auth-page" ]
                     [ div [ class "container page" ]
@@ -206,16 +228,20 @@ view user =
                             [ div [ class "col-md-6 col-md-offset-3 col-xs-12" ]
                                 [ h1 [ class "text-xs-center" ] [ text "Sign up" ]
                                 , p [ class "text-xs-center" ] [ a [ href "loginelm.html" ] [ text "Have an account?" ] ]
-                                , div [ class showError ]
+                                , div [ class "showError" ]
                                     [ div [ class "alert alert-danger" ] [ text user.errmsg ]
                                     ]
                                 , form []
                                     -- [ viewForm "text" "Your Name"
                                     -- , viewForm "text" "Email"
                                     -- , viewForm "password" "Password"
-                                    [ fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName ] [] ] --another function for this
-                                    , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail ] [] ]
-                                    , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword ] [] ]
+                                    -- another function for this
+                                    [ fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName, value user.username ] [] ] 
+                                    , div [] [ text (Maybe.withDefault "" user.usernameError) ]
+                                    , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail, value user.email ] [] ]
+                                    , div [] [ text (Maybe.withDefault "" user.emailError) ]
+                                    , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword, value user.password ] [] ]
+                                    , div [] [ text (Maybe.withDefault "" user.passwordError) ]
                                     , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick Signup ] [ text "Sign up" ]
                                     ]
                                 ]
@@ -238,7 +264,6 @@ view user =
                 ]
             ]
         , mainStuff --testing
-
         -- div[class "auth-page"]
         --     [ div[class "container page"]
         --         [div [class "row"]
@@ -276,18 +301,13 @@ view user =
 --div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
 --messages for defining what the update is to do upon interactivity
 
-
 type Msg
     = SaveName String
     | SaveEmail String
     | SavePassword String
     | Signup
     | LoadUser (Result Http.Error User)
-
-
-
 -- | Error String
-
 
 main : Program () User Msg
 main =

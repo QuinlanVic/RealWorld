@@ -32,7 +32,7 @@ type alias User =
 
 baseUrl : String
 baseUrl =
-    "http://127.0.0.1:8010/proxy/"
+    "http://localhost:3000/"
 
 
 saveUser : User -> Cmd Msg
