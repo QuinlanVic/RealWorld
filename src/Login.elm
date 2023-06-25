@@ -72,7 +72,6 @@ userDecoder =
         |> hardcoded ""
         |> hardcoded True
         |> hardcoded ""
-        |> field "user"
 
 
 

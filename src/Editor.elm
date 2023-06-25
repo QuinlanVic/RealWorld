@@ -5,16 +5,16 @@ module Editor exposing (main)
 import Html exposing (..)
 
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
-import Post exposing (Msg)
+import Post exposing (Msg) 
 import Html.Events exposing (onClick, onInput)
 
 import Browser
 
 import Http 
 
-import Json.Decode exposing (Decoder, bool, int, list, string, succeed) 
+import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed) 
 
-import Json.Decode.Pipeline exposing (hardcoded, required)  
+import Json.Decode.Pipeline exposing (custom, hardcoded, required)  
 
 import Json.Encode as Encode
 
@@ -23,15 +23,14 @@ import Platform.Cmd as Cmd
 
 
 -- Model --
-type alias Post =
-    { title : String
-    , description : String --?
-    , body : String
-    , tagList : List String 
-    , created : Bool
+type alias Author = --inside article 9what we need to fetch
+    { username : String
+    , bio : String
+    , image : String
+    , following : Bool
     }
 
-type alias Post2 =
+type alias Article = --whole article
     { slug : String
     , title : String
     , description : String
@@ -41,49 +40,54 @@ type alias Post2 =
     , updatedAt : String
     , favorited : Bool 
     , favoritesCount : Int
-    -- "author": {
-    , username : String
-    , bio : String
-    , image : String
-    , following : Bool
+    , author : Author 
+    , created : Bool 
     }
     
 
 baseUrl : String
-baseUrl = "http://localhost:8010/proxy/"    
+baseUrl = "http://localhost:3000/"    
 
-savePost : Post -> Cmd Msg
-savePost user = 
+savePost : Article -> Cmd Msg
+savePost article = 
     let
         body =
-            Http.jsonBody <| encodePost <| user       
+            Http.jsonBody <| Encode.object [( "article", encodePost <| article) ]
     in 
-    Http.post
-        { body = body 
-        , expect = Http.expectJson LoadArticle (postDecoder) -- wrap JSON received in LoadUser Msg    
-        , url = baseUrl ++ "api/users"
+    Http.post 
+        { body = body  
+        , expect = Http.expectJson LoadArticle (field "article" postDecoder) -- wrap JSON received in LoadArtifcle Msg    
+        , url = baseUrl ++ "api/articles"
         }
 
-getPostCompleted : Post -> Result Http.Error Post -> ( Post, Cmd Msg )
-getPostCompleted post result =
+getPostCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
+getPostCompleted article result =
     case result of  
-        Ok getPost -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            (getPost |> Debug.log "got the post", Cmd.none)   
+        Ok getArticle -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+            (getArticle |> Debug.log "got the article", Cmd.none)    
         Err error ->
-            (post, Cmd.none) 
+            (article, Cmd.none) 
 
-encodePost : Post -> Encode.Value
-encodePost post = --used to encode user sent to the server via POST request body (for registering)
+encodePost : Article -> Encode.Value
+encodePost article = --used to encode Article sent to the server via Article request body (for registering)
     Encode.object
-        [ ( "title", Encode.string post.title ) 
-        , ( "description", Encode.string post.description )
-        , ( "body", Encode.string post.body )
-        , ( "tagList", Encode.list Encode.string post.tagList )   
+        [ ( "title", Encode.string article.title ) 
+        , ( "description", Encode.string article.description )
+        , ( "body", Encode.string article.body )
+        , ( "tagList", Encode.list Encode.string article.tagList )   
         ]
 
-postDecoder : Decoder Post2
+authorDecoder : Decoder Author
+authorDecoder =
+    succeed Author
+        |> required "username" string
+        |> required "bio" string
+        |> required "image" string
+        |> required "following" bool
+
+postDecoder : Decoder Article
 postDecoder = 
-    succeed Post2 
+    succeed Article 
     |> required "slug" string
     |> required "title" string
     |> required "description" string
@@ -94,42 +98,54 @@ postDecoder =
     |> required "favorited" bool
     |> required "favoritesCount" int
     -- "author": {
-    |> required "username" string
-    |> required "bio" string
-    |> required "image" string
-    |> required "following" bool
+    |> required "author" authorDecoder 
+    |> hardcoded False 
 
-initialModel : Post 
+defaultAuthor : Author
+defaultAuthor =
+    { username = ""
+    , bio = ""
+    , image = ""
+    , following = False
+    }
+
+initialModel : Article 
 initialModel =
-    { title = ""
+    { slug = ""
+    , title = ""
     , description = ""
     , body = ""
     , tagList = [""]
+    , createdAt = ""
+    , updatedAt = ""
+    , favorited = False 
+    , favoritesCount = 0
+    , author = defaultAuthor 
     , created = False 
     }
 
-init : () -> (Post, Cmd Msg)
+init : () -> (Article, Cmd Msg)
 init () =
     (initialModel, Cmd.none) 
     
 -- Update --
-update : Msg -> Post -> (Post, Cmd Msg)
-update message post =
+update : Msg -> Article -> (Article, Cmd Msg)
+update message article =
     case message of
-        SaveTitle title -> ({ post | title = title }, Cmd.none) --update record syntax
-        SaveDescription description -> ({post | description = description}, Cmd.none)
-        SaveBody body -> ({ post | body = body }, Cmd.none)
-        SaveTags tagList -> ({post | tagList = tagList }, Cmd.none)
-        LoadArticle result -> getPostCompleted post result 
-        CreatePost -> ({ post | created = True }, savePost post) 
+        SaveTitle title -> ({ article | title = title }, Cmd.none) --update record syntax
+        SaveDescription description -> ({article | description = description}, Cmd.none)
+        SaveBody body -> ({ article | body = body }, Cmd.none)
+        SaveTags tagList -> ({article | tagList = tagList }, Cmd.none)
+        LoadArticle result -> getPostCompleted article result 
+        CreateArticle -> ({ article | created = True }, savePost article) 
 
-subscriptions : Post -> Sub Msg
-subscriptions post = 
+subscriptions : Article -> Sub Msg
+subscriptions article = 
     Sub.none 
 
 -- View --
-view : Post -> Html Msg 
-view post =
+view : Article -> Html Msg 
+view article =
     div []
         [ nav [ class "navbar navbar-light" ]
             [ div [ class "container" ]
@@ -137,7 +153,7 @@ view post =
                 , ul [ class "nav navbar-nav pull-xs-right" ]
                     --could make a function for doing all of this
                     [ li [class "nav-item"] [a [class "nav-link", href "indexelm.html"] [text "Home :)"]]
-                    , li [ class "nav-item active" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
+                    , li [ class "nav-item active" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
                     , li [class "nav-item"] [a [class "nav-link", href "loginelm.html"] [text "Log in"]]
                     , li [ class "nav-item" ] [ a [ class "nav-link", href "authelm.html" ] [ text "Sign up" ] ]
                     , li [ class "nav-item" ] [ a [ class "nav-link", href "settingselm.html" ] [ text "Settings" ] ]
@@ -150,9 +166,9 @@ view post =
                     [ div [ class "col-md-10 col-md-offset-1 col-xs-12" ]
                         [ form []
                             [ fieldset [ class "form-group" ]
-                                [ input [ class "form-control form-control-lg", type_ "text", placeholder "Post Title", onInput SaveTitle ] [] ]
+                                [ input [ class "form-control form-control-lg", type_ "text", placeholder "Article Title", onInput SaveTitle ] [] ]
                             , fieldset [ class "form-group" ]
-                                [ textarea [ class "form-control", rows 8, placeholder "Write your post (in markdown)", onInput SaveBody ] [] ]
+                                [ textarea [ class "form-control", rows 8, placeholder "Write your Article (in markdown)", onInput SaveBody ] [] ]
                             , fieldset [ class "form-group" ]
                                 [ input [ class "form-control", type_ "text", placeholder "Enter tagList" ] [] --, onInput SaveTags (have to do it for a list of strings (split into strings to be passed into list))
                                 , div [ class "tag-list" ]
@@ -163,7 +179,7 @@ view post =
                                     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " webdev" ]
                                     ]
                                 ]
-                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick CreatePost ] [ text "Create Post" ]
+                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick CreateArticle ] [ text "Create Article" ]
                             ]
                         ]
                     ]
@@ -186,10 +202,10 @@ type Msg
     | SaveDescription String 
     | SaveBody String 
     | SaveTags (List String)
-    | LoadArticle (Result Http.Error Post2 )
-    | CreatePost
+    | LoadArticle (Result Http.Error Article )
+    | CreateArticle
 
-main : Program () Post Msg 
+main : Program () Article Msg 
 main =
      Browser.element
         { init = init
