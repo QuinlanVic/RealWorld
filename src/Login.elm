@@ -9,7 +9,7 @@ import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succ
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Post exposing (Model)
-
+import Auth exposing (User, baseUrl, initialModel, userDecoder) 
 
 
 --Model--
@@ -18,21 +18,24 @@ import Post exposing (Model)
 --     }
 
 
-type alias User =
-    { email : String --all of these fields are contained in the response from the server (besides last 3)
-    , token : String
-    , username : String
-    , bio : String
-    , image : String
-    , password : String --user's password
-    , loggedIn : Bool --bool saying if they've signed up or not (maybe used later)
-    , errmsg : String --display any API errors from authentication
-    }
+-- type alias User = --reuse from Auth.elm
+--     { email : String --all of these fields are contained in the response from the server (besides last 3)
+--     , token : String
+--     , username : String
+--     , bio : Maybe String
+--     , image : Maybe String
+--     , password : String --user's password
+--     , signedUp : Bool --bool saying if they've signed up or not (maybe used later)
+--     , errmsg : String --display any API errors from authentication
+--     , usernameError : Maybe String 
+--     , emailError : Maybe String 
+--     , passwordError : Maybe String 
+--     }
 
 
-baseUrl : String
-baseUrl =
-    "http://localhost:3000/"
+-- baseUrl : String
+-- baseUrl = --reuse from Auth.elm
+--     "http://localhost:3000"
 
 
 saveUser : User -> Cmd Msg
@@ -60,18 +63,22 @@ encodeUser user =
 
 --userDecoder used for JSON decoding users returned when they register/sign-up
 
-
-userDecoder : Decoder User
-userDecoder =
-    succeed User
-        |> required "email" string
-        |> required "token" string
-        |> required "username" string
-        |> required "bio" string
-        |> required "image" string
-        |> hardcoded ""
-        |> hardcoded True
-        |> hardcoded ""
+-- userDecoder : Decoder User
+-- userDecoder = --reuse from Auth.elm
+--     succeed User
+--         |> required "email" string
+--         |> required "token" string
+--         |> required "username" string
+--         |> required "bio" (nullable string)
+--         |> required "image" (nullable string)
+--         |> hardcoded ""
+--         |> hardcoded True
+--         |> hardcoded ""
+--         |> hardcoded (Just "")
+--         |> hardcoded (Just "")
+--         |> hardcoded (Just "")
+-- hardcoded tells JSON decoder to use a static value as an argument in the underlying decoder function instead
+--of extracting a property from the JSON object
 
 
 
@@ -89,17 +96,20 @@ getUserCompleted user result =
             ( { user | errmsg = Debug.toString error }, Cmd.none )
 
 
-initialModel : User
-initialModel =
-    { email = ""
-    , token = ""
-    , username = ""
-    , bio = ""
-    , image = ""
-    , password = ""
-    , loggedIn = False
-    , errmsg = ""
-    }
+-- initialModel : User
+-- initialModel = --reuse from Auth.elm
+--     { email = ""
+--     , token = ""
+--     , username = ""
+--     , bio = Just ""
+--     , image = Just ""
+--     , password = ""
+--     , signedUpOrloggedIn = False
+--     , errmsg = ""
+--     , usernameError = Just ""
+--     , emailError = Just ""
+--     , passwordError = Just ""
+--     }
 
 
 init : () -> ( User, Cmd Msg )
@@ -130,7 +140,7 @@ update message user =
             ( { user | password = password }, Cmd.none )
 
         Login ->
-            ( { user | loggedIn = True }, saveUser user )
+            ( { user | signedUpOrloggedIn = True }, saveUser user )
 
         -- LoadUser (Ok getUser) -> --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
         --     -- ({getUser | signedUp = True, password = "", errmsg = ""}, Cmd.none)
@@ -140,17 +150,12 @@ update message user =
         --     (user, Cmd.none)
         LoadUser result ->
             getUserCompleted user result
-
-
-
 -- Error errormsg -> user
 
 
 subscriptions : User -> Sub Msg
 subscriptions user =
     Sub.none
-
-
 
 --View--
 -- getType : String -> String -> Msg
@@ -164,7 +169,6 @@ subscriptions user =
 --     fieldset [class "form-group"]
 --         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder, onInput (getType textType)] []
 --         ]
-
 
 view : User -> Html Msg
 view user =
@@ -228,11 +232,7 @@ type Msg
     | SavePassword String
     | Login
     | LoadUser (Result Http.Error User)
-
-
-
 -- | Error String
-
 
 main : Program () User Msg
 main =

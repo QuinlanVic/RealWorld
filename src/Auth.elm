@@ -1,4 +1,4 @@
-module Auth exposing (main, userDecoder)
+module Auth exposing (User, baseUrl, initialModel, main, userDecoder)
 
 -- import Exts.Html exposing (nbsp)
 
@@ -7,10 +7,10 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
+import Json.Decode exposing (Decoder, field, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
-import Regex exposing (Regex, contains, fromString) 
+import Regex exposing (Regex, fromString) 
 
 -- import Route exposing (Route)
 
@@ -19,7 +19,7 @@ import Regex exposing (Regex, contains, fromString)
 --     { username : String
 --     , email : String
 --     , password : String
---     , signedUp : Bool
+--     , signedUpOrloggedIn : Bool
 --     }
 
 type alias User =
@@ -29,7 +29,7 @@ type alias User =
     , bio : Maybe String
     , image : Maybe String
     , password : String --user's password
-    , signedUp : Bool --bool saying if they've signed up or not (maybe used later)
+    , signedUpOrloggedIn : Bool --bool saying if they've signed up or not (maybe used later)
     , errmsg : String --display any API errors from authentication
     , usernameError : Maybe String 
     , emailError : Maybe String 
@@ -60,7 +60,7 @@ getUserCompleted user result =
     case result of
         Ok getUser ->
             --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( { getUser | signedUp = True, password = "", errmsg = "" }, Cmd.none )
+            ( { getUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
 
         Err error ->
             ( { user | errmsg = Debug.toString error }, Cmd.none )
@@ -102,7 +102,7 @@ initialModel =
     , bio = Just ""
     , image = Just ""
     , password = ""
-    , signedUp = False
+    , signedUpOrloggedIn = False
     , errmsg = ""
     , usernameError = Just ""
     , emailError = Just ""

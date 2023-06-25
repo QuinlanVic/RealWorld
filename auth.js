@@ -5443,7 +5443,7 @@ var $author$project$Auth$initialModel = {
 	image: $elm$core$Maybe$Just(''),
 	password: '',
 	passwordError: $elm$core$Maybe$Just(''),
-	signedUp: false,
+	signedUpOrloggedIn: false,
 	token: '',
 	username: '',
 	usernameError: $elm$core$Maybe$Just('')
@@ -5466,7 +5466,7 @@ var $author$project$Auth$getUserCompleted = F2(
 			return _Utils_Tuple2(
 				_Utils_update(
 					getUser,
-					{errmsg: '', password: '', signedUp: true}),
+					{errmsg: '', password: '', signedUpOrloggedIn: true}),
 				$elm$core$Platform$Cmd$none);
 		} else {
 			var error = result.a;
@@ -6311,12 +6311,12 @@ var $author$project$Auth$User = function (email) {
 			return function (bio) {
 				return function (image) {
 					return function (password) {
-						return function (signedUp) {
+						return function (signedUpOrloggedIn) {
 							return function (errmsg) {
 								return function (usernameError) {
 									return function (emailError) {
 										return function (passwordError) {
-											return {bio: bio, email: email, emailError: emailError, errmsg: errmsg, image: image, password: password, passwordError: passwordError, signedUp: signedUp, token: token, username: username, usernameError: usernameError};
+											return {bio: bio, email: email, emailError: emailError, errmsg: errmsg, image: image, password: password, passwordError: passwordError, signedUpOrloggedIn: signedUpOrloggedIn, token: token, username: username, usernameError: usernameError};
 										};
 									};
 								};
