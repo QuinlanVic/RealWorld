@@ -91,6 +91,7 @@ userDecoder =
 -- hardcoded tells JSON decoder to use a static value as an argument in the underlying decoder function instead
 --of extracting a property from the JSON object
 
+
 initialModel : User
 initialModel =
     { email = ""
@@ -111,14 +112,41 @@ init : () -> ( User, Cmd Msg )
 init () =
     ( initialModel, Cmd.none )
 
+validateUsername : String -> Maybe String 
+validateUsername username =
+    if String.isEmpty username then
+        Just "Username is required"
+    else 
+        Nothing 
+
+validateEmail : String -> Maybe String 
+validateEmail email =
+    if String.isEmpty email then
+        Just "Email is required"
+    else 
+        let
+            emailRegexResult : Maybe Regex 
+            emailRegexResult = fromString "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+        in
+        case emailRegexResult of 
+            Just emailRegex ->
+                if not (Regex.contains emailRegex email) then
+                    Just "Invalid Email Format" 
+                else 
+                    Nothing 
+            Nothing ->
+                Just "Invalid email pattern" 
+
+validatePassword : String -> Maybe String 
+validatePassword pswd =
+    if String.isEmpty pswd then 
+        Just "Password is required"
+    else if String.length pswd < 6 then 
+        Just "Password must be at least 6 characters long"
+    else 
+        Nothing 
 
 
--- fetchUser : Cmd Msg
--- fetchUser =
---     Http.get
---         { url = baseUrl ++ "api/users"
---         , expect = Http.expectJson LoadUser userDecoder -- wrap JSON received in LoadUser Msg
---         }
 --Update--
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
@@ -169,6 +197,7 @@ subscriptions user =
 --     fieldset [class "form-group"]
 --         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder, onInput (getType textType)] []
 --         ]
+
 
 view : User -> Html Msg
 view user =
@@ -267,6 +296,8 @@ view user =
             ]
         ]
 
+
+
 --div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
 --messages for defining what the update is to do upon interactivity
 
@@ -286,6 +317,8 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+
 
 -- elm-live src/Auth.elm --open --start-page=authelm.html -- --output=auth.js
 -- elm make src/Auth.elm --output auth.js
