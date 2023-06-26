@@ -5479,6 +5479,18 @@ var $author$project$Auth$getUserCompleted = F2(
 				$elm$core$Platform$Cmd$none);
 		}
 	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Auth$isFormValid = function (user) {
+	return (A2($elm$core$Maybe$withDefault, '', user.usernameError) === '') && ((A2($elm$core$Maybe$withDefault, '', user.emailError) === '') && (A2($elm$core$Maybe$withDefault, '', user.passwordError) === ''));
+};
 var $author$project$Auth$LoadUser = function (a) {
 	return {$: 'LoadUser', a: a};
 };
@@ -6434,7 +6446,8 @@ var $author$project$Auth$validateEmail = function (email) {
 	}
 };
 var $author$project$Auth$validatePassword = function (pswd) {
-	return $elm$core$String$isEmpty(pswd) ? $elm$core$Maybe$Just('Password is required') : (($elm$core$String$length(pswd) < 6) ? $elm$core$Maybe$Just('Password must be at least 6 characters long') : $elm$core$Maybe$Nothing);
+	return $elm$core$String$isEmpty(pswd) ? $elm$core$Maybe$Just('Password is required') : (($elm$core$String$length(
+		$elm$core$String$trim(pswd)) < 6) ? $elm$core$Maybe$Just('Password must be at least 6 characters long') : $elm$core$Maybe$Nothing);
 };
 var $author$project$Auth$validateUsername = function (username) {
 	return $elm$core$String$isEmpty(username) ? $elm$core$Maybe$Just('Username is required') : $elm$core$Maybe$Nothing;
@@ -6487,9 +6500,9 @@ var $author$project$Auth$update = F2(
 						passwordError: $author$project$Auth$validatePassword(trimmedUser.password),
 						usernameError: $author$project$Auth$validateUsername(trimmedUser.username)
 					});
-				return _Utils_Tuple2(
+				return $author$project$Auth$isFormValid(validatedUser) ? _Utils_Tuple2(
 					validatedUser,
-					$author$project$Auth$saveUser(validatedUser));
+					$author$project$Auth$saveUser(validatedUser)) : _Utils_Tuple2(validatedUser, $elm$core$Platform$Cmd$none);
 			default:
 				var result = message.a;
 				return A2($author$project$Auth$getUserCompleted, user, result);
@@ -6588,15 +6601,6 @@ var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Auth$view = function (user) {
 	var mainStuff = function () {
 		var loggedIn = ($elm$core$String$length(user.token) > 0) ? true : false;

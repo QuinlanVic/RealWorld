@@ -10,10 +10,11 @@ import Http
 import Json.Decode exposing (Decoder, field, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
-import Regex exposing (Regex, fromString) 
+import Regex exposing (Regex, fromString)
+
+
 
 -- import Route exposing (Route)
-
 --Model--
 -- type alias Model =
 --     { username : String
@@ -21,6 +22,7 @@ import Regex exposing (Regex, fromString)
 --     , password : String
 --     , signedUpOrloggedIn : Bool
 --     }
+
 
 type alias User =
     { email : String --all of these fields are contained in the response from the server (besides last 3)
@@ -31,9 +33,9 @@ type alias User =
     , password : String --user's password
     , signedUpOrloggedIn : Bool --bool saying if they've signed up or not (maybe used later)
     , errmsg : String --display any API errors from authentication
-    , usernameError : Maybe String 
-    , emailError : Maybe String 
-    , passwordError : Maybe String 
+    , usernameError : Maybe String
+    , emailError : Maybe String
+    , passwordError : Maybe String
     }
 
 
@@ -75,7 +77,11 @@ encodeUser user =
         , ( "password", Encode.string user.password )
         ]
 
+
+
 --userDecoder used for JSON decoding users returned when they register/sign-up
+
+
 userDecoder : Decoder User
 userDecoder =
     succeed User
@@ -90,6 +96,9 @@ userDecoder =
         |> hardcoded (Just "")
         |> hardcoded (Just "")
         |> hardcoded (Just "")
+
+
+
 -- hardcoded tells JSON decoder to use a static value as an argument in the underlying decoder function instead
 --of extracting a property from the JSON object
 
@@ -114,42 +123,55 @@ init : () -> ( User, Cmd Msg )
 init () =
     ( initialModel, Cmd.none )
 
-validateUsername : String -> Maybe String 
+
+validateUsername : String -> Maybe String
 validateUsername username =
     if String.isEmpty username then
         Just "Username is required"
-    else 
-        Nothing 
 
-validateEmail : String -> Maybe String 
+    else
+        Nothing
+
+
+validateEmail : String -> Maybe String
 validateEmail email =
     if String.isEmpty email then
         Just "Email is required"
-    else 
+
+    else
         let
-            emailRegexResult : Maybe Regex 
-            emailRegexResult = fromString "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+            emailRegexResult : Maybe Regex
+            emailRegexResult =
+                fromString "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
         in
-        case emailRegexResult of 
+        case emailRegexResult of
             Just emailRegex ->
                 if not (Regex.contains emailRegex email) then
-                    Just "Invalid Email Format" 
-                else 
-                    Nothing 
-            Nothing ->
-                Just "Invalid email pattern" 
+                    Just "Invalid Email Format"
 
-validatePassword : String -> Maybe String 
+                else
+                    Nothing
+
+            Nothing ->
+                Just "Invalid email pattern"
+
+
+validatePassword : String -> Maybe String
 validatePassword pswd =
-    if String.isEmpty pswd then 
+    if String.isEmpty pswd then
         Just "Password is required"
-    else if String.length (pswd) < 6 then 
+
+    else if String.length (String.trim pswd) < 6 then
         Just "Password must be at least 6 characters long"
-    else 
-        Nothing 
+
+    else
+        Nothing
+
 
 
 --Update--
+
+
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
     --what to do (update) with each message type
@@ -165,18 +187,38 @@ update message user =
             ( { user | password = password, passwordError = validatePassword password }, Cmd.none )
 
         Signup ->
-            let --trim the input fields and then ensure that these fields are valid
-                trimmedUser = {user | username = String.trim user.username, email = String.trim user.email, password = String.trim user.password}
-                validatedUser = {trimmedUser | usernameError = validateUsername trimmedUser.username, emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password}
+            let
+                --trim the input fields and then ensure that these fields are valid
+                trimmedUser =
+                    { user | username = String.trim user.username, email = String.trim user.email, password = String.trim user.password }
+
+                validatedUser =
+                    { trimmedUser | usernameError = validateUsername trimmedUser.username, emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password }
             in
-            ( validatedUser, saveUser validatedUser )
+            if isFormValid validatedUser then
+                ( validatedUser, saveUser validatedUser )
+
+            else
+                ( validatedUser, Cmd.none )
+
         LoadUser result ->
             getUserCompleted user result
+
+
+isFormValid : User -> Bool
+isFormValid user =
+    Maybe.withDefault "" user.usernameError == "" && Maybe.withDefault "" user.emailError == "" && Maybe.withDefault "" user.passwordError == ""
+
+
+
 -- Error errormsg -> user
+
 
 subscriptions : User -> Sub Msg
 subscriptions user =
     Sub.none
+
+
 
 --View--
 -- getType : String -> String -> Msg
@@ -198,12 +240,13 @@ view user =
     let
         mainStuff =
             let
-                loggedIn : Bool 
-                loggedIn =  
-                    if String.length user.token > 0 then 
+                loggedIn : Bool
+                loggedIn =
+                    if String.length user.token > 0 then
                         True
-                    else 
-                        False 
+
+                    else
+                        False
 
                 greeting : String
                 greeting =
@@ -215,6 +258,7 @@ view user =
                     [ h3 [ class "text-center" ] [ text greeting ]
                     , p [ class "text-center" ] [ text "You have successfully signed up!" ]
                     ]
+
             else
                 div [ class "auth-page" ]
                     [ div [ class "container page" ]
@@ -230,7 +274,7 @@ view user =
                                     -- , viewForm "text" "Email"
                                     -- , viewForm "password" "Password"
                                     -- another function for this
-                                    [ fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName, value user.username ] [] ] 
+                                    [ fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName, value user.username ] [] ]
                                     , div [] [ text (Maybe.withDefault "" user.usernameError) ]
                                     , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail, value user.email ] [] ]
                                     , div [] [ text (Maybe.withDefault "" user.emailError) ]
@@ -258,6 +302,7 @@ view user =
                 ]
             ]
         , mainStuff --testing
+
         -- div[class "auth-page"]
         --     [ div[class "container page"]
         --         [div [class "row"]
@@ -290,8 +335,11 @@ view user =
             ]
         ]
 
+
+
 --div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
 --messages for defining what the update is to do upon interactivity
+
 
 type Msg
     = SaveName String
@@ -299,7 +347,11 @@ type Msg
     | SavePassword String
     | Signup
     | LoadUser (Result Http.Error User)
+
+
+
 -- | Error String
+
 
 main : Program () User Msg
 main =
@@ -309,6 +361,8 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+
 
 -- elm-live src/Auth.elm --open --start-page=authelm.html -- --output=auth.js
 -- elm make src/Auth.elm --output auth.js
