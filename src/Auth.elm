@@ -11,7 +11,7 @@ import Json.Decode exposing (Decoder, field, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Regex exposing (Regex, fromString)
-
+import String exposing (replace) 
 
 
 -- import Route exposing (Route)
@@ -123,6 +123,13 @@ init : () -> ( User, Cmd Msg )
 init () =
     ( initialModel, Cmd.none )
 
+isWhiteSpace : Char -> Bool 
+isWhiteSpace c =
+    c == ' ' || c == '\t' || c == '\n'
+
+trimString : String -> String 
+trimString inputString =
+    String.filter (not << isWhiteSpace) inputString   
 
 validateUsername : String -> Maybe String
 validateUsername username =
@@ -161,7 +168,7 @@ validatePassword pswd =
     if String.isEmpty pswd then
         Just "Password is required"
 
-    else if String.length (String.trim pswd) < 6 then
+    else if String.length (trimString pswd) < 6 then
         Just "Password must be at least 6 characters long"
 
     else
@@ -188,9 +195,9 @@ update message user =
 
         Signup ->
             let
-                --trim the input fields and then ensure that these fields are valid
+                --trimString the input fields and then ensure that these fields are valid 
                 trimmedUser =
-                    { user | username = String.trim user.username, email = String.trim user.email, password = String.trim user.password }
+                    { user | username = trimString user.username, email = trimString user.email, password = trimString user.password }
 
                 validatedUser =
                     { trimmedUser | usernameError = validateUsername trimmedUser.username, emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password }
@@ -274,12 +281,12 @@ view user =
                                     -- , viewForm "text" "Email"
                                     -- , viewForm "password" "Password"
                                     -- another function for this
-                                    [ fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName, value user.username ] [] ]
-                                    , div [] [ text (Maybe.withDefault "" user.usernameError) ]
+                                    [ div [style "color" "red"] [ text (Maybe.withDefault "" user.usernameError) ]
+                                    , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName, value user.username ] [] ]
+                                    , div [style "color" "red"] [ text (Maybe.withDefault "" user.emailError) ] 
                                     , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail, value user.email ] [] ]
-                                    , div [] [ text (Maybe.withDefault "" user.emailError) ]
+                                    , div [style "color" "red"] [ text (Maybe.withDefault "" user.passwordError) ]
                                     , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword, value user.password ] [] ]
-                                    , div [] [ text (Maybe.withDefault "" user.passwordError) ]
                                     , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick Signup ] [ text "Sign up" ]
                                     ]
                                 ]

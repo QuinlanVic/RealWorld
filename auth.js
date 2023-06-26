@@ -6418,7 +6418,28 @@ var $author$project$Auth$saveUser = function (user) {
 			url: $author$project$Auth$baseUrl + 'api/users'
 		});
 };
-var $elm$core$String$trim = _String_trim;
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$String$filter = _String_filter;
+var $author$project$Auth$isWhiteSpace = function (c) {
+	return _Utils_eq(
+		c,
+		_Utils_chr(' ')) || (_Utils_eq(
+		c,
+		_Utils_chr('\t')) || _Utils_eq(
+		c,
+		_Utils_chr('\n')));
+};
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Auth$trimString = function (inputString) {
+	return A2(
+		$elm$core$String$filter,
+		A2($elm$core$Basics$composeL, $elm$core$Basics$not, $author$project$Auth$isWhiteSpace),
+		inputString);
+};
 var $elm$regex$Regex$Match = F4(
 	function (match, index, number, submatches) {
 		return {index: index, match: match, number: number, submatches: submatches};
@@ -6431,7 +6452,6 @@ var $elm$regex$Regex$fromString = function (string) {
 		{caseInsensitive: false, multiline: false},
 		string);
 };
-var $elm$core$Basics$not = _Basics_not;
 var $author$project$Auth$validateEmail = function (email) {
 	if ($elm$core$String$isEmpty(email)) {
 		return $elm$core$Maybe$Just('Email is required');
@@ -6447,7 +6467,7 @@ var $author$project$Auth$validateEmail = function (email) {
 };
 var $author$project$Auth$validatePassword = function (pswd) {
 	return $elm$core$String$isEmpty(pswd) ? $elm$core$Maybe$Just('Password is required') : (($elm$core$String$length(
-		$elm$core$String$trim(pswd)) < 6) ? $elm$core$Maybe$Just('Password must be at least 6 characters long') : $elm$core$Maybe$Nothing);
+		$author$project$Auth$trimString(pswd)) < 6) ? $elm$core$Maybe$Just('Password must be at least 6 characters long') : $elm$core$Maybe$Nothing);
 };
 var $author$project$Auth$validateUsername = function (username) {
 	return $elm$core$String$isEmpty(username) ? $elm$core$Maybe$Just('Username is required') : $elm$core$Maybe$Nothing;
@@ -6489,9 +6509,9 @@ var $author$project$Auth$update = F2(
 				var trimmedUser = _Utils_update(
 					user,
 					{
-						email: $elm$core$String$trim(user.email),
-						password: $elm$core$String$trim(user.password),
-						username: $elm$core$String$trim(user.username)
+						email: $author$project$Auth$trimString(user.email),
+						password: $author$project$Auth$trimString(user.password),
+						username: $author$project$Auth$trimString(user.username)
 					});
 				var validatedUser = _Utils_update(
 					trimmedUser,
@@ -6596,6 +6616,8 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
@@ -6719,6 +6741,17 @@ var $author$project$Auth$view = function (user) {
 											_List_fromArray(
 												[
 													A2(
+													$elm$html$Html$div,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'color', 'red')
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text(
+															A2($elm$core$Maybe$withDefault, '', user.usernameError))
+														])),
+													A2(
 													$elm$html$Html$fieldset,
 													_List_fromArray(
 														[
@@ -6740,11 +6773,14 @@ var $author$project$Auth$view = function (user) {
 														])),
 													A2(
 													$elm$html$Html$div,
-													_List_Nil,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'color', 'red')
+														]),
 													_List_fromArray(
 														[
 															$elm$html$Html$text(
-															A2($elm$core$Maybe$withDefault, '', user.usernameError))
+															A2($elm$core$Maybe$withDefault, '', user.emailError))
 														])),
 													A2(
 													$elm$html$Html$fieldset,
@@ -6768,11 +6804,14 @@ var $author$project$Auth$view = function (user) {
 														])),
 													A2(
 													$elm$html$Html$div,
-													_List_Nil,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'color', 'red')
+														]),
 													_List_fromArray(
 														[
 															$elm$html$Html$text(
-															A2($elm$core$Maybe$withDefault, '', user.emailError))
+															A2($elm$core$Maybe$withDefault, '', user.passwordError))
 														])),
 													A2(
 													$elm$html$Html$fieldset,
@@ -6793,14 +6832,6 @@ var $author$project$Auth$view = function (user) {
 																	$elm$html$Html$Attributes$value(user.password)
 																]),
 															_List_Nil)
-														])),
-													A2(
-													$elm$html$Html$div,
-													_List_Nil,
-													_List_fromArray(
-														[
-															$elm$html$Html$text(
-															A2($elm$core$Maybe$withDefault, '', user.passwordError))
 														])),
 													A2(
 													$elm$html$Html$button,
