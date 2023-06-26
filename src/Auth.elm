@@ -1,4 +1,4 @@
-module Auth exposing (User, baseUrl, initialModel, main, userDecoder)
+module Auth exposing (User, baseUrl, initialModel, main, userDecoder, validateEmail, validatePassword)
 
 -- import Exts.Html exposing (nbsp)
 

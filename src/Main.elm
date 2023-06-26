@@ -1,7 +1,168 @@
-module Main exposing (..) 
+module Main exposing (..)
 
+import Browser exposing (Document, UrlRequest)
+import Browser.Navigation as Navigation
 import Html exposing (..)
-
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
+import Routes
+import Url exposing (Url)
 
-main = text "Hello World" 
+
+type Page
+    = PublicFeed
+    | Register
+    | CreateArticle
+    | Login
+    | Article
+    | Profile
+    | Settings
+    | NotFound
+
+
+type alias Model =
+    { page : Page
+    , navigationKey : Navigation.Key -- program will supply navigationKey at runtime
+    }
+
+
+initialModel : Navigation.Key -> Model
+initialModel navigationKey =
+    { page = NotFound
+    , navigationKey = navigationKey
+    }
+
+
+init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+init () url navigationKey =
+    -- program supplies initial Url when the app boots
+    -- Convert url into a route and construct initialmodel -> pass to setNewPage to set initial page
+    setNewPage (Routes.match url) (initialModel navigationKey)
+
+
+
+---- VIEW ----
+
+
+viewContent : Page -> ( String, Html Msg )
+viewContent page =
+    case page of
+        PublicFeed ->
+            ( "Conduit"
+            , h1 [] [ text "Public Feed" ]
+            )
+
+        Register ->
+            ( "Register"
+            , h1 [] [ text "register" ]
+            )
+
+        CreateArticle ->
+            ( "CreateArticle"
+            , h1 [] [ text "CreateArticle" ]
+            )
+
+        Login ->
+            ( "Login"
+            , h1 [] [ text "Login" ]
+            )
+
+        Article ->
+            ( "Article"
+            , h1 [] [ text "Article" ]
+            )
+
+        Profile ->
+            ( "Profile"
+            , h1 [] [ text "Profile" ]
+            )
+
+        Settings ->
+            ( "Settings"
+            , h1 [] [ text "Settings" ]
+            )
+
+        NotFound ->
+            ( "Not Found"
+            , div [ class "not-found" ]
+                [ h1 [] [ text "Page Not Found" ] ]
+            )
+
+
+view : Model -> Document Msg
+view model =
+    let
+        ( title, content ) =
+            viewContent model.page
+    in
+    { title = title
+    , body = [ content ]
+    }
+
+
+
+---- UPDATE ----
+
+
+type Msg
+    = NewRoute (Maybe Routes.Route)
+    | Visit UrlRequest
+
+
+setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
+setNewPage maybeRoute model =
+    --update model's page basede on the new route
+    case maybeRoute of
+        Just Routes.Index ->
+            ( { model | page = PublicFeed }, Cmd.none )
+
+        Just Routes.Auth ->
+            ( { model | page = Register }, Cmd.none )
+
+        Just Routes.Editor ->
+            ( { model | page = CreateArticle }, Cmd.none )
+
+        Just Routes.Login ->
+            ( { model | page = Login }, Cmd.none )
+
+        Just Routes.Article ->
+            ( { model | page = Article }, Cmd.none )
+
+        Just Routes.Profile ->
+            ( { model | page = Profile }, Cmd.none )
+
+        Just Routes.Settings ->
+            ( { model | page = Settings }, Cmd.none )
+
+        Nothing ->
+            ( { model | page = NotFound }, Cmd.none )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        NewRoute maybeRoute ->
+            setNewPage maybeRoute model
+
+        _ ->
+            ( model, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+---- PROGRAM ----
+
+
+main : Program () Model Msg
+main =
+    Browser.application
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        , onUrlRequest = Visit
+        , onUrlChange = Routes.match >> NewRoute
+        }
