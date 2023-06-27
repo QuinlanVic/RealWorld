@@ -1,9 +1,9 @@
 module Login exposing (main)
 
-import Auth exposing (User, baseUrl, initialModel, userDecoder, validateEmail, validatePassword)
+import Auth exposing (User, baseUrl, initialModel, trimString, userDecoder, validateEmail, validatePassword)
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (class, href, placeholder, style, type_)
+import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed)
@@ -43,7 +43,7 @@ saveUser user =
     in
     Http.post
         { body = body
-        , expect = Http.expectJson LoadUser userDecoder -- wrap JSON received in LoadUser Msg
+        , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
         , url = baseUrl ++ "api/users/login"
         }
 
@@ -81,7 +81,8 @@ getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
 getUserCompleted user result =
     case result of
         Ok getUser ->
-            ( { user | token = getUser.token, password = "", errmsg = "" } |> Debug.log "got the user", Cmd.none )
+            --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+            ( { getUser | signedUpOrloggedIn = True, password = "", errmsg = "" } |> Debug.log "got the user", Cmd.none )
 
         Err error ->
             ( { user | errmsg = Debug.toString error }, Cmd.none )
@@ -135,7 +136,7 @@ update message user =
             let
                 --trim the input fields and then ensure that these fields are valid
                 trimmedUser =
-                    { user | email = String.trim user.email, password = String.trim user.password }
+                    { user | email = trimString user.email, password = trimString user.password }
 
                 validatedUser =
                     { trimmedUser | emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password }
@@ -181,6 +182,53 @@ subscriptions user =
 
 view : User -> Html Msg
 view user =
+    let
+        mainStuff =
+            let
+                loggedIn : Bool
+                loggedIn =
+                    if String.length user.token > 0 then
+                        True
+
+                    else
+                        False
+
+                greeting : String
+                greeting =
+                    "Hello, " ++ user.username ++ "!"
+            in
+            if loggedIn then
+                --testing
+                div [ id "greeting" ]
+                    [ h3 [ class "text-center" ] [ text greeting ]
+                    , p [ class "text-center" ] [ text "You have successfully signed up!" ]
+                    ]
+
+            else
+                div [ class "auth-page" ]
+                    [ div [ class "container page" ]
+                        [ div [ class "row" ]
+                            [ div [ class "col-md-6 col-md-offset-3 col-xs-12" ]
+                                [ h1 [ class "text-xs-center" ] [ text "Log in" ]
+                                , p [ class "text-xs-center" ] [ a [ href "authelm.html" ] [ text "Don't have an account?" ] ]
+                                , div [ class "showError" ]
+                                    [ div [ class "alert alert-danger" ] [ text user.errmsg ]
+                                    ]
+                                , form []
+                                    -- [ viewForm "text" "Your Name"
+                                    -- , viewForm "text" "Email"
+                                    -- , viewForm "password" "Password"
+                                    [ div [ style "color" "red" ] [ text (Maybe.withDefault "" user.emailError) ]
+                                    , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail ] [] ]
+                                    , div [ style "color" "red" ] [ text (Maybe.withDefault "" user.passwordError) ]
+                                    , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword ] [] ]
+                                    , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick Login ] [ text "Log In" ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+    in
     div []
         [ nav [ class "navbar navbar-light" ]
             [ div [ class "container" ]
@@ -195,28 +243,29 @@ view user =
                     ]
                 ]
             ]
-        , div [ class "auth-page" ]
-            [ div [ class "container page" ]
-                [ div [ class "row" ]
-                    [ div [ class "col-md-6 col-md-offset-3 col-xs-12" ]
-                        [ h1 [ class "text-xs-center" ] [ text "Log in" ]
-                        , p [ class "text-xs-center" ] [ a [ href "authelm.html" ] [ text "Don't have an account?" ] ]
+        , mainStuff
 
-                        -- , div [ class showError ]
-                        --     [ div [ class "alert alert-danger" ] [ text user.errmsg ]
-                        --     ]
-                        , form []
-                            -- [ viewForm "text" "Your Name"
-                            -- , viewForm "text" "Email"
-                            -- , viewForm "password" "Password"
-                            [ fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail ] [] ]
-                            , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword ] [] ]
-                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick Login ] [ text "Log In" ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+        -- div [ class "auth-page" ]
+        --     [ div [ class "container page" ]
+        --         [ div [ class "row" ]
+        --             [ div [ class "col-md-6 col-md-offset-3 col-xs-12" ]
+        --                 [ h1 [ class "text-xs-center" ] [ text "Log in" ]
+        --                 , p [ class "text-xs-center" ] [ a [ href "authelm.html" ] [ text "Don't have an account?" ] ]
+        --                 -- , div [ class showError ]
+        --                 --     [ div [ class "alert alert-danger" ] [ text user.errmsg ]
+        --                 --     ]
+        --                 , form []
+        --                     -- [ viewForm "text" "Your Name"
+        --                     -- , viewForm "text" "Email"
+        --                     -- , viewForm "password" "Password"
+        --                     [ fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail ] [] ]
+        --                     , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword ] [] ]
+        --                     , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick Login ] [ text "Log In" ]
+        --                     ]
+        --                 ]
+        --             ]
+        --         ]
+        --     ]
         , footer []
             [ div [ class "container" ]
                 [ a [ href "/", class "logo-font" ] [ text "conduit" ]

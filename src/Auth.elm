@@ -1,4 +1,4 @@
-module Auth exposing (User, baseUrl, initialModel, main, userDecoder, validateEmail, validatePassword)
+module Auth exposing (User, baseUrl, initialModel, main, trimString, userDecoder, validateEmail, validatePassword)
 
 -- import Exts.Html exposing (nbsp)
 
@@ -11,7 +11,8 @@ import Json.Decode exposing (Decoder, field, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Regex exposing (Regex, fromString)
-import String exposing (replace) 
+import String exposing (replace)
+
 
 
 -- import Route exposing (Route)
@@ -123,13 +124,16 @@ init : () -> ( User, Cmd Msg )
 init () =
     ( initialModel, Cmd.none )
 
-isWhiteSpace : Char -> Bool 
+
+isWhiteSpace : Char -> Bool
 isWhiteSpace c =
     c == ' ' || c == '\t' || c == '\n'
 
-trimString : String -> String 
+
+trimString : String -> String
 trimString inputString =
-    String.filter (not << isWhiteSpace) inputString   
+    String.filter (not << isWhiteSpace) inputString
+
 
 validateUsername : String -> Maybe String
 validateUsername username =
@@ -195,7 +199,7 @@ update message user =
 
         Signup ->
             let
-                --trimString the input fields and then ensure that these fields are valid 
+                --trimString the input fields and then ensure that these fields are valid
                 trimmedUser =
                     { user | username = trimString user.username, email = trimString user.email, password = trimString user.password }
 
@@ -281,11 +285,11 @@ view user =
                                     -- , viewForm "text" "Email"
                                     -- , viewForm "password" "Password"
                                     -- another function for this
-                                    [ div [style "color" "red"] [ text (Maybe.withDefault "" user.usernameError) ]
+                                    [ div [ style "color" "red" ] [ text (Maybe.withDefault "" user.usernameError) ]
                                     , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName, value user.username ] [] ]
-                                    , div [style "color" "red"] [ text (Maybe.withDefault "" user.emailError) ] 
+                                    , div [ style "color" "red" ] [ text (Maybe.withDefault "" user.emailError) ]
                                     , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail, value user.email ] [] ]
-                                    , div [style "color" "red"] [ text (Maybe.withDefault "" user.passwordError) ]
+                                    , div [ style "color" "red" ] [ text (Maybe.withDefault "" user.passwordError) ]
                                     , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword, value user.password ] [] ]
                                     , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick Signup ] [ text "Sign up" ]
                                     ]

@@ -1,10 +1,17 @@
 module Main exposing (..)
 
+import Auth
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Navigation
+import Editor
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
+import Index
+import Login
+import Post
+import Profile
 import Routes
+import Settings
 import Url exposing (Url)
 
 
@@ -88,6 +95,20 @@ viewContent page =
             )
 
 
+
+-- viewHeader : Html Msg
+-- viewHeader =
+--     div [class "header"]
+--         [div [class "header-nav"]
+--             [ a [class "nav-brand", Routes.href Routes.Home] --a = anchor tag
+--                 [text "Picshare"]
+--             , a [class "nav-account", Routes.href Routes.Account]
+--                 [i [class "fa fa-2x fa-gear"] [] ]
+--                 --account link displays a gear with an i tag and Font Awesome classes
+--             ]
+--         ]
+
+
 view : Model -> Document Msg
 view model =
     let
@@ -95,7 +116,7 @@ view model =
             viewContent model.page
     in
     { title = title
-    , body = [ content ]
+    , body = [ content ] --viewHeader
     }
 
 
@@ -106,6 +127,16 @@ view model =
 type Msg
     = NewRoute (Maybe Routes.Route)
     | Visit UrlRequest
+
+
+
+-- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
+-- | PublicFeedMsg PublicFeed.Msg --like above 2.0
+-- | UserFeedMsg UserFeed.Msg --like above 3.0
+--helper function
+-- processPageUpdate : (pageModel -> Page) -> (pageMsg -> Msg) -> Model -> (pageModel, Cmd pageMsg) -> (Model, Cmd Msg)
+-- processPageUpdate createPage wrapMsg model (pageModel, pageCmd) =
+--     ({model | page = createPage pageModel}, Cmd.map wrapMsg pageCmd)
 
 
 setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
@@ -166,3 +197,9 @@ main =
         , onUrlRequest = Visit
         , onUrlChange = Routes.match >> NewRoute
         }
+
+
+
+--wrap current URL whenever the URL changes in the browser and then passes the wrapped value to update
+--transform the incoming Url into Maybe Route with Routes.match then pass Maybe Route onto the NewRoute constructor
+-- elm make src/Main.elm --output=main.js
