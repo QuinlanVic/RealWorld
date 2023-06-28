@@ -1,17 +1,17 @@
 module Main exposing (..)
 
-import Auth
+-- import Auth
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Navigation
-import Editor
+-- import Editor
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
-import Index
-import Login
-import Post
-import Profile
+-- import Index
+-- import Login
+-- import Post
+-- import Profile
 import Routes
-import Settings
+-- import Settings
 import Url exposing (Url)
 
 
@@ -60,7 +60,7 @@ viewContent page =
 
         Register ->
             ( "Register"
-            , h1 [] [ text "register" ]
+            , h1 [] [ text "Register" ]
             )
 
         CreateArticle ->
@@ -147,7 +147,7 @@ setNewPage maybeRoute model =
             ( { model | page = PublicFeed }, Cmd.none )
 
         Just Routes.Auth ->
-            ( { model | page = Register }, Cmd.none )
+            ( { model | page = Register }, Cmd.none ) 
 
         Just Routes.Editor ->
             ( { model | page = CreateArticle }, Cmd.none )

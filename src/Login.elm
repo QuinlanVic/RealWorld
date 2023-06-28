@@ -10,8 +10,7 @@ import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succ
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Post exposing (Model)
-
-
+-- import Task 
 
 --Model--
 -- type alias Model =
@@ -34,6 +33,10 @@ import Post exposing (Model)
 -- baseUrl = --reuse from Auth.elm
 --     "http://localhost:3000"
 
+-- port storeToken : String -> Cmd Msg 
+-- storeToken : String -> Cmd Msg 
+-- storeToken token =
+--     port storeToken (Encode.string as token) 
 
 saveUser : User -> Cmd Msg
 saveUser user =
@@ -82,7 +85,7 @@ getUserCompleted user result =
     case result of
         Ok getUser ->
             --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( { getUser | signedUpOrloggedIn = True, password = "", errmsg = "" } |> Debug.log "got the user", Cmd.none )
+            ( { getUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none ) --|> Debug.log "got the user"
 
         Err error ->
             ( { user | errmsg = Debug.toString error }, Cmd.none )
@@ -290,7 +293,7 @@ type Msg
     | SavePassword String
     | Login
     | LoadUser (Result Http.Error User)
-
+    -- | StoreToken String 
 
 
 -- | Error String
@@ -304,3 +307,5 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+-- elm-live src/Login.elm --open --start-page=loginelm.html -- --output=login.js

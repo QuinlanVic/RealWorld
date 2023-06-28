@@ -5458,19 +5458,15 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Login$subscriptions = function (user) {
 	return $elm$core$Platform$Sub$none;
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Login$getUserCompleted = F2(
 	function (user, result) {
 		if (result.$ === 'Ok') {
 			var getUser = result.a;
 			return _Utils_Tuple2(
-				A2(
-					$elm$core$Debug$log,
-					'got the user',
-					_Utils_update(
-						getUser,
-						{errmsg: '', password: '', signedUpOrloggedIn: true})),
+				_Utils_update(
+					getUser,
+					{errmsg: '', password: '', signedUpOrloggedIn: true}),
 				$elm$core$Platform$Cmd$none);
 		} else {
 			var error = result.a;

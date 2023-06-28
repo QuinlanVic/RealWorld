@@ -5945,11 +5945,11 @@ var $author$project$Routes$routes = $elm$url$Url$Parser$oneOf(
 			A2(
 			$elm$url$Url$Parser$map,
 			$author$project$Routes$Article,
-			$elm$url$Url$Parser$s('article/')),
+			$elm$url$Url$Parser$s('article')),
 			A2(
 			$elm$url$Url$Parser$map,
 			$author$project$Routes$Profile,
-			$elm$url$Url$Parser$s('profile/')),
+			$elm$url$Url$Parser$s('profile')),
 			A2(
 			$elm$url$Url$Parser$map,
 			$author$project$Routes$Settings,
@@ -6083,7 +6083,7 @@ var $author$project$Main$viewContent = function (page) {
 					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$html$Html$text('register')
+							$elm$html$Html$text('Register')
 						])));
 		case 'CreateArticle':
 			return _Utils_Tuple2(
