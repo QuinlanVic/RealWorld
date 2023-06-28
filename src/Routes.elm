@@ -1,8 +1,8 @@
 module Routes exposing (Route(..), match)
 
-import Browser
-import Html exposing (Html, a, div, h1, i, text)
-import Html.Attributes exposing (class)
+-- import Browser
+-- import Html exposing (Html, a, div, h1, i, text)
+-- import Html.Attributes exposing (class)
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser)
 
@@ -44,4 +44,4 @@ match url =
 -- a Maybe because the parser may not match the current path. In this case, if
 -- the parser matches, then Parser.parse will return a Route constructor inside Just.
 -- Otherwise, it will return Nothing.
----- MODEL ----
+
