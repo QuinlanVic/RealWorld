@@ -1,4 +1,4 @@
-module Editor exposing (Article, Author, articleDecoder, main)
+module Editor exposing (Article, Author, Msg, view, initialModel, articleDecoder, main)
 
 -- import Exts.Html exposing (nbsp)
 

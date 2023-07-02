@@ -1,4 +1,4 @@
-module Index exposing (main)
+module Index exposing (main, Model)
 
 import Browser
 

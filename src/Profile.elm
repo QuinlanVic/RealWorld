@@ -1,4 +1,4 @@
-module Profile exposing (..)
+module Profile exposing (Model, Msg)
 
 import Html exposing (..)
 

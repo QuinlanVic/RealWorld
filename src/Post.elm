@@ -1,4 +1,4 @@
-module Post exposing (..)
+module Post exposing (Model, initialModel, Msg(..))
 
 import Html exposing (..)
 
