@@ -1,17 +1,17 @@
 module Main2 exposing (main)
 
--- import Auth
+import Auth
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Navigation
--- import Editor
+import Editor
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
--- import Index
--- import Login
--- import Post
--- import Profile
+import Index
+import Login
+import Post
+import Profile
 import Routes
--- import Settings
+import Settings
 import Url exposing (Url)
 
 
