@@ -35,15 +35,15 @@ type CurrentPage
 type alias Model =
     { page : CurrentPage
     , navigationKey : Navigation.Key -- program will supply navigationKey at runtime
-    , url : Url
+    -- , url : Url
     }
 
 
-initialModel : Navigation.Key -> Url -> Model
-initialModel navigationKey url =
-    { page = NotFound
+initialModel : Navigation.Key -> Model ---> Url
+initialModel navigationKey = -- url
+    { page = Register 
     , navigationKey = navigationKey
-    , url = url
+    -- , url = url
     }
 
 
@@ -51,23 +51,23 @@ init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init () url navigationKey =
     -- program supplies initial Url when the app boots
     -- Convert url into a route and construct initialmodel -> pass to setNewPage to set initial page
-    setNewPage (Routes.match url) (initialModel navigationKey url)
+    setNewPage (Routes.match url) (initialModel navigationKey) --url
 
 
 
 ---- VIEW ----
 
 
-viewContent : Model -> ( String, Html Msg )
-viewContent model =
-    let
-        url = model.url
-    in
-        case model.page of
+viewContent : CurrentPage -> ( String, Html Msg ) --Model
+viewContent page =
+    -- let
+    --     url = model.url
+    -- in
+        case page of -- model.page
             PublicFeed ->
-            ( "Conduit"
-            , h1 [] [ text "Public Feed" ]
-            )
+                ( "Conduit"
+                , h1 [] [ text "Public Feed" ]
+                )
 
             Register ->
                 ( "Register"
@@ -149,7 +149,7 @@ view : Model -> Document Msg
 view model =
     let
         ( title, content ) =
-            viewContent model
+            viewContent model.page 
     in
     { title = title
     , body = [ content ] --viewHeader
@@ -217,7 +217,7 @@ setNewPage maybeRoute model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case (Debug.log "RECEIVED MESSAGE" msg) of
+    case msg of -- (Debug.log "RECEIVED MESSAGE" msg)
         NewRoute maybeRoute ->
             setNewPage maybeRoute model
 

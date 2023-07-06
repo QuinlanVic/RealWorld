@@ -36,7 +36,7 @@ routes =
 
 match : Url -> Maybe Route
 match url =
-    Parser.parse routes (Debug.log "TRYING TO MATCH URL" url)
+    Parser.parse routes url -- (Debug.log "TRYING TO MATCH URL" url)
 
 
 
