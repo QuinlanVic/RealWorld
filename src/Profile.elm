@@ -99,19 +99,19 @@ updatePostPreviewLikes postpreview =
         { postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes + 1 }
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         ToggleLike ->
-            { model | postsMade = List.map updatePostPreviewLikes model.postsMade }
+            ( { model | postsMade = List.map updatePostPreviewLikes model.postsMade }, Cmd.none )
 
         --need lazy execution
         ToggleFollow ->
             if model.followed then
-                { model | followed = not model.followed, numfollowers = model.numfollowers - 1 }
+                ( { model | followed = not model.followed, numfollowers = model.numfollowers - 1 }, Cmd.none )
 
             else
-                { model | followed = not model.followed, numfollowers = model.numfollowers + 1 }
+                ( { model | followed = not model.followed, numfollowers = model.numfollowers + 1 }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

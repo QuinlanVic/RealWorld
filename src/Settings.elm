@@ -52,29 +52,29 @@ init =
 --Update--
 
 
-update : Msg -> UserSettings -> UserSettings
+update : Msg -> UserSettings -> ( UserSettings, Cmd Msg )
 update message userset =
     case message of
         SavePic urlpic ->
-            { userset | urlpic = urlpic }
+            ( { userset | urlpic = urlpic }, Cmd.none )
 
         SaveName name ->
-            { userset | name = name }
+            ( { userset | name = name }, Cmd.none )
 
         SaveBio bio ->
-            { userset | bio = bio }
+            ( { userset | bio = bio }, Cmd.none )
 
         SaveEmail email ->
-            { userset | email = email }
+            ( { userset | email = email }, Cmd.none )
 
         SavePassword password ->
-            { userset | password = password }
+            ( { userset | password = password }, Cmd.none )
 
         UpdateSettings ->
-            { userset | updated = True }
+            ( { userset | updated = True }, Cmd.none )
 
         LogOut ->
-            { userset | loggedOut = True }
+            ( { userset | loggedOut = True }, Cmd.none )
 
 
 subscriptions : UserSettings -> Sub Msg

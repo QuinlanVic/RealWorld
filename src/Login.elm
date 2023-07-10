@@ -1,4 +1,4 @@
-module Login exposing (Msg, init, view)
+module Login exposing (Msg, init, update, view)
 
 -- import Browser
 

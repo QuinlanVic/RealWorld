@@ -1,4 +1,4 @@
-module Post exposing (Model, Msg(..), init, initialModel, update, view)
+module Post exposing (Model, Msg, init, initialModel, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
@@ -75,28 +75,28 @@ saveNewComment model =
             }
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         ToggleLike ->
             if model.liked then
-                { model | liked = not model.liked, numlikes = model.numlikes - 1 }
+                ( { model | liked = not model.liked, numlikes = model.numlikes - 1 }, Cmd.none )
 
             else
-                { model | liked = not model.liked, numlikes = model.numlikes + 1 }
+                ( { model | liked = not model.liked, numlikes = model.numlikes + 1 }, Cmd.none )
 
         ToggleFollow ->
             if model.followed then
-                { model | followed = not model.followed, numfollowers = model.numfollowers - 1 }
+                ( { model | followed = not model.followed, numfollowers = model.numfollowers - 1 }, Cmd.none )
 
             else
-                { model | followed = not model.followed, numfollowers = model.numfollowers + 1 }
+                ( { model | followed = not model.followed, numfollowers = model.numfollowers + 1 }, Cmd.none )
 
         UpdateComment comment ->
-            { model | newComment = comment }
+            ( { model | newComment = comment }, Cmd.none )
 
         SaveComment ->
-            saveNewComment model
+            ( saveNewComment model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

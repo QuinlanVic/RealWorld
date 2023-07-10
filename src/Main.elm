@@ -272,6 +272,41 @@ update msg model =
             in
             ( { model | page = Auth updatedAuthUser }, Cmd.map AuthMessage authCmd )
 
+        ( EditorMessage editorMsg, Editor editorArticle ) ->
+            let
+                ( updatedEditorArticle, editorCmd ) =
+                    Editor.update editorMsg editorArticle
+            in
+            ( { model | page = Editor updatedEditorArticle }, Cmd.map EditorMessage editorCmd )
+
+        ( LoginMessage loginMsg, Login loginUser ) ->
+            let
+                ( updatedLoginUser, loginCmd ) =
+                    Login.update loginMsg loginUser
+            in
+            ( { model | page = Login updatedLoginUser }, Cmd.map LoginMessage loginCmd )
+
+        ( PostMessage postMsg, Post postModel ) ->
+            let
+                ( updatedPostModel, postCmd ) =
+                    Post.update postMsg postModel
+            in
+            ( { model | page = Post updatedPostModel }, Cmd.map PostMessage postCmd )
+
+        ( ProfileMessage profileMsg, Profile profileModel ) ->
+            let
+                ( updatedProfileModel, profileCmd ) =
+                    Profile.update profileMsg profileModel
+            in
+            ( { model | page = Profile updatedProfileModel }, Cmd.map ProfileMessage profileCmd )
+
+        ( SettingsMessage settingsMsg, Settings settingsUserSettings ) ->
+            let
+                ( updatedSettingsUserSettings, settingsCmd ) =
+                    Settings.update settingsMsg settingsUserSettings
+            in
+            ( { model | page = Settings updatedSettingsUserSettings }, Cmd.map SettingsMessage settingsCmd )
+
         -- Visit (Internal url) ->
         --     setNewPage
         --         (Routes.match url)
