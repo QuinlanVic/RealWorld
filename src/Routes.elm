@@ -1,9 +1,9 @@
-module Routes exposing (Route(..), match)
+module Routes exposing (Route(..), href, match)
 
 -- import Browser
--- import Html exposing (Html, a, div, h1, i, text)
--- import Html.Attributes exposing (class)
 
+import Html
+import Html.Attributes
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser)
 
@@ -31,12 +31,42 @@ routes =
         ]
 
 
+routeToUrl : Route -> String
+routeToUrl route =
+    --accept route and convert it to a string path via pattern matching
+    case route of
+        Index ->
+            "/"
 
--- match function that uses the routes parser to convert URLs
+        Auth ->
+            "/signup"
+
+        Editor ->
+            "/createpost"
+
+        Login ->
+            "/login"
+
+        Post ->
+            "/article"
+
+        Profile ->
+            "/profile"
+
+        Settings ->
+            "/settings"
+
+
+href : Route -> Html.Attribute msg
+href route =
+    -- convert route into a string using routeToUrl then pipe result -> Html.Attributes.href
+    -- which allows you to build links to pages via Route constructors
+    Html.Attributes.href (routeToUrl route)
 
 
 match : Url -> Maybe Route
 match url =
+    -- match function that uses the routes parser to convert URLs
     Parser.parse routes (Debug.log "TRYING TO MATCH URL" url)
 
 

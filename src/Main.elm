@@ -150,15 +150,28 @@ viewContent model =
 --     )
 -- viewHeader : Html Msg
 -- viewHeader =
---     div [class "header"]
---         [div [class "header-nav"]
---             [ a [class "nav-brand", Routes.href Routes.Home] --a = anchor tag
---                 [text "Picshare"]
---             , a [class "nav-account", Routes.href Routes.Account]
---                 [i [class "fa fa-2x fa-gear"] [] ]
---                 --account link displays a gear with an i tag and Font Awesome classes
+-- div []
+--     [ nav [ class "navbar navbar-light" ]
+--         [ div [ class "container" ]
+--             [ a [ class "navbar-brand", href "indexelm.html" ] [ text "conduit" ]
+--             , ul [ class "nav navbar-nav pull-xs-right" ]
+--                 --could make a function for doing all of this
+--                 [ li [ class "nav-item active" ] [ a [ class "nav-link", href "indexelm.html" ] [ text "Home :)" ] ]
+--                 , li [ class "nav-item" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
+--                 , li [ class "nav-item" ] [ a [ class "nav-link", href "loginelm.html" ] [ text "Log in" ] ]
+--                 , li [ class "nav-item" ] [ a [ class "nav-link", href "authelm.html" ] [ text "Sign up" ] ]
+--                 , li [ class "nav-item" ] [ a [ class "nav-link", href "settingselm.html" ] [ text "Settings" ] ]
+--                 ]
 --             ]
 --         ]
+--     , div [ class "home-page" ]
+--         [ div [ class "banner" ]
+--             [ div [ class "container" ]
+--                 [ h1 [ class "logo-font" ]
+--                     [ text "conduit" ]
+--                 , p [] [ text "A place to share your knowledge." ]
+--                 ]
+--             ]
 
 
 view : Model -> Document Msg
@@ -307,10 +320,9 @@ update msg model =
             in
             ( { model | page = Settings updatedSettingsUserSettings }, Cmd.map SettingsMessage settingsCmd )
 
-        -- Visit (Internal url) ->
-        --     setNewPage
-        --         (Routes.match url)
-        --         model
+        ( Visit (Browser.Internal url), _ ) ->
+            ( model, Navigation.pushUrl model.navigationKey (Url.toString url) )
+
         _ ->
             ( model, Cmd.none )
 
