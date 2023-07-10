@@ -3,13 +3,14 @@ module Routes exposing (Route(..), match)
 -- import Browser
 -- import Html exposing (Html, a, div, h1, i, text)
 -- import Html.Attributes exposing (class)
+
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser)
 
 
 type Route
     = Index
-    | Auth 
+    | Auth
     | Editor
     | Login
     | Article
@@ -22,7 +23,7 @@ routes =
     Parser.oneOf
         [ Parser.map Index Parser.top --#/ ?
         , Parser.map Auth (Parser.s "signup")
-        , Parser.map Editor (Parser.s "createpost") 
+        , Parser.map Editor (Parser.s "createpost")
         , Parser.map Login (Parser.s "login")
         , Parser.map Article (Parser.s "article") --article name
         , Parser.map Profile (Parser.s "profile") --profile username
@@ -36,7 +37,7 @@ routes =
 
 match : Url -> Maybe Route
 match url =
-    Parser.parse routes url -- (Debug.log "TRYING TO MATCH URL" url)
+    Parser.parse routes (Debug.log "TRYING TO MATCH URL" url)
 
 
 
@@ -44,4 +45,3 @@ match url =
 -- a Maybe because the parser may not match the current path. In this case, if
 -- the parser matches, then Parser.parse will return a Route constructor inside Just.
 -- Otherwise, it will return Nothing.
-

@@ -6,6 +6,7 @@ import Browser.Navigation as Navigation
 import Editor
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
+import Html.Events exposing (onClick)
 import Index
 import Login
 import Post
@@ -13,37 +14,37 @@ import Profile
 import Routes
 import Settings
 import Url exposing (Url)
-import Html.Events exposing (onClick)
 
 
 type CurrentPage
-    = PublicFeed
-    | Register
-    | CreateArticle
-    | Login
-    | Article
-    | Profile
-    | Settings
+    = -- PublicFeed
+      -- | Register
+      -- | CreateArticle
+      -- | Login
+      -- | Article
+      -- | Profile
+      -- | Settings
+      -- | NotFound
+      LoginOrSomethingLikeIt Auth.User
+    | Edit Editor.Article
+    | Post Post.Model
+    | Profile Profile.Model
+    | Settings Settings.UserSettings
     | NotFound
-    -- LoginOrSomethingLikeIt Auth.User
-    -- | Edit Editor.Article
-    -- | Post Post.Model
-    -- | Profile Profile.Model
-    -- | Settings Settings.UserSettings
-    -- | NotFound
+
 
 type alias Model =
     { page : CurrentPage
     , navigationKey : Navigation.Key -- program will supply navigationKey at runtime
-    -- , url : Url
+    , url : Url
     }
 
 
-initialModel : Navigation.Key -> Model ---> Url
-initialModel navigationKey = -- url
-    { page = Register 
+initialModel : Navigation.Key -> Url -> Model
+initialModel navigationKey url =
+    { page = NotFound
     , navigationKey = navigationKey
-    -- , url = url
+    , url = url
     }
 
 
@@ -51,86 +52,87 @@ init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init () url navigationKey =
     -- program supplies initial Url when the app boots
     -- Convert url into a route and construct initialmodel -> pass to setNewPage to set initial page
-    setNewPage (Routes.match url) (initialModel navigationKey) --url
+    setNewPage (Routes.match url) (initialModel navigationKey url)
 
 
 
 ---- VIEW ----
 
 
-viewContent : CurrentPage -> ( String, Html Msg ) --Model
-viewContent page =
-    -- let
-    --     url = model.url
-    -- in
-        case page of -- model.page
-            PublicFeed ->
-                ( "Conduit"
-                , h1 [] [ text "Public Feed" ]
-                )
+viewContent :
+    Model
+    -> ( String, Html Msg ) --Model
+viewContent model =
+    let
+        url =
+            model.url
+    in
+    case model.page of
+        -- model.page
+        -- PublicFeed ->
+        --     ( "Conduit"
+        --     , h1 [] [ text "Public Feed" ]
+        --     )
+        -- Register ->
+        --     ( "Register"
+        --     , h1 [] [ text "Register" ]
+        --     )
+        -- CreateArticle ->
+        --     ( "CreateArticle"
+        --     , h1 [] [ text "CreateArticle" ]
+        --     )
+        -- Login ->
+        --     ( "Login"
+        --     , h1 [] [ text "Login" ]
+        --     )
+        -- Article ->
+        --     ( "Article"
+        --     , h1 [] [ text "Article" ]
+        --     )
+        -- Profile ->
+        --     ( "Profile"
+        --     , h1 [] [ text "Profile" ]
+        --     )
+        -- Settings ->
+        --     ( "Settings"
+        --     , h1 [] [ text "Settings" ]
+        --     )
+        -- NotFound ->
+        --     ( "Not Found"
+        --     , div [ class "not-found" ]
+        --         [ h1 [] [ text "Page Not Found" ] ]
+        --     )
+        LoginOrSomethingLikeIt user ->
+            ( "What up, homie?"
+            , Html.map AuthMessage (Auth.view user)
+            )
 
-            Register ->
-                ( "Register"
-                , h1 [] [ text "Register" ]
-                )
+        Edit article ->
+            ( "Be The Change You Want To See In The Article"
+            , Html.map EditorMessage <| Editor.view article
+            )
 
-            CreateArticle ->
-                ( "CreateArticle"
-                , h1 [] [ text "CreateArticle" ]
-                )
+        _ ->
+            ( "Unimplemented ....... yet!"
+            , div
+                []
+                [ text "UNIMPLEMENTED but check this out:"
+                , br [] []
+                , a
+                    [ onClick (Visit <| Internal { url | path = "signup" })
+                    , style "cursor" "pointer"
+                    ]
+                    [ text "Auth page yo" ]
+                , br [] []
+                , a
+                    [ onClick (Visit <| Internal { url | path = "createpost" })
+                    , style "cursor" "pointer"
+                    ]
+                    [ text "Feeling creative?" ]
+                ]
+            )
 
-            Login ->
-                ( "Login"
-                , h1 [] [ text "Login" ]
-                )
 
-            Article ->
-                ( "Article"
-                , h1 [] [ text "Article" ]
-                )
-
-            Profile ->
-                ( "Profile"
-                , h1 [] [ text "Profile" ]
-                )
-
-            Settings ->
-                ( "Settings"
-                , h1 [] [ text "Settings" ]
-                )
-
-            NotFound ->
-                ( "Not Found"
-                , div [ class "not-found" ]
-                    [ h1 [] [ text "Page Not Found" ] ]
-                )
-            -- LoginOrSomethingLikeIt user ->
-            --     ( "What up, homie?"
-            --     , Html.map AuthMessage (Auth.view user)
-            --     )
-            -- Edit article ->
-            --     ( "Be The Change You Want To See In The Article"
-            --     , Html.map EditorMessage <| Editor.view article
-            --     )
-            -- _ ->
-            --     ( "Unimplemented ....... yet!"
-            --     , div
-            --         []
-            --         [ text "UNIMPLEMENTED but check this out:"
-            --         , br [] []
-            --         , a
-            --             [ onClick (Visit <| Internal { url | path = "signup" })
-            --             , style "cursor" "pointer"
-            --             ]
-            --             [ text "Auth page yo" ]
-            --         , br [] []
-            --         , a
-            --             [ onClick (Visit <| Internal { url | path = "createpost" })
-            --             , style "cursor" "pointer"
-            --             ]
-            --             [ text "Feeling creative?" ]
-            --         ]
-            --     )
 
 -- viewHeader : Html Msg
 -- viewHeader =
@@ -149,11 +151,12 @@ view : Model -> Document Msg
 view model =
     let
         ( title, content ) =
-            viewContent model.page 
+            viewContent model
     in
     { title = title
     , body = [ content ] --viewHeader
     }
+
 
 
 ---- UPDATE ----
@@ -162,8 +165,9 @@ view model =
 type Msg
     = NewRoute (Maybe Routes.Route)
     | Visit UrlRequest
-    -- | AuthMessage Auth.Msg
-    -- | EditorMessage Editor.Msg
+    | AuthMessage Auth.Msg
+    | EditorMessage Editor.Msg
+
 
 
 -- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
@@ -179,52 +183,46 @@ setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
 setNewPage maybeRoute model =
     --update model's page based on the new route
     case maybeRoute of
-        Just Routes.Index ->
-            ( { model | page = PublicFeed }, Cmd.none )
-
+        -- Just Routes.Index ->
+        --     ( { model | page = PublicFeed }, Cmd.none )
+        -- Just Routes.Auth ->
+        --     ( { model | page = Register }, Cmd.none )
+        -- Just Routes.Editor ->
+        --     ( { model | page = CreateArticle }, Cmd.none )
+        -- Just Routes.Login ->
+        --     ( { model | page = Login }, Cmd.none )
+        -- Just Routes.Article ->
+        --     ( { model | page = Article }, Cmd.none )
+        -- Just Routes.Profile ->
+        --     ( { model | page = Profile }, Cmd.none )
+        -- Just Routes.Settings ->
+        --     ( { model | page = Settings }, Cmd.none )
+        -- Nothing ->
+        --     ( { model | page = NotFound }, Cmd.none )
         Just Routes.Auth ->
-            ( { model | page = Register }, Cmd.none ) 
+            ( { model | page = LoginOrSomethingLikeIt Auth.initialModel }
+            , Navigation.pushUrl model.navigationKey "signup"
+            )
 
         Just Routes.Editor ->
-            ( { model | page = CreateArticle }, Cmd.none )
+            ( { model | page = Edit Editor.initialModel }
+            , Navigation.pushUrl model.navigationKey "createpost"
+            )
 
-        Just Routes.Login ->
-            ( { model | page = Login }, Cmd.none )
-
-        Just Routes.Article ->
-            ( { model | page = Article }, Cmd.none )
-
-        Just Routes.Profile ->
-            ( { model | page = Profile }, Cmd.none )
-
-        Just Routes.Settings ->
-            ( { model | page = Settings }, Cmd.none )
-
-        Nothing ->
+        _ ->
             ( { model | page = NotFound }, Cmd.none )
-        -- Just Routes.Auth ->
-        --     ( { model | page = LoginOrSomethingLikeIt Auth.initialModel }
-        --     , Navigation.pushUrl model.navigationKey "signup"
-        --     )
 
-        -- Just Routes.Editor ->
-        --     ( { model | page = Edit Editor.initialModel }
-        --     , Navigation.pushUrl model.navigationKey "createpost"
-        --     )
-
-        -- _ ->
-        --     ( { model | page = NotFound }, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of -- (Debug.log "RECEIVED MESSAGE" msg)
+    case Debug.log "RECEIVED MESSAGE" msg of
         NewRoute maybeRoute ->
             setNewPage maybeRoute model
 
-        -- Visit (Internal url) ->
-        --     setNewPage
-        --         (Routes.match url)
-        --         model
+        Visit (Internal url) ->
+            setNewPage
+                (Routes.match url)
+                model
 
         _ ->
             ( model, Cmd.none )
