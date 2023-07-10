@@ -12,6 +12,7 @@ import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
 import Response exposing (mapModel)
+import Routes
 
 
 
@@ -163,15 +164,15 @@ viewPostPreview : PostPreview -> Html Msg
 viewPostPreview postPreview =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ href postPreview.authorpage ] [ img [ src postPreview.authorimage ] [] ]
+            [ a [ Routes.href Routes.Profile ] [ img [ src postPreview.authorimage ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ href postPreview.authorpage, class "author" ] [ text postPreview.authorname ]
+                [ a [ Routes.href Routes.Profile, class "author" ] [ text postPreview.authorname ]
                 , span [ class "date" ] [ text postPreview.date ]
                 ]
             , viewLoveButton postPreview
             ]
-        , a [ href "postelm.html", class "preview-link" ]
+        , a [ Routes.href Routes.Post, class "preview-link" ]
             [ h1 [] [ text postPreview.articletitle ]
             , p [] [ text postPreview.articlepreview ]
             , span [] [ text "Read more..." ]
@@ -189,20 +190,7 @@ viewPosts postPreviews =
 view : Model -> Html Msg
 view model =
     div []
-        [ nav [ class "navbar navbar-light" ]
-            [ div [ class "container" ]
-                [ a [ class "navbar-brand", href "indexelm.html" ] [ text "conduit" ]
-                , ul [ class "nav navbar-nav pull-xs-right" ]
-                    --could make a function for doing all of this
-                    [ li [ class "nav-item active" ] [ a [ class "nav-link", href "indexelm.html" ] [ text "Home :)" ] ]
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "loginelm.html" ] [ text "Log in" ] ]
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "authelm.html" ] [ text "Sign up" ] ]
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "settingselm.html" ] [ text "Settings" ] ]
-                    ]
-                ]
-            ]
-        , div [ class "home-page" ]
+        [ div [ class "home-page" ]
             [ div [ class "banner" ]
                 [ div [ class "container" ]
                     [ h1 [ class "logo-font" ]
@@ -312,11 +300,11 @@ view model =
             ]
         , footer []
             [ div [ class "container" ]
-                [ a [ href "/", class "logo-font" ] [ text "conduit" ]
+                [ a [ Routes.href Routes.Index, class "logo-font" ] [ text "conduit" ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https:..thinkster.io" ] [ text "Thinkster" ]
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]

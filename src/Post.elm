@@ -6,6 +6,7 @@ module Post exposing (Model, Msg, init, initialModel, update, view)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
 import Html.Events exposing (onClick, onInput, onMouseLeave, onMouseOver, onSubmit)
+import Routes
 
 
 
@@ -151,10 +152,10 @@ viewComment comment =
             [ p [ class "card-text" ] [ text comment ]
             ]
         , div [ class "card-footer" ]
-            [ a [ href "profileelm.html", class "comment-author" ]
+            [ a [ Routes.href Routes.Profile, class "comment-author" ]
                 [ img [ src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img" ] [] ]
             , text " \u{00A0} "
-            , a [ href "profileelm.html", class "comment-author" ] [ text "Jacob Schmidt" ]
+            , a [ Routes.href Routes.Profile, class "comment-author" ] [ text "Jacob Schmidt" ]
             , text " "
             , span [ class "date-posted" ] [ text "Dec 29th" ]
             , span [ class "mod-options" ]
@@ -215,33 +216,16 @@ viewComments model =
 view : Model -> Html Msg
 view model =
     div []
-        [ nav [ class "navbar navbar-light" ]
-            [ div [ class "container" ]
-                [ a [ class "navbar-brand", href "indexelm.html" ] [ text "conduit" ]
-                , ul [ class "nav navbar-nav pull-xs-right" ]
-                    --could make a function for doing all of this
-                    [ li [ class "nav-item" ] [ a [ class "nav-link", href "indexelm.html" ] [ text "Home :)" ] ]
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "loginelm.html" ] [ text "Log in" ] ]
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "authelm.html" ] [ text "Sign up" ] ]
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "settingselm.html" ] [ text "Settings" ] ]
-
-                    -- <!--           <li class="nav-item active">
-                    --<a class="nav-link" href="index.html">Home</a>
-                    --</li> -->
-                    ]
-                ]
-            ]
-        , div [ class "post-page" ]
+        [ div [ class "post-page" ]
             [ div [ class "banner" ]
                 [ div [ class "container" ]
                     [ h1 [] [ text "How to build webapps that scale" ]
                     , div [ class "post-meta" ]
-                        [ a [ href "profileelm.html" ]
+                        [ a [ Routes.href Routes.Profile ]
                             [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
-                            [ a [ href "profileelm.html", class "author" ] [ text "Eric Simons" ]
+                            [ a [ Routes.href Routes.Profile, class "author" ] [ text "Eric Simons" ]
                             , span [ class "date" ] [ text "January 20th" ]
                             ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
@@ -338,10 +322,10 @@ view model =
                 , hr [] []
                 , div [ class "post-actions" ]
                     [ div [ class "post-meta" ]
-                        [ a [ href "profileelm.html" ] [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
+                        [ a [ Routes.href Routes.Profile ] [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
-                            [ a [ href "profileelm.html", class "author" ] [ text "Eric Simons" ]
+                            [ a [ Routes.href Routes.Profile, class "author" ] [ text "Eric Simons" ]
                             , span [ class "date" ] [ text "January 20th" ]
                             ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
@@ -411,11 +395,11 @@ view model =
             ]
         , footer []
             [ div [ class "container" ]
-                [ a [ href "/", class "logo-font" ] [ text "conduit" ]
+                [ a [ Routes.href Routes.Index, class "logo-font" ] [ text "conduit" ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https:..thinkster.io" ] [ text "Thinkster" ]
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]

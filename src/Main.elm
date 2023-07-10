@@ -148,30 +148,24 @@ viewContent model =
 --             [ text "Feeling creative?" ]
 --         ]
 --     )
--- viewHeader : Html Msg
--- viewHeader =
--- div []
---     [ nav [ class "navbar navbar-light" ]
---         [ div [ class "container" ]
---             [ a [ class "navbar-brand", href "indexelm.html" ] [ text "conduit" ]
---             , ul [ class "nav navbar-nav pull-xs-right" ]
---                 --could make a function for doing all of this
---                 [ li [ class "nav-item active" ] [ a [ class "nav-link", href "indexelm.html" ] [ text "Home :)" ] ]
---                 , li [ class "nav-item" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
---                 , li [ class "nav-item" ] [ a [ class "nav-link", href "loginelm.html" ] [ text "Log in" ] ]
---                 , li [ class "nav-item" ] [ a [ class "nav-link", href "authelm.html" ] [ text "Sign up" ] ]
---                 , li [ class "nav-item" ] [ a [ class "nav-link", href "settingselm.html" ] [ text "Settings" ] ]
---                 ]
---             ]
---         ]
---     , div [ class "home-page" ]
---         [ div [ class "banner" ]
---             [ div [ class "container" ]
---                 [ h1 [ class "logo-font" ]
---                     [ text "conduit" ]
---                 , p [] [ text "A place to share your knowledge." ]
---                 ]
---             ]
+
+
+viewHeader : Html Msg
+viewHeader =
+    --universal header used on all pages
+    nav [ class "navbar navbar-light" ]
+        [ div [ class "container" ]
+            [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
+            , ul [ class "nav navbar-nav pull-xs-right" ]
+                --could make a function for doing all of this
+                [ li [ class "nav-item active" ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
+                , li [ class "nav-item" ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
+                , li [ class "nav-item" ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
+                , li [ class "nav-item" ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
+                , li [ class "nav-item" ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ text "Settings" ] ]
+                ]
+            ]
+        ]
 
 
 view : Model -> Document Msg
@@ -181,7 +175,7 @@ view model =
             viewContent model
     in
     { title = title
-    , body = [ content ] --viewHeader
+    , body = [ viewHeader, content ]
     }
 
 

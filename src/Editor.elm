@@ -11,6 +11,7 @@ import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succ
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
 import Json.Encode as Encode
 import Post exposing (Msg)
+import Routes
 
 
 
@@ -178,20 +179,7 @@ subscriptions article =
 view : Article -> Html Msg
 view article =
     div []
-        [ nav [ class "navbar navbar-light" ]
-            [ div [ class "container" ]
-                [ a [ class "navbar-brand", href "indexelm.html" ] [ text "conduit" ]
-                , ul [ class "nav navbar-nav pull-xs-right" ]
-                    --could make a function for doing all of this
-                    [ li [ class "nav-item" ] [ a [ class "nav-link", href "indexelm.html" ] [ text "Home :)" ] ]
-                    , li [ class "nav-item active" ] [ a [ class "nav-link", href "editorelm.html" ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "loginelm.html" ] [ text "Log in" ] ]
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "authelm.html" ] [ text "Sign up" ] ]
-                    , li [ class "nav-item" ] [ a [ class "nav-link", href "settingselm.html" ] [ text "Settings" ] ]
-                    ]
-                ]
-            ]
-        , div [ class "editor-page" ]
+        [ div [ class "editor-page" ]
             [ div [ class "container page" ]
                 [ div [ class "row" ]
                     [ div [ class "col-md-10 col-md-offset-1 col-xs-12" ]
@@ -218,11 +206,11 @@ view article =
             ]
         , footer []
             [ div [ class "container" ]
-                [ a [ href "/", class "logo-font" ] [ text "conduit" ]
+                [ a [ Routes.href Routes.Index, class "logo-font" ] [ text "conduit" ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https:..thinkster.io" ] [ text "Thinkster" ]
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]
