@@ -33,9 +33,6 @@ import Routes
 --     , emailError : Maybe String
 --     , passwordError : Maybe String
 --     }
--- baseUrl : String
--- baseUrl = --reuse from Auth.elm
---     "http://localhost:3000"
 -- port storeToken : String -> Cmd Msg
 -- storeToken : String -> Cmd Msg
 -- storeToken token =
@@ -210,7 +207,7 @@ view user =
                 --testing
                 div [ id "greeting" ]
                     [ h3 [ class "text-center" ] [ text greeting ]
-                    , p [ class "text-center" ] [ text "You have successfully signed up!" ]
+                    , p [ class "text-center" ] [ text "You have successfully logged in!" ]
                     ]
 
             else

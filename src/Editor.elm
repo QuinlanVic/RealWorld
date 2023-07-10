@@ -45,7 +45,7 @@ type alias Article =
 
 baseUrl : String
 baseUrl =
-    "http://localhost:3000/"
+    "http://localhost:8000/"
 
 
 saveArticle : Article -> Cmd Msg

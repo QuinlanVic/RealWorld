@@ -22,7 +22,7 @@ routes : Parser (Route -> a) a
 routes =
     Parser.oneOf
         [ Parser.map Index Parser.top --#/ ?
-        , Parser.map Auth (Parser.s "signup")
+        , Parser.map Auth (Parser.s "register")
         , Parser.map Editor (Parser.s "createpost")
         , Parser.map Login (Parser.s "login")
         , Parser.map Post (Parser.s "article") --article name
@@ -39,7 +39,7 @@ routeToUrl route =
             "/"
 
         Auth ->
-            "/signup"
+            "/register"
 
         Editor ->
             "/createpost"
