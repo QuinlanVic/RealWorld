@@ -1,4 +1,4 @@
-module Auth exposing (User, Msg, view, baseUrl, initialModel, main, trimString, userDecoder, validateEmail, validatePassword)
+module Auth exposing (Msg, User, baseUrl, init, initialModel, trimString, update, userDecoder, validateEmail, validatePassword, view)
 
 -- import Exts.Html exposing (nbsp)
 
@@ -120,8 +120,9 @@ initialModel =
     }
 
 
-init : () -> ( User, Cmd Msg )
-init () =
+init : ( User, Cmd Msg )
+init =
+    -- () -> (No longer need unit flag as it's no longer an application but a component)
     ( initialModel, Cmd.none )
 
 
@@ -362,18 +363,14 @@ type Msg
 
 
 -- | Error String
-
-
-main : Program () User Msg
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
-
+-- main : Program () User Msg
+-- main =
+--     Browser.element
+--         { init = init
+--         , view = view
+--         , update = update
+--         , subscriptions = subscriptions
+--         }
+--Now Auth is a component and no longer an application
 -- elm-live src/Auth.elm --open --start-page=authelm.html -- --output=auth.js
 -- elm make src/Auth.elm --output auth.js

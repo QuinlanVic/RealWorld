@@ -13,7 +13,7 @@ type Route
     | Auth
     | Editor
     | Login
-    | Article
+    | Post
     | Profile
     | Settings
 
@@ -25,7 +25,7 @@ routes =
         , Parser.map Auth (Parser.s "signup")
         , Parser.map Editor (Parser.s "createpost")
         , Parser.map Login (Parser.s "login")
-        , Parser.map Article (Parser.s "article") --article name
+        , Parser.map Post (Parser.s "article") --article name
         , Parser.map Profile (Parser.s "profile") --profile username
         , Parser.map Settings (Parser.s "settings")
         ]
