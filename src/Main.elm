@@ -40,6 +40,7 @@ type alias Model =
     { page : CurrentPage
     , navigationKey : Navigation.Key -- program will supply navigationKey at runtime
     , url : Url
+    , currentPage : String
     }
 
 
@@ -48,6 +49,7 @@ initialModel navigationKey url =
     { page = NotFound
     , navigationKey = navigationKey
     , url = url
+    , currentPage = ""
     }
 
 
@@ -150,19 +152,27 @@ viewContent model =
 --     )
 
 
-viewHeader : Html Msg
-viewHeader =
-    --universal header used on all pages
+viewHeader : Model -> Html Msg
+viewHeader model =
+    --universal header used on all pages BUT changes the active element depending on the page
+    let
+        isActivePage pageName =
+            if model.currentPage == pageName then
+                "nav-item active"
+
+            else
+                "nav-item"
+    in
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
             [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
                 --could make a function for doing all of this
-                [ li [ class "nav-item active" ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
-                , li [ class "nav-item" ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
-                , li [ class "nav-item" ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
-                , li [ class "nav-item" ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
-                , li [ class "nav-item" ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ text "Settings" ] ]
+                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
+                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
+                , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
+                , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
+                , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ text "Settings" ] ]
                 ]
             ]
         ]
@@ -175,7 +185,7 @@ view model =
             viewContent model
     in
     { title = title
-    , body = [ viewHeader, content ]
+    , body = [ viewHeader model, content ]
     }
 
 
@@ -199,52 +209,52 @@ setNewPage maybeRoute model =
                 ( publicFeedModel, publicFeedCmd ) =
                     PublicFeed.init ()
             in
-            ( { model | page = PublicFeed publicFeedModel }, Cmd.map PublicFeedMessage publicFeedCmd )
+            ( { model | page = PublicFeed publicFeedModel, currentPage = "Home" }, Cmd.map PublicFeedMessage publicFeedCmd )
 
         Just Routes.Auth ->
             let
                 ( authUser, authCmd ) =
                     Auth.init
             in
-            ( { model | page = Auth authUser }, Cmd.map AuthMessage authCmd )
+            ( { model | page = Auth authUser, currentPage = "Auth" }, Cmd.map AuthMessage authCmd )
 
         Just Routes.Editor ->
             let
                 ( editorArticle, editorCmd ) =
                     Editor.init
             in
-            ( { model | page = Editor editorArticle }, Cmd.map EditorMessage editorCmd )
+            ( { model | page = Editor editorArticle, currentPage = "Editor" }, Cmd.map EditorMessage editorCmd )
 
         Just Routes.Login ->
             let
                 ( loginUser, loginCmd ) =
                     Login.init
             in
-            ( { model | page = Login loginUser }, Cmd.map LoginMessage loginCmd )
+            ( { model | page = Login loginUser, currentPage = "Login" }, Cmd.map LoginMessage loginCmd )
 
         Just Routes.Post ->
             let
                 ( postModel, postCmd ) =
                     Post.init
             in
-            ( { model | page = Post postModel }, Cmd.map PostMessage postCmd )
+            ( { model | page = Post postModel, currentPage = "Post" }, Cmd.map PostMessage postCmd )
 
         Just Routes.Profile ->
             let
                 ( profileModel, profileCmd ) =
                     Profile.init
             in
-            ( { model | page = Profile profileModel }, Cmd.map ProfileMessage profileCmd )
+            ( { model | page = Profile profileModel, currentPage = "Profile" }, Cmd.map ProfileMessage profileCmd )
 
         Just Routes.Settings ->
             let
                 ( settingsUserSettings, settingsCmd ) =
                     Settings.init
             in
-            ( { model | page = Settings settingsUserSettings }, Cmd.map SettingsMessage settingsCmd )
+            ( { model | page = Settings settingsUserSettings, currentPage = "Settings" }, Cmd.map SettingsMessage settingsCmd )
 
         Nothing ->
-            ( { model | page = NotFound }, Cmd.none )
+            ( { model | page = NotFound, currentPage = "" }, Cmd.none )
 
 
 
