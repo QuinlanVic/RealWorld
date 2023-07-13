@@ -7,7 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed)
+import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
 import Json.Encode as Encode
 import Post exposing (Msg)
@@ -40,6 +40,8 @@ type alias Article =
     , favoritesCount : Int
     , author : Author
     , created : Bool
+    , titleError : Maybe String
+    , bodyError : Maybe String
     }
 
 
@@ -65,9 +67,10 @@ getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg
 getArticleCompleted article result =
     case result of
         Ok getArticle ->
-            --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+            --confused here
             ( getArticle |> Debug.log "got the article", Cmd.none )
 
+        --| created = True
         Err error ->
             ( article, Cmd.none )
 
@@ -107,6 +110,8 @@ articleDecoder =
         -- "author": {
         |> required "author" authorDecoder
         |> hardcoded False
+        |> hardcoded (Just "")
+        |> hardcoded (Just "")
 
 
 defaultAuthor : Author
@@ -131,6 +136,8 @@ initialModel =
     , favoritesCount = 0
     , author = defaultAuthor
     , created = False
+    , titleError = Just ""
+    , bodyError = Just ""
     }
 
 
@@ -144,27 +151,61 @@ init =
 -- Update --
 
 
+validateTitle : String -> Maybe String
+validateTitle input =
+    if String.isEmpty input then
+        Just "Input is required"
+
+    else
+        Nothing
+
+
+validateBody : String -> Maybe String
+validateBody input =
+    if String.isEmpty input then
+        Just "Input is required"
+
+    else if String.length input < 1000 then
+        Just "Article has to be at least 1000 characters long"
+
+    else
+        Nothing
+
+
 update : Msg -> Article -> ( Article, Cmd Msg )
 update message article =
     case message of
         SaveTitle title ->
-            ( { article | title = title }, Cmd.none )
+            ( { article | titleError = validateTitle title }, Cmd.none )
 
         --update record syntax
         SaveDescription description ->
             ( { article | description = description }, Cmd.none )
 
         SaveBody body ->
-            ( { article | body = body }, Cmd.none )
+            ( { article | bodyError = validateBody body }, Cmd.none )
 
         SaveTags tagList ->
             ( { article | tagList = tagList }, Cmd.none )
 
+        CreateArticle ->
+            let
+                validatedArticle =
+                    { article | titleError = validateTitle article.title, bodyError = validateBody article.body }
+            in
+            if isFormValid validatedArticle then
+                ( validatedArticle, saveArticle validatedArticle )
+
+            else
+                ( validatedArticle, Cmd.none )
+
         LoadArticle result ->
             getArticleCompleted article result
 
-        CreateArticle ->
-            ( { article | created = True }, saveArticle article )
+
+isFormValid : Article -> Bool
+isFormValid article =
+    Maybe.withDefault "" article.titleError == "" && Maybe.withDefault "" article.bodyError == ""
 
 
 subscriptions : Article -> Sub Msg
@@ -184,8 +225,10 @@ view article =
                 [ div [ class "row" ]
                     [ div [ class "col-md-10 col-md-offset-1 col-xs-12" ]
                         [ form []
-                            [ fieldset [ class "form-group" ]
+                            [ div [ style "color" "red" ] [ text (Maybe.withDefault "" article.titleError) ]
+                            , fieldset [ class "form-group" ]
                                 [ input [ class "form-control form-control-lg", type_ "text", placeholder "Article Title", onInput SaveTitle ] [] ]
+                            , div [ style "color" "red" ] [ text (Maybe.withDefault "" article.bodyError) ]
                             , fieldset [ class "form-group" ]
                                 [ textarea [ class "form-control", rows 8, placeholder "Write your Article (in markdown)", onInput SaveBody ] [] ]
                             , fieldset [ class "form-group" ]
@@ -219,12 +262,12 @@ view article =
 
 
 type Msg
-    = SaveTitle String
+    = SaveTitle String --maybe string
     | SaveDescription String
     | SaveBody String
     | SaveTags (List String)
-    | LoadArticle (Result Http.Error Article)
     | CreateArticle
+    | LoadArticle (Result Http.Error Article)
 
 
 
