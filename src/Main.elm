@@ -23,7 +23,7 @@ type CurrentPage
     | Login Auth.User
     | Post Post.Model
     | Profile Profile.Model
-    | Settings Settings.UserSettings
+    | Settings Auth.User
     | NotFound
 
 
@@ -172,7 +172,7 @@ viewHeader model =
                 , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
                 , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
                 , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
-                , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ text "Settings" ] ]
+                , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
                 ]
             ]
         ]

@@ -1,43 +1,84 @@
-module Settings exposing (Msg, UserSettings, init, update, view)
+module Settings exposing (Msg, init, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
 
-import Auth exposing (User)
+import Auth exposing (User, initialModel, isFormValid, trimString, validateEmail, validatePassword, validateUsername)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
 import Html.Events exposing (onClick, onInput)
+import Http
+import Json.Decode exposing (Decoder, field, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Encode as Encode
 import Routes
+import String exposing (replace)
 
 
 
 --Model--
 
 
-type alias UserSettings =
-    { urlpic : String
-    , name : String
-    , bio : String
-    , email : String
-    , password : String
-    , updated : Bool
-    , loggedOut : Bool
-    }
+baseUrl : String
+baseUrl =
+    "http://localhost:8000/"
 
 
-initialModel : UserSettings
-initialModel =
-    { urlpic = ""
-    , name = ""
-    , bio = ""
-    , email = ""
-    , password = ""
-    , updated = False
-    , loggedOut = False
-    }
+saveUser : User -> Cmd Msg
+saveUser user =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "user", encodeUser <| user ) ]
+    in
+    Http.request
+        { method = "PUT"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
+        , url = baseUrl ++ "api/users"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
-init : ( UserSettings, Cmd Msg )
+getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
+getUserCompleted user result =
+    case result of
+        Ok getUser ->
+            --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+            ( { getUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
+
+        Err error ->
+            ( { user | errmsg = Debug.toString error }, Cmd.none )
+
+
+encodeUser : User -> Encode.Value
+encodeUser user =
+    --used to encode user sent to the server via POST request body (for registering)
+    Encode.object
+        [ ( "username", Encode.string user.username )
+        , ( "email", Encode.string user.email )
+        , ( "password", Encode.string user.password )
+        ]
+
+
+userDecoder : Decoder User
+userDecoder =
+    succeed User
+        |> required "email" string
+        |> required "token" string
+        |> required "username" string
+        |> required "bio" (nullable string)
+        |> required "image" (nullable string)
+        |> hardcoded ""
+        |> hardcoded True
+        |> hardcoded ""
+        |> hardcoded (Just "")
+        |> hardcoded (Just "")
+        |> hardcoded (Just "")
+
+
+init : ( User, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
     ( initialModel, Cmd.none )
@@ -53,33 +94,48 @@ init =
 --Update--
 
 
-update : Msg -> UserSettings -> ( UserSettings, Cmd Msg )
-update message userset =
+update : Msg -> User -> ( User, Cmd Msg )
+update message user =
     case message of
-        SavePic urlpic ->
-            ( { userset | urlpic = urlpic }, Cmd.none )
+        SavePic image ->
+            ( { user | image = Just image }, Cmd.none )
 
-        SaveName name ->
-            ( { userset | name = name }, Cmd.none )
+        SaveName username ->
+            ( { user | username = username }, Cmd.none )
 
         SaveBio bio ->
-            ( { userset | bio = bio }, Cmd.none )
+            ( { user | bio = Just bio }, Cmd.none )
 
         SaveEmail email ->
-            ( { userset | email = email }, Cmd.none )
+            ( { user | email = email }, Cmd.none )
 
         SavePassword password ->
-            ( { userset | password = password }, Cmd.none )
+            ( { user | password = password }, Cmd.none )
 
         UpdateSettings ->
-            ( { userset | updated = True }, Cmd.none )
+            let
+                --trimString the input fields and then ensure that these fields are valid
+                trimmedUser =
+                    { user | username = trimString user.username, email = trimString user.email, password = trimString user.password }
+
+                validatedUser =
+                    { trimmedUser | usernameError = validateUsername trimmedUser.username, emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password }
+            in
+            if isFormValid validatedUser then
+                ( validatedUser, saveUser validatedUser )
+
+            else
+                ( validatedUser, Cmd.none )
 
         LogOut ->
-            ( { userset | loggedOut = True }, Cmd.none )
+            ( user, Cmd.none )
+
+        LoadUser result ->
+            getUserCompleted user result
 
 
-subscriptions : UserSettings -> Sub Msg
-subscriptions userSettings =
+subscriptions : User -> Sub Msg
+subscriptions user =
     Sub.none
 
 
@@ -100,14 +156,14 @@ subscriptions userSettings =
 -- #373a3c
 
 
-view : UserSettings -> Html Msg
+view : User -> Html Msg
 view user =
     div []
         [ div [ class "settings-page" ]
             [ div [ class "container page" ]
                 [ div [ class "row" ]
                     [ div [ class "col-md-6 col-md-offset-3 col-xs-12" ]
-                        [ h1 [ class "text-xs-center" ] [ text "Your Settings" ]
+                        [ h2 [ class "text-xs-center" ] [ text "Your Settings" ]
                         , form []
                             [ fieldset []
                                 [ fieldset [ class "form-group" ]
@@ -129,7 +185,7 @@ view user =
 
                                 -- , viewForm "password" "Password"
                                 , fieldset [ class "form-group" ]
-                                    [ input [ class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword ] []
+                                    [ input [ class "form-control form-control-lg", type_ "password", placeholder "New Password", onInput SavePassword ] []
                                     ]
                                 , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick UpdateSettings ] [ text "Update Settings" ]
                                 ]
@@ -161,11 +217,12 @@ type Msg
     | SaveEmail String
     | SavePassword String
     | UpdateSettings
+    | LoadUser (Result Http.Error User)
     | LogOut
 
 
 
--- main : Program () UserSettings Msg
+-- main : Program () User Msg
 -- main =
 --     Browser.element
 --         { init = init
