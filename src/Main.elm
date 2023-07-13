@@ -72,43 +72,43 @@ viewContent model =
     in
     case model.page of
         PublicFeed publicFeedModel ->
-            ( "Conduit"
+            ( "Conduit - Conduit"
             , PublicFeed.view publicFeedModel |> Html.map PublicFeedMessage
               -- , h1 [] [ text "Public Feed" ]
             )
 
         Auth authUser ->
-            ( "Auth"
+            ( "Auth - Conduit"
             , Auth.view authUser |> Html.map AuthMessage
               -- , h1 [] [ text "Auth" ]
             )
 
         Editor editorArticle ->
-            ( "Editor"
+            ( "Editor - Conduit"
             , Editor.view editorArticle |> Html.map EditorMessage
               -- , h1 [] [ text "Editor" ]
             )
 
         Login loginUser ->
-            ( "Login"
+            ( "Login - Conduit"
             , Login.view loginUser |> Html.map LoginMessage
               -- , h1 [] [ text "Login" ]
             )
 
         Post postModel ->
-            ( "Article"
+            ( "Article - Conduit"
             , Post.view postModel |> Html.map PostMessage
               -- , h1 [] [ text "Article" ]
             )
 
         Profile profileModel ->
-            ( "Profile"
+            ( "Profile - Conduit"
             , Profile.view profileModel |> Html.map ProfileMessage
               -- , h1 [] [ text "Profile" ]
             )
 
         Settings settingsUserSettings ->
-            ( "Settings"
+            ( "Settings - Conduit"
             , Settings.view settingsUserSettings |> Html.map SettingsMessage
               -- , h1 [] [ text "Settings" ]
             )
