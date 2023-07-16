@@ -1,201 +1,201 @@
-module OldMain exposing (main)
+-- module OldMain exposing (main)
+
+-- -- import Auth
+-- -- import Editor
+-- -- import Index
+-- -- import Login
+-- -- import Post
+-- -- import Profile
+-- -- import Settings
 
 -- import Auth
+-- import Browser exposing (Document, UrlRequest(..))
+-- import Browser.Navigation as Navigation
 -- import Editor
--- import Index
--- import Login
+-- import Html exposing (..)
+-- import Html.Attributes exposing (class, href, id, placeholder, style, type_)
+-- import Html.Events exposing (onClick)
 -- import Post
 -- import Profile
+-- import Routes
 -- import Settings
-
-import Auth
-import Browser exposing (Document, UrlRequest(..))
-import Browser.Navigation as Navigation
-import Editor
-import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, style, type_)
-import Html.Events exposing (onClick)
-import Post
-import Profile
-import Routes
-import Settings
-import Url exposing (Url)
+-- import Url exposing (Url)
 
 
-type CurrentPage
-    = LoginOrSomethingLikeIt Auth.User
-    | Edit Editor.Article
-    | Post Post.Model
-    | Profile Profile.Model
-    | Settings Settings.UserSettings
-    | NotFound
+-- type CurrentPage
+--     = LoginOrSomethingLikeIt Auth.User
+--     | Edit Editor.Article
+--     | Post Post.Model
+--     | Profile Profile.Model
+--     | Settings Settings.UserSettings
+--     | NotFound
 
 
-type alias Model =
-    { page : CurrentPage
-    , navigationKey : Navigation.Key -- program will supply navigationKey at runtime
-    , url : Url
-    }
+-- type alias Model =
+--     { page : CurrentPage
+--     , navigationKey : Navigation.Key -- program will supply navigationKey at runtime
+--     , url : Url
+--     }
 
 
-initialModel : Navigation.Key -> Url -> Model
-initialModel navigationKey url =
-    { page = NotFound
-    , navigationKey = navigationKey
-    , url = url
-    }
+-- initialModel : Navigation.Key -> Url -> Model
+-- initialModel navigationKey url =
+--     { page = NotFound
+--     , navigationKey = navigationKey
+--     , url = url
+--     }
 
 
-init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init () url navigationKey =
-    -- program supplies initial Url when the app boots
-    -- Convert url into a route and construct initialmodel -> pass to setNewPage to set initial page
-    setNewPage (Routes.match url) (initialModel navigationKey url)
+-- init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+-- init () url navigationKey =
+--     -- program supplies initial Url when the app boots
+--     -- Convert url into a route and construct initialmodel -> pass to setNewPage to set initial page
+--     setNewPage (Routes.match url) (initialModel navigationKey url)
 
 
 
----- VIEW ----
+-- ---- VIEW ----
 
 
-viewContent : Model -> ( String, Html Msg )
-viewContent model =
-    let
-        url =
-            model.url
-    in
-    case model.page of
-        LoginOrSomethingLikeIt user ->
-            ( "What up, homie?"
-            , Html.map AuthMessage (Auth.view user)
-            )
+-- viewContent : Model -> ( String, Html Msg )
+-- viewContent model =
+--     let
+--         url =
+--             model.url
+--     in
+--     case model.page of
+--         LoginOrSomethingLikeIt user ->
+--             ( "What up, homie?"
+--             , Html.map AuthMessage (Auth.view user)
+--             )
 
-        Edit article ->
-            ( "Be The Change You Want To See In The Article"
-            , Html.map EditorMessage <| Editor.view article
-            )
+--         Edit article ->
+--             ( "Be The Change You Want To See In The Article"
+--             , Html.map EditorMessage <| Editor.view article
+--             )
 
-        _ ->
-            ( "Unimplemented ....... yet!"
-            , div
-                []
-                [ text "UNIMPLEMENTED but check this out:"
-                , br [] []
-                , a
-                    [ onClick (Visit <| Internal { url | path = "signup" })
-                    , style "cursor" "pointer"
-                    ]
-                    [ text "Auth page yo" ]
-                , br [] []
-                , a
-                    [ onClick (Visit <| Internal { url | path = "createpost" })
-                    , style "cursor" "pointer"
-                    ]
-                    [ text "Feeling creative?" ]
-                ]
-            )
-
-
-
--- viewHeader : Html Msg
--- viewHeader =
---     div [class "header"]
---         [div [class "header-nav"]
---             [ a [class "nav-brand", Routes.href Routes.Home] --a = anchor tag
---                 [text "Picshare"]
---             , a [class "nav-account", Routes.href Routes.Account]
---                 [i [class "fa fa-2x fa-gear"] [] ]
---                 --account link displays a gear with an i tag and Font Awesome classes
---             ]
---         ]
-
-
-view : Model -> Document Msg
-view model =
-    let
-        ( title, content ) =
-            viewContent model
-    in
-    { title = title
-    , body = [ content ] --viewHeader
-    }
+--         _ ->
+--             ( "Unimplemented ....... yet!"
+--             , div
+--                 []
+--                 [ text "UNIMPLEMENTED but check this out:"
+--                 , br [] []
+--                 , a
+--                     [ onClick (Visit <| Internal { url | path = "signup" })
+--                     , style "cursor" "pointer"
+--                     ]
+--                     [ text "Auth page yo" ]
+--                 , br [] []
+--                 , a
+--                     [ onClick (Visit <| Internal { url | path = "createpost" })
+--                     , style "cursor" "pointer"
+--                     ]
+--                     [ text "Feeling creative?" ]
+--                 ]
+--             )
 
 
 
----- UPDATE ----
+-- -- viewHeader : Html Msg
+-- -- viewHeader =
+-- --     div [class "header"]
+-- --         [div [class "header-nav"]
+-- --             [ a [class "nav-brand", Routes.href Routes.Home] --a = anchor tag
+-- --                 [text "Picshare"]
+-- --             , a [class "nav-account", Routes.href Routes.Account]
+-- --                 [i [class "fa fa-2x fa-gear"] [] ]
+-- --                 --account link displays a gear with an i tag and Font Awesome classes
+-- --             ]
+-- --         ]
 
 
-type Msg
-    = NewRoute (Maybe Routes.Route)
-    | Visit UrlRequest
-    | AuthMessage Auth.Msg
-    | EditorMessage Editor.Msg
-
-
-
--- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
--- | PublicFeedMsg PublicFeed.Msg --like above 2.0
--- | UserFeedMsg UserFeed.Msg --like above 3.0
---helper function
--- processPageUpdate : (pageModel -> Page) -> (pageMsg -> Msg) -> Model -> (pageModel, Cmd pageMsg) -> (Model, Cmd Msg)
--- processPageUpdate createPage wrapMsg model (pageModel, pageCmd) =
---     ({model | page = createPage pageModel}, Cmd.map wrapMsg pageCmd)
-
-
-setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
-setNewPage maybeRoute model =
-    --update model's page based on the new route
-    case maybeRoute of
-        Just Routes.Auth ->
-            ( { model | page = LoginOrSomethingLikeIt Auth.initialModel }
-            , Navigation.pushUrl model.navigationKey "signup"
-            )
-
-        Just Routes.Editor ->
-            ( { model | page = Edit Editor.initialModel }
-            , Navigation.pushUrl model.navigationKey "createpost"
-            )
-
-        _ ->
-            ( { model | page = NotFound }, Cmd.none )
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case Debug.log "RECEIVED MESSAGE" msg of
-        NewRoute maybeRoute ->
-            setNewPage maybeRoute model
-
-        Visit (Internal url) ->
-            setNewPage
-                (Routes.match url)
-                model
-
-        _ ->
-            ( model, Cmd.none )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
+-- view : Model -> Document Msg
+-- view model =
+--     let
+--         ( title, content ) =
+--             viewContent model
+--     in
+--     { title = title
+--     , body = [ content ] --viewHeader
+--     }
 
 
 
----- PROGRAM ----
+-- ---- UPDATE ----
 
 
-main : Program () Model Msg
-main =
-    Browser.application
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        , onUrlRequest = Visit
-        , onUrlChange = Routes.match >> NewRoute
-        }
+-- type Msg
+--     = NewRoute (Maybe Routes.Route)
+--     | Visit UrlRequest
+--     | AuthMessage Auth.Msg
+--     | EditorMessage Editor.Msg
 
 
 
---wrap current URL whenever the URL changes in the browser and then passes the wrapped value to update
---transform the incoming Url into Maybe Route with Routes.match then pass Maybe Route onto the NewRoute constructor
--- elm make src/Main.elm --output=main.js
+-- -- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
+-- -- | PublicFeedMsg PublicFeed.Msg --like above 2.0
+-- -- | UserFeedMsg UserFeed.Msg --like above 3.0
+-- --helper function
+-- -- processPageUpdate : (pageModel -> Page) -> (pageMsg -> Msg) -> Model -> (pageModel, Cmd pageMsg) -> (Model, Cmd Msg)
+-- -- processPageUpdate createPage wrapMsg model (pageModel, pageCmd) =
+-- --     ({model | page = createPage pageModel}, Cmd.map wrapMsg pageCmd)
+
+
+-- setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
+-- setNewPage maybeRoute model =
+--     --update model's page based on the new route
+--     case maybeRoute of
+--         Just Routes.Auth ->
+--             ( { model | page = LoginOrSomethingLikeIt Auth.initialModel }
+--             , Navigation.pushUrl model.navigationKey "signup"
+--             )
+
+--         Just Routes.Editor ->
+--             ( { model | page = Edit Editor.initialModel }
+--             , Navigation.pushUrl model.navigationKey "createpost"
+--             )
+
+--         _ ->
+--             ( { model | page = NotFound }, Cmd.none )
+
+
+-- update : Msg -> Model -> ( Model, Cmd Msg )
+-- update msg model =
+--     case Debug.log "RECEIVED MESSAGE" msg of
+--         NewRoute maybeRoute ->
+--             setNewPage maybeRoute model
+
+--         Visit (Internal url) ->
+--             setNewPage
+--                 (Routes.match url)
+--                 model
+
+--         _ ->
+--             ( model, Cmd.none )
+
+
+-- subscriptions : Model -> Sub Msg
+-- subscriptions model =
+--     Sub.none
+
+
+
+-- ---- PROGRAM ----
+
+
+-- main : Program () Model Msg
+-- main =
+--     Browser.application
+--         { init = init
+--         , view = view
+--         , update = update
+--         , subscriptions = subscriptions
+--         , onUrlRequest = Visit
+--         , onUrlChange = Routes.match >> NewRoute
+--         }
+
+
+
+-- --wrap current URL whenever the URL changes in the browser and then passes the wrapped value to update
+-- --transform the incoming Url into Maybe Route with Routes.match then pass Maybe Route onto the NewRoute constructor
+-- -- elm make src/Main.elm --output=main.js

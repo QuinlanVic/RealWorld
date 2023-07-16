@@ -114,12 +114,6 @@ update msg model =
         LoadArticles articles ->
             ( model, Cmd.none )
 
-
-
--- Like -> {model | liked = True}
--- Unlike -> {model | liked = False}
-
-
 subscriptions : Model -> Sub Msg
 subscriptions articles =
     Sub.none
@@ -134,15 +128,13 @@ viewTag tag =
     a [ href "#", class "label label-pill label-default" ] [ text tag ]
 
 
-
--- viewTags : List String -> Html msg
--- viewTags tagList =
---     div [class "tag-list"]
---         case tag of tagList
---         [ a [href "#", class "label label-pill label-default"] [text " programming"]
---         , text nbsp --spaces inbetween the labels
---         ]
-
+viewTags : List String -> Html msg
+viewTags tags =
+    case tags of 
+        [] ->
+            text ""
+        _ ->
+            div [ class "tag-list" ] (List.map viewTag tags)
 
 viewLoveButton : PostPreview -> Html Msg
 viewLoveButton postPreview =
@@ -183,7 +175,6 @@ viewPostPreview postPreview =
 viewPosts : List PostPreview -> Html Msg
 viewPosts postPreviews =
     div []
-        --ul and li = weird dot :)
         (List.map viewPostPreview postPreviews)
 
 
@@ -262,37 +253,35 @@ view model =
                     , div [ class "col-md-3" ]
                         [ div [ class "sidebar" ]
                             [ p [] [ text "Popular Tags" ]
+                            , viewTags model.tags
+                                -- , viewTags [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
+                                --  viewTag " programming"
 
-                            -- , viewTags [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
-                            , div [ class "tag-list" ]
-                                [ viewTag " programming"
+                                -- --   a [href "#", class "label label-pill label-default"] [text " programming"]
+                                -- , text " " --spaces inbetween the labels
+                                -- , viewTag " javascript"
 
-                                --   a [href "#", class "label label-pill label-default"] [text " programming"]
-                                , text " " --spaces inbetween the labels
-                                , viewTag " javascript"
+                                -- -- , a [href "#", class "label label-pill label-default"] [text " javascript"]
+                                -- , text " "
+                                -- , viewTag " angularjs"
 
-                                -- , a [href "#", class "label label-pill label-default"] [text " javascript"]
-                                , text " "
-                                , viewTag " angularjs"
+                                -- -- , a [href "#", class "label label-pill label-default"] [text " angularjs"]
+                                -- , text " "
+                                -- , viewTag " react"
 
-                                -- , a [href "#", class "label label-pill label-default"] [text " angularjs"]
-                                , text " "
-                                , viewTag " react"
+                                -- -- , a [href "#", class "label label-pill label-default"] [text " react"]
+                                -- , text " "
+                                -- , viewTag " mean"
 
-                                -- , a [href "#", class "label label-pill label-default"] [text " react"]
-                                , text " "
-                                , viewTag " mean"
+                                -- -- , a [href "#", class "label label-pill label-default"] [text " mean"]
+                                -- , text " "
+                                -- , viewTag " node"
 
-                                -- , a [href "#", class "label label-pill label-default"] [text " mean"]
-                                , text " "
-                                , viewTag " node"
+                                -- -- , a [href "#", class "label label-pill label-default"] [text " node"]
+                                -- , text " "
+                                -- , viewTag " rails"
 
-                                -- , a [href "#", class "label label-pill label-default"] [text " node"]
-                                , text " "
-                                , viewTag " rails"
-
-                                -- , a [href "#", class "label label-pill label-default"] [text " rails"]
-                                ]
+                                -- -- , a [href "#", class "label label-pill label-default"] [text " rails"]
                             ]
                         ]
                     ]
