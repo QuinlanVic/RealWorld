@@ -206,7 +206,7 @@ viewComments model =
                 --add enter on enter and shift enter to move to next row :) (otherwise input) onEnter UpdateComment
                 , div [ class "card-footer" ]
                     [ img [ src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img" ] []
-                    , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button" ] [ text " Post Comment" ]
+                    , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick SaveComment ] [ text " Post Comment" ]
                     ]
                 ]
             ]

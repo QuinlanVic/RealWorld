@@ -116,7 +116,7 @@ viewContent model =
             )
 
         NotFound ->
-            ( "Not Found"
+            ( "Not Found - Conduit"
             , div [ class "not-found" ]
                 [ h1 [] [ text "Page Not Found" ] ]
             )
@@ -254,7 +254,7 @@ setNewPage maybeRoute model =
             ( { model | page = Settings settingsUserSettings, currentPage = "Settings" }, Cmd.map SettingsMessage settingsCmd )
 
         Nothing ->
-            ( { model | page = NotFound, currentPage = "" }, Cmd.none )
+            ( { model | page = NotFound, currentPage = "NotFound" }, Cmd.none )
 
 
 
@@ -378,3 +378,4 @@ main =
 --wrap current URL whenever the URL changes in the browser and then passes the wrapped value to update
 --transform the incoming Url into Maybe Route with Routes.match then pass Maybe Route onto the NewRoute constructor
 -- elm make src/Main.elm --output=main.js
+-- serve using: npx serve -c serve.json
