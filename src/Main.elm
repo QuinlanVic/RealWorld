@@ -217,22 +217,22 @@ view model =
         ( title, content ) =
             viewContent model
     in
-    --loggedin vs loggedout headers
-    -- case model.isLoggedIn of
-    --     True ->
-    --         { title = title
-    --         , body = [ viewHeader model, content ]
-    --         }
-    --     False ->
-    --         { title = title
-    --         , body = [ viewHeaderLO model, content ]
-    --         }
-    { title = title
-    , body = [ viewHeader model, content ]
-    }
+    -- loggedin vs loggedout headers
+    if model.isLoggedIn then
+        { title = title
+        , body = [ viewHeader model, content ]
+        }
+
+    else
+        { title = title
+        , body = [ viewHeaderLO model, content ]
+        }
 
 
 
+-- { title = title
+-- , body = [ viewHeader model, content ]
+-- }
 ---- UPDATE ----
 -- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
 -- | PublicFeedMsg PublicFeed.Msg --like above 2.0
@@ -367,8 +367,15 @@ update msg model =
             in
             ( { model | page = Settings updatedSettingsUserSettings }, Cmd.map SettingsMessage settingsCmd )
 
-        ( Visit (Browser.Internal url), _ ) ->
-            ( model, Navigation.pushUrl model.navigationKey (Url.toString url) )
+        -- ( Visit (Browser.Internal url), _ ) ->
+        --     ( model, Navigation.pushUrl model.navigationKey (Url.toString url) )
+        ( Visit urlRequest, _ ) ->
+            case urlRequest of
+                Internal url ->
+                    ( model, Navigation.pushUrl model.navigationKey (Url.toString url) )
+
+                External url ->
+                    ( model, Navigation.load url )
 
         _ ->
             ( model, Cmd.none )
@@ -376,6 +383,8 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    --going to use this to trigger when a user logs in :) (super cool)
+    -- Browser.Navigation.onUrlChange (NvigateTo << parseUrl)
     Sub.none
 
 

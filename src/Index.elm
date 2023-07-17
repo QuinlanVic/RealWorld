@@ -35,7 +35,6 @@ type alias Article =
     , favorited : Bool
     , favoritesCount : Int
     , author : Editor.Author
-    , id : Id
     }
 
 
@@ -63,7 +62,6 @@ articleDecoder =
         |> required "favoritesCount" int
         -- "author": {
         |> required "author" authorDecoder
-        |> hardcoded 0
 
 
 initialModel : Model
@@ -111,7 +109,6 @@ postPreview1 =
     , favorited = False
     , favoritesCount = 29
     , author = author1
-    , id = 1
     }
 
 
@@ -140,33 +137,11 @@ postPreview2 =
     , favorited = False
     , favoritesCount = 32
     , author = author2
-    , id = 2
     }
 
 
 
 --Update--
-
-
-updateArticleById : (Article -> Article) -> Id -> Feed -> Feed
-updateArticleById updateArticle id feed =
-    List.map
-        (\article ->
-            if article.id == id then
-                updateArticle article
-
-            else
-                article
-        )
-        feed
-
-
-updatePostPreviewLikes : (Article -> Article) -> Id -> Maybe Feed -> Maybe Feed
-updatePostPreviewLikes updateArticle id maybeFeed =
-    Maybe.map (updateArticleById updateArticle id) maybeFeed
-
-
-
 -- case postpreviews of
 --     Just post ->
 --         if post.favorited then
@@ -178,15 +153,37 @@ updatePostPreviewLikes updateArticle id maybeFeed =
 
 
 toggleLike : Article -> Article
-toggleLike article =
-    { article | favorited = not article.favorited }
+toggleLike post =
+    if post.favorited then
+        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 }
+
+    else
+        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
+
+
+updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
+updateArticleBySlug updateArticle article feed =
+    List.map
+        (\currArticle ->
+            if article.slug == currArticle.slug then
+                updateArticle article
+
+            else
+                article
+        )
+        feed
+
+
+updatePostPreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
+updatePostPreviewLikes updateArticle article maybeFeed =
+    Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ToggleLike id ->
-            ( { model | feed = updatePostPreviewLikes toggleLike id model.feed }, Cmd.none )
+        ToggleLike article ->
+            ( { model | feed = updatePostPreviewLikes toggleLike article model.feed }, Cmd.none )
 
         -- need lazy execution
         LoadArticles (Ok feed) ->
@@ -225,10 +222,10 @@ viewLoveButton postPreview =
     let
         buttonClass =
             if postPreview.favorited then
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick (ToggleLike postPreview.id) ]
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick (ToggleLike postPreview) ]
 
             else
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick (ToggleLike postPreview.id) ]
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick (ToggleLike postPreview) ]
     in
     button buttonClass
         [ i [ class "ion-heart" ] []
@@ -387,7 +384,7 @@ view model =
 
 
 type Msg
-    = ToggleLike Id
+    = ToggleLike Article
     | LoadArticles (Result Http.Error Feed)
 
 
