@@ -11,16 +11,13 @@ import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
+import Json.Encode as Encode
 import Response exposing (mapModel)
 import Routes
 
 
 
 --Model--
-
-
-type alias Id =
-    Int
 
 
 type alias Article =
@@ -142,23 +139,19 @@ postPreview2 =
 
 
 --Update--
--- case postpreviews of
---     Just post ->
---         if post.favorited then
---             Just { post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 }
---         else
---             Just { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
---     Nothing ->
---         Nothing
 
 
-toggleLike : Article -> Article
-toggleLike post =
-    if post.favorited then
-        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 }
-
-    else
-        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
+saveArticle : Article -> Cmd Msg
+saveArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "slug", Encode.string article.slug ) ]
+    in
+    Http.post
+        { body = body
+        , expect = Http.expectJson LoadArticles (list (field "article" articleDecoder))
+        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        }
 
 
 updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
@@ -174,6 +167,15 @@ updateArticleBySlug updateArticle article feed =
         feed
 
 
+toggleLike : Article -> Article
+toggleLike post =
+    if post.favorited then
+        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 }
+
+    else
+        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
+
+
 updatePostPreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
 updatePostPreviewLikes updateArticle article maybeFeed =
     Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
@@ -183,7 +185,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ToggleLike article ->
-            ( { model | feed = updatePostPreviewLikes toggleLike article model.feed }, Cmd.none )
+            ( { model | feed = updatePostPreviewLikes toggleLike article model.feed }, favouriteArticle article )
 
         -- need lazy execution
         LoadArticles (Ok feed) ->
@@ -293,77 +295,11 @@ view model =
                                 ]
                             ]
                         , viewPosts model.feed
-
-                        -- , div [class "post-preview"]
-                        --     [ div [class "post-meta"]
-                        --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
-                        --         , text nbsp
-                        --         , div [class "info"]
-                        --             [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
-                        --             , span [class "date"] [text "January 20th"]
-                        --             ]
-                        --         , button [class "btn btn-outline-primary btn-sm pull-xs-right"]
-                        --             [i [class "ion-heart"] []
-                        --             , text " 29"
-                        --             ]
-                        --         ]
-                        --     , a [href "postelm.html", class "preview-link"]
-                        --         [ h1 [] [text "How to build webapps that scale"]
-                        --         , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names
-                        --                 and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and
-                        --                 the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""]
-                        --         , span [] [text "Read more..."]
-                        --         ]
-                        --     ]
-                        -- , viewPostPreview model2
-                        -- , div [class "post-preview"]
-                        --     [ div [class "post-meta"]
-                        --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/N4VcUeJ.jpg"] []]
-                        --         , text nbsp
-                        --         , div [class "info"]
-                        --             [ a [href "profileelm.html", class "author"] [text "Albert Pai"]
-                        --             , span [class "date"] [text "January 20th"]
-                        --             ]
-                        --         , button [class "btn btn-outline-primary btn-sm pull-xs-right"]
-                        --             [ i [class "ion-heart"] []
-                        --             , text (" " ++ String.fromInt 32)
-                        --             ]
-                        --         ]
-                        --     , a [href "postelm.html", class "preview-link"]
-                        --         [ h1 [] [text "The song you won't ever stop singing. No matter how hard you try."]
-                        --         , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names
-                        --                 and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and
-                        --                 the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""]
-                        --         , span [] [text "Read more..."]
-                        --         ]
-                        --     ]
                         ]
                     , div [ class "col-md-3" ]
                         [ div [ class "sidebar" ]
                             [ p [] [ text "Popular Tags" ]
                             , viewTags model.tags
-
-                            -- , viewTags [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
-                            --  viewTag " programming"
-                            -- --   a [href "#", class "label label-pill label-default"] [text " programming"]
-                            -- , text " " --spaces inbetween the labels
-                            -- , viewTag " javascript"
-                            -- -- , a [href "#", class "label label-pill label-default"] [text " javascript"]
-                            -- , text " "
-                            -- , viewTag " angularjs"
-                            -- -- , a [href "#", class "label label-pill label-default"] [text " angularjs"]
-                            -- , text " "
-                            -- , viewTag " react"
-                            -- -- , a [href "#", class "label label-pill label-default"] [text " react"]
-                            -- , text " "
-                            -- , viewTag " mean"
-                            -- -- , a [href "#", class "label label-pill label-default"] [text " mean"]
-                            -- , text " "
-                            -- , viewTag " node"
-                            -- -- , a [href "#", class "label label-pill label-default"] [text " node"]
-                            -- , text " "
-                            -- , viewTag " rails"
-                            -- -- , a [href "#", class "label label-pill label-default"] [text " rails"]
                             ]
                         ]
                     ]

@@ -230,9 +230,6 @@ view model =
 
 
 
--- { title = title
--- , body = [ viewHeader model, content ]
--- }
 ---- UPDATE ----
 -- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
 -- | PublicFeedMsg PublicFeed.Msg --like above 2.0
