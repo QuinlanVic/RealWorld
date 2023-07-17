@@ -4,7 +4,7 @@ module Index exposing (Model, Msg, init, main, update, view)
 
 import Auth exposing (baseUrl)
 import Browser
-import Editor exposing (Author, articleDecoder)
+import Editor exposing (Author, authorDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, src, style, type_)
 import Html.Events exposing (onClick)
@@ -19,10 +19,8 @@ import Routes
 --Model--
 
 
-type alias Model =
-    { postPreviews : List (Maybe Article) --postpreview may exist or not lol
-    , tags : List String
-    }
+type alias Id =
+    Int
 
 
 type alias Article =
@@ -37,12 +35,40 @@ type alias Article =
     , favorited : Bool
     , favoritesCount : Int
     , author : Editor.Author
+    , id : Id
     }
+
+
+type alias Feed =
+    List Article
+
+
+type alias Model =
+    { feed : Maybe Feed --postpreview may exist or not lol
+    , tags : List String
+    }
+
+
+articleDecoder : Decoder Article
+articleDecoder =
+    succeed Article
+        |> required "slug" string
+        |> required "title" string
+        |> required "description" string
+        |> required "body" string
+        |> required "tagList" (list string)
+        |> required "createdAt" string
+        |> required "updatedAt" string
+        |> required "favorited" bool
+        |> required "favoritesCount" int
+        -- "author": {
+        |> required "author" authorDecoder
+        |> hardcoded 0
 
 
 initialModel : Model
 initialModel =
-    { postPreviews = [ Just postPreview1, Just postPreview2 ]
+    { feed = Just [ postPreview1, postPreview2 ]
     , tags = [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
     }
 
@@ -51,28 +77,13 @@ fetchArticles : Cmd Msg
 fetchArticles =
     Http.get
         { url = baseUrl ++ "api/articles"
-        , expect = Http.expectJson LoadArticles (field "article" articleDecoder)
+        , expect = Http.expectJson LoadArticles (list (field "article" articleDecoder))
         }
 
 
 init : () -> ( Model, Cmd Msg )
 init () =
     ( initialModel, fetchArticles )
-
-
-
--- type alias Article =
---     { Article
---     , authorpage : String
---     , authorimage : String
---     , authorname : String
---     , date : String
---     , articletitle : String
---     , articlepreview : String
---     , favoritesCount : Int
---     , favorited : Bool
---     , id : String
---     }
 
 
 author1 : Editor.Author
@@ -100,6 +111,7 @@ postPreview1 =
     , favorited = False
     , favoritesCount = 29
     , author = author1
+    , id = 1
     }
 
 
@@ -128,6 +140,7 @@ postPreview2 =
     , favorited = False
     , favoritesCount = 32
     , author = author2
+    , id = 2
     }
 
 
@@ -135,29 +148,51 @@ postPreview2 =
 --Update--
 
 
-updatePostPreviewLikes : Maybe Article -> Maybe Article
-updatePostPreviewLikes postpreview =
-    --very inefficient
-    case postpreview of
-        Just post ->
-            if post.favorited then
-                Just ({ post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 })
+updateArticleById : (Article -> Article) -> Id -> Feed -> Feed
+updateArticleById updateArticle id feed =
+    List.map
+        (\article ->
+            if article.id == id then
+                updateArticle article
 
             else
-                Just ({ post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 } )
+                article
+        )
+        feed
 
-        Nothing -> 
-            Nothing 
+
+updatePostPreviewLikes : (Article -> Article) -> Id -> Maybe Feed -> Maybe Feed
+updatePostPreviewLikes updateArticle id maybeFeed =
+    Maybe.map (updateArticleById updateArticle id) maybeFeed
+
+
+
+-- case postpreviews of
+--     Just post ->
+--         if post.favorited then
+--             Just { post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 }
+--         else
+--             Just { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
+--     Nothing ->
+--         Nothing
+
+
+toggleLike : Article -> Article
+toggleLike article =
+    { article | favorited = not article.favorited }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ToggleLike ->
-            ( { model | postPreviews = List.map updatePostPreviewLikes model.postPreviews }, Cmd.none )
+        ToggleLike id ->
+            ( { model | feed = updatePostPreviewLikes toggleLike id model.feed }, Cmd.none )
 
-        --need lazy execution
-        LoadArticles (Ok articles) ->
+        -- need lazy execution
+        LoadArticles (Ok feed) ->
+            ( { model | feed = Just feed }, Cmd.none )
+
+        LoadArticles (Err _) ->
             ( model, Cmd.none )
 
 
@@ -190,10 +225,10 @@ viewLoveButton postPreview =
     let
         buttonClass =
             if postPreview.favorited then
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike ]
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick (ToggleLike postPreview.id) ]
 
             else
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick ToggleLike ]
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick (ToggleLike postPreview.id) ]
     in
     button buttonClass
         [ i [ class "ion-heart" ] []
@@ -201,35 +236,37 @@ viewLoveButton postPreview =
         ]
 
 
-viewPostPreview : Maybe Article -> Html Msg
-viewPostPreview postPreview =
-    case postPreview of
-        Just post ->
-            div [ class "post-preview" ]
-                [ div [ class "post-meta" ]
-                    [ a [ Routes.href Routes.Profile ] [ img [ src post.author.image ] [] ]
-                    , text " "
-                    , div [ class "info" ]
-                        [ a [ Routes.href Routes.Profile, class "author" ] [ text post.author.username ]
-                        , span [ class "date" ] [ text post.createdAt ]
-                        ]
-                    , viewLoveButton post
-                    ]
-                , a [ Routes.href Routes.Post, class "preview-link" ]
-                    [ h1 [] [ text post.title ]
-                    , p [] [ text post.slug ]
-                    , span [] [ text "Read more..." ]
-                    ]
+viewPostPreview : Article -> Html Msg
+viewPostPreview post =
+    div [ class "post-preview" ]
+        [ div [ class "post-meta" ]
+            [ a [ Routes.href Routes.Profile ] [ img [ src post.author.image ] [] ]
+            , text " "
+            , div [ class "info" ]
+                [ a [ Routes.href Routes.Profile, class "author" ] [ text post.author.username ]
+                , span [ class "date" ] [ text post.createdAt ]
                 ]
+            , viewLoveButton post
+            ]
+        , a [ Routes.href Routes.Post, class "preview-link" ]
+            [ h1 [] [ text post.title ]
+            , p [] [ text post.slug ]
+            , span [] [ text "Read more..." ]
+            ]
+        ]
+
+
+viewPosts : Maybe Feed -> Html Msg
+viewPosts maybeFeed =
+    case maybeFeed of
+        Just feed ->
+            div []
+                (List.map viewPostPreview feed)
 
         Nothing ->
-            text ""
-
-
-viewPosts : List (Maybe Article) -> Html Msg
-viewPosts postPreviews =
-    div []
-        (List.map viewPostPreview postPreviews)
+            --put something nice here :)
+            div [ class "loading-feed" ]
+                [ text "Loading Feed..." ]
 
 
 view : Model -> Html Msg
@@ -258,7 +295,7 @@ view model =
                                     ]
                                 ]
                             ]
-                        , viewPosts model.postPreviews
+                        , viewPosts model.feed
 
                         -- , div [class "post-preview"]
                         --     [ div [class "post-meta"]
@@ -350,8 +387,8 @@ view model =
 
 
 type Msg
-    = ToggleLike
-    | LoadArticles (Result Http.Error Article)
+    = ToggleLike Id
+    | LoadArticles (Result Http.Error Feed)
 
 
 main : Program () Model Msg
