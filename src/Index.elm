@@ -4,7 +4,7 @@ module Index exposing (Model, Msg, init, main, update, view)
 
 import Auth exposing (baseUrl)
 import Browser
-import Editor exposing (Article, articleDecoder)
+import Editor exposing (Author, articleDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, src, style, type_)
 import Html.Events exposing (onClick)
@@ -20,14 +20,29 @@ import Routes
 
 
 type alias Model =
-    { postPreviews : List PostPreview
+    { postPreviews : List (Maybe Article) --postpreview may exist or not lol
     , tags : List String
+    }
+
+
+type alias Article =
+    --whole article
+    { slug : String
+    , title : String
+    , description : String
+    , body : String
+    , tagList : List String
+    , createdAt : String
+    , updatedAt : String
+    , favorited : Bool
+    , favoritesCount : Int
+    , author : Editor.Author
     }
 
 
 initialModel : Model
 initialModel =
-    { postPreviews = [ postPreview1, postPreview2 ]
+    { postPreviews = [ Just postPreview1, Just postPreview2 ]
     , tags = [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
     }
 
@@ -45,48 +60,74 @@ init () =
     ( initialModel, fetchArticles )
 
 
-type alias PostPreview =
-    { authorpage : String
-    , authorimage : String
-    , authorname : String
-    , date : String
-    , articletitle : String
-    , articlepreview : String
-    , numlikes : Int
-    , liked : Bool
-    , id : String
+
+-- type alias Article =
+--     { Article
+--     , authorpage : String
+--     , authorimage : String
+--     , authorname : String
+--     , date : String
+--     , articletitle : String
+--     , articlepreview : String
+--     , favoritesCount : Int
+--     , favorited : Bool
+--     , id : String
+--     }
+
+
+author1 : Editor.Author
+author1 =
+    { username = "Eric Simons"
+    , bio = ""
+    , image = "http://i.imgur.com/Qr71crq.jpg"
+    , following = False
+
+    -- , authorpage = "profileelm.html"
     }
 
 
-postPreview1 : PostPreview
+postPreview1 : Article
 postPreview1 =
-    { authorpage = "profileelm.html"
-    , authorimage = "http://i.imgur.com/Qr71crq.jpg"
-    , authorname = "Eric Simons"
-    , date = "January 20th"
-    , articletitle = "How to build webapps that scale"
-    , articlepreview = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+    { slug = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
                         and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
                         the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
-    , numlikes = 29
-    , liked = False
-    , id = "Num1"
+    , title = "How to build webapps that scale"
+    , description = ""
+    , body = ""
+    , tagList = [ "" ]
+    , createdAt = "January 20th"
+    , updatedAt = ""
+    , favorited = False
+    , favoritesCount = 29
+    , author = author1
     }
 
 
-postPreview2 : PostPreview
+author2 : Editor.Author
+author2 =
+    { username = "Albert Pai"
+    , bio = ""
+    , image = "http://i.imgur.com/N4VcUeJ.jpg"
+    , following = False
+
+    -- , authorpage = "profileelm.html"
+    }
+
+
+postPreview2 : Article
 postPreview2 =
-    { authorpage = "profileelm.html"
-    , authorimage = "http://i.imgur.com/N4VcUeJ.jpg"
-    , authorname = "Albert Pai"
-    , date = "January 20th"
-    , articletitle = "The song you won't ever stop singing. No matter how hard you try."
-    , articlepreview = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+    { slug = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
                         and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
                         the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
-    , numlikes = 32
-    , liked = False
-    , id = "Num2"
+    , title = "The song you won't ever stop singing. No matter how hard you try."
+    , description = ""
+    , body = ""
+    , tagList = [ "" ]
+    , createdAt = "January 20th"
+    , updatedAt = ""
+    , favorited = False
+    , favoritesCount = 32
+    , author = author2
     }
 
 
@@ -94,14 +135,19 @@ postPreview2 =
 --Update--
 
 
-updatePostPreviewLikes : PostPreview -> PostPreview
+updatePostPreviewLikes : Maybe Article -> Maybe Article
 updatePostPreviewLikes postpreview =
     --very inefficient
-    if postpreview.liked then
-        { postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes - 1 }
+    case postpreview of
+        Just post ->
+            if post.favorited then
+                Just ({ post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 })
 
-    else
-        { postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes + 1 }
+            else
+                Just ({ post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 } )
+
+        Nothing -> 
+            Nothing 
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -111,8 +157,9 @@ update msg model =
             ( { model | postPreviews = List.map updatePostPreviewLikes model.postPreviews }, Cmd.none )
 
         --need lazy execution
-        LoadArticles articles ->
+        LoadArticles (Ok articles) ->
             ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions articles =
@@ -130,49 +177,56 @@ viewTag tag =
 
 viewTags : List String -> Html msg
 viewTags tags =
-    case tags of 
+    case tags of
         [] ->
             text ""
+
         _ ->
             div [ class "tag-list" ] (List.map viewTag tags)
 
-viewLoveButton : PostPreview -> Html Msg
+
+viewLoveButton : Article -> Html Msg
 viewLoveButton postPreview =
     let
         buttonClass =
-            if postPreview.liked then
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike, id postPreview.id ]
+            if postPreview.favorited then
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike ]
 
             else
                 [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick ToggleLike ]
     in
     button buttonClass
         [ i [ class "ion-heart" ] []
-        , text (" " ++ String.fromInt postPreview.numlikes)
+        , text (" " ++ String.fromInt postPreview.favoritesCount)
         ]
 
 
-viewPostPreview : PostPreview -> Html Msg
+viewPostPreview : Maybe Article -> Html Msg
 viewPostPreview postPreview =
-    div [ class "post-preview" ]
-        [ div [ class "post-meta" ]
-            [ a [ Routes.href Routes.Profile ] [ img [ src postPreview.authorimage ] [] ]
-            , text " "
-            , div [ class "info" ]
-                [ a [ Routes.href Routes.Profile, class "author" ] [ text postPreview.authorname ]
-                , span [ class "date" ] [ text postPreview.date ]
+    case postPreview of
+        Just post ->
+            div [ class "post-preview" ]
+                [ div [ class "post-meta" ]
+                    [ a [ Routes.href Routes.Profile ] [ img [ src post.author.image ] [] ]
+                    , text " "
+                    , div [ class "info" ]
+                        [ a [ Routes.href Routes.Profile, class "author" ] [ text post.author.username ]
+                        , span [ class "date" ] [ text post.createdAt ]
+                        ]
+                    , viewLoveButton post
+                    ]
+                , a [ Routes.href Routes.Post, class "preview-link" ]
+                    [ h1 [] [ text post.title ]
+                    , p [] [ text post.slug ]
+                    , span [] [ text "Read more..." ]
+                    ]
                 ]
-            , viewLoveButton postPreview
-            ]
-        , a [ Routes.href Routes.Post, class "preview-link" ]
-            [ h1 [] [ text postPreview.articletitle ]
-            , p [] [ text postPreview.articlepreview ]
-            , span [] [ text "Read more..." ]
-            ]
-        ]
+
+        Nothing ->
+            text ""
 
 
-viewPosts : List PostPreview -> Html Msg
+viewPosts : List (Maybe Article) -> Html Msg
 viewPosts postPreviews =
     div []
         (List.map viewPostPreview postPreviews)
@@ -254,34 +308,28 @@ view model =
                         [ div [ class "sidebar" ]
                             [ p [] [ text "Popular Tags" ]
                             , viewTags model.tags
-                                -- , viewTags [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
-                                --  viewTag " programming"
 
-                                -- --   a [href "#", class "label label-pill label-default"] [text " programming"]
-                                -- , text " " --spaces inbetween the labels
-                                -- , viewTag " javascript"
-
-                                -- -- , a [href "#", class "label label-pill label-default"] [text " javascript"]
-                                -- , text " "
-                                -- , viewTag " angularjs"
-
-                                -- -- , a [href "#", class "label label-pill label-default"] [text " angularjs"]
-                                -- , text " "
-                                -- , viewTag " react"
-
-                                -- -- , a [href "#", class "label label-pill label-default"] [text " react"]
-                                -- , text " "
-                                -- , viewTag " mean"
-
-                                -- -- , a [href "#", class "label label-pill label-default"] [text " mean"]
-                                -- , text " "
-                                -- , viewTag " node"
-
-                                -- -- , a [href "#", class "label label-pill label-default"] [text " node"]
-                                -- , text " "
-                                -- , viewTag " rails"
-
-                                -- -- , a [href "#", class "label label-pill label-default"] [text " rails"]
+                            -- , viewTags [" programming", " javascript", " angularjs", " react", " mean", " node", " rails"]
+                            --  viewTag " programming"
+                            -- --   a [href "#", class "label label-pill label-default"] [text " programming"]
+                            -- , text " " --spaces inbetween the labels
+                            -- , viewTag " javascript"
+                            -- -- , a [href "#", class "label label-pill label-default"] [text " javascript"]
+                            -- , text " "
+                            -- , viewTag " angularjs"
+                            -- -- , a [href "#", class "label label-pill label-default"] [text " angularjs"]
+                            -- , text " "
+                            -- , viewTag " react"
+                            -- -- , a [href "#", class "label label-pill label-default"] [text " react"]
+                            -- , text " "
+                            -- , viewTag " mean"
+                            -- -- , a [href "#", class "label label-pill label-default"] [text " mean"]
+                            -- , text " "
+                            -- , viewTag " node"
+                            -- -- , a [href "#", class "label label-pill label-default"] [text " node"]
+                            -- , text " "
+                            -- , viewTag " rails"
+                            -- -- , a [href "#", class "label label-pill label-default"] [text " rails"]
                             ]
                         ]
                     ]

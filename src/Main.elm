@@ -41,6 +41,7 @@ type alias Model =
     , navigationKey : Navigation.Key -- program will supply navigationKey at runtime
     , url : Url
     , currentPage : String
+    , isLoggedIn : Bool
     }
 
 
@@ -50,6 +51,7 @@ initialModel navigationKey url =
     , navigationKey = navigationKey
     , url = url
     , currentPage = ""
+    , isLoggedIn = False
     }
 
 
@@ -71,6 +73,9 @@ viewContent model =
     let
         url =
             model.url
+
+        -- isLoggedIn =
+        --     model.isLoggedIn
     in
     case model.page of
         PublicFeed publicFeedModel ->
@@ -152,9 +157,37 @@ viewContent model =
 --     )
 
 
+viewHeaderLO : Model -> Html Msg
+viewHeaderLO model =
+    --Logged out universal header used on all pages BUT changes the active element depending on the page
+    let
+        isActivePage pageName =
+            if model.currentPage == pageName then
+                "nav-item active"
+
+            else
+                "nav-item"
+    in
+    nav [ class "navbar navbar-light" ]
+        [ div [ class "container" ]
+            [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
+            , ul [ class "nav navbar-nav pull-xs-right" ]
+                --could make a function for doing all of this
+                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
+
+                -- , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
+                , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
+                , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
+
+                -- , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
+                ]
+            ]
+        ]
+
+
 viewHeader : Model -> Html Msg
 viewHeader model =
-    --universal header used on all pages BUT changes the active element depending on the page
+    --Logged in universal header used on all pages BUT changes the active element depending on the page
     let
         isActivePage pageName =
             if model.currentPage == pageName then
@@ -184,6 +217,16 @@ view model =
         ( title, content ) =
             viewContent model
     in
+    --loggedin vs loggedout headers
+    -- case model.isLoggedIn of
+    --     True ->
+    --         { title = title
+    --         , body = [ viewHeader model, content ]
+    --         }
+    --     False ->
+    --         { title = title
+    --         , body = [ viewHeaderLO model, content ]
+    --         }
     { title = title
     , body = [ viewHeader model, content ]
     }
