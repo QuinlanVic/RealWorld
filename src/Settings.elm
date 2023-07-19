@@ -24,12 +24,9 @@ baseUrl =
     "http://localhost:8000/"
 
 
-
---PUT/user
-
-
 saveUser : User -> Cmd Msg
 saveUser user =
+    --PUT/user
     let
         body =
             Http.jsonBody <| Encode.object [ ( "user", encodeUser <| user ) ]
@@ -45,12 +42,21 @@ saveUser user =
         }
 
 
+getUser : Cmd Msg
+getUser =
+    --GET logged in user upon loadin
+    Http.get
+        { url = baseUrl ++ "user"
+        , expect = Http.expectJson LoadUser (field "user" userDecoder)
+        }
+
+
 getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
 getUserCompleted user result =
     case result of
-        Ok getUser ->
+        Ok gotUser ->
             --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( { getUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
+            ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
 
         Err error ->
             ( { user | errmsg = Debug.toString error }, Cmd.none )
@@ -97,7 +103,7 @@ userDecoder =
 init : ( User, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
-    ( initialModel, Cmd.none )
+    ( initialModel, getUser )
 
 
 

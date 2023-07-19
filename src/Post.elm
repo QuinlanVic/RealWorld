@@ -3,7 +3,6 @@ module Post exposing (Model, Msg, init, initialModel, update, view)
 -- import Exts.Html exposing (nbsp)
 -- import Browser
 
-import Editor exposing (Article, articleDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
 import Html.Events exposing (onClick, onInput, onMouseLeave, onMouseOver, onSubmit)
@@ -19,50 +18,114 @@ import Routes
 -- Model --
 
 
+type alias Author =
+    --inside article what we need to fetch
+    { username : String
+    , bio : String
+    , image : String
+    , following : Bool
+    , numfollowers : Int
+    }
+
+
 type alias Model =
-    { heading : String
-    , authorpage : String
-    , authorimage : String
-    , authorname : String
-    , date : String
-    , article : String
+    { article : Article
+    , author : Author
+    }
+
+
+type alias Article =
+    --whole article
+    { slug : String
+    , title : String
+    , description : String
+    , body : String
+    , tagList : List String
+    , createdAt : String
+    , updatedAt : String
+    , favorited : Bool
+    , favoritesCount : Int
+    , author : Author
     , comments : List String
     , newComment : String
-    , liked : Bool
-    , numlikes : Int
-    , followed : Bool
-    , numfollowers : Int
+    }
+
+
+defaultArticle : Article
+defaultArticle =
+    { slug = "slug1"
+    , title = "How to build webapps that scale"
+    , description = ""
+    , body = ""
+    , tagList = [ "" ]
+    , createdAt = "January 20th"
+    , updatedAt = "January 20th"
+    , favorited = False
+    , favoritesCount = 29
+    , author = defaultAuthor
+    , comments = [ "With supporting text below as a natural lead-in to additional content." ]
+    , newComment = ""
+    }
+
+
+defaultAuthor : Author
+defaultAuthor =
+    -- authorpage = "profileelm.html"
+    { username = "Eric Simons"
+    , bio = ""
+    , image = "http://i.imgur.com/Qr71crq.jpg"
+    , following = False
+    , numfollowers = 10
     }
 
 
 initialModel : Model
 initialModel =
-    { heading = "How to build webapps that scale"
-    , authorpage = "profileelm.html"
-    , authorimage = "http://i.imgur.com/Qr71crq.jpg"
-    , authorname = "Eric Simons"
-    , date = "January 20th"
-    , article = "String"
-    , comments = [ "With supporting text below as a natural lead-in to additional content." ]
-    , newComment = ""
-    , liked = False
-    , numlikes = 29
-    , followed = False
-    , numfollowers = 10
+    { article = defaultArticle
+    , author = defaultAuthor
     }
 
 
+authorDecoder : Decoder Author
+authorDecoder =
+    succeed Author
+        |> required "username" string
+        |> required "bio" string
+        |> required "image" string
+        |> required "following" bool
+        |> hardcoded 10
 
--- fetchArticle : Article -> Cmd Msg
--- fetchArticle article =
---     Http.get
---         { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
---         , expect = Http.expectJson LoadArticle (field "article" articleDecoder)
---         }
+
+articleDecoder : Decoder Article
+articleDecoder =
+    succeed Article
+        |> required "slug" string
+        |> required "title" string
+        |> required "description" string
+        |> required "body" string
+        |> required "tagList" (list string)
+        |> required "createdAt" string
+        |> required "updatedAt" string
+        |> required "favorited" bool
+        |> required "favoritesCount" int
+        -- "author": {
+        |> required "author" authorDecoder
+        |> hardcoded [ "" ]
+        |> hardcoded ""
+
+
+fetchArticle : Article -> Cmd Msg
+fetchArticle article =
+    Http.get
+        { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
+        , expect = Http.expectJson LoadArticle (field "article" articleDecoder)
+        }
+
 
 baseUrl : String
 baseUrl =
-    "http://localhost:8000/" 
+    "http://localhost:8000/"
+
 
 getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
 getArticleCompleted article result =
@@ -80,7 +143,7 @@ init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
     -- get a specific article
-    ( initialModel, Cmd.none )
+    ( initialModel, fetchArticle )
 
 
 
@@ -129,6 +192,12 @@ update message model =
 
         SaveComment ->
             ( saveNewComment model, Cmd.none )
+
+        LoadArticle (Ok article) ->
+            ( { model | article = article }, Cmd.none )
+
+        LoadArticle (Err _) ->
+            ( model, Cmd.none )
 
 
 
@@ -358,7 +427,7 @@ view model =
                 , hr [] []
                 , div [ class "post-actions" ]
                     [ div [ class "post-meta" ]
-                        [ a [ Routes.href Routes.Profile ] [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
+                        [ a [ Routes.href Routes.Profile model.username ] [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
                             [ a [ Routes.href Routes.Profile, class "author" ] [ text "Eric Simons" ]
@@ -448,6 +517,7 @@ type Msg
     | ToggleFollow
     | UpdateComment String
     | SaveComment
+    | LoadArticle (Result Http.Error Article)
 
 
 

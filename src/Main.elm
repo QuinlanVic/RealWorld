@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Auth
-import Browser exposing (Document, UrlRequest(..))
+import Browser exposing (Document, UrlRequest(..)) 
 import Browser.Navigation as Navigation
 import Editor
 import Html exposing (..)

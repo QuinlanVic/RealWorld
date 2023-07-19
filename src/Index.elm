@@ -279,11 +279,11 @@ viewTag tag =
 viewPostPreview : Article -> Html Msg
 viewPostPreview post =
     div [ class "post-preview" ]
-        [ div [ class "post-meta" ]
-            [ a [ Routes.href Routes.Profile ] [ img [ src post.author.image ] [] ]
+        [ div [ class "post-meta" ]  
+            [ a [ Routes.href (Routes.Profile post.author.username) ] [ img [ src post.author.image ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href Routes.Profile, class "author" ] [ text post.author.username ]
+                [ a [ Routes.href (Routes.Profile post.author.username), class "author" ] [ text post.author.username ]
                 , span [ class "date" ] [ text post.createdAt ]
                 ]
             , viewLoveButton post

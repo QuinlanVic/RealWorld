@@ -2,9 +2,9 @@ module Profile exposing (Model, Msg, init, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
+-- import Editor exposing (Author)
 
 import Auth exposing (User, userDecoder)
-import Editor exposing (Author)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
 import Html.Events exposing (onClick, onMouseLeave, onMouseOver)
@@ -15,6 +15,16 @@ import Routes
 
 
 -- Model --
+
+
+type alias Author =
+    --inside article what we need to fetch
+    { username : String
+    , bio : String
+    , image : String
+    , following : Bool
+    , numfollowers : Int
+    }
 
 
 type alias Model =
@@ -30,6 +40,7 @@ defaultProfile =
     , bio = " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
     , image = "http://i.imgur.com/Qr71crq.jpg"
     , following = False
+    , numfollowers = 10
     }
 
 
@@ -107,8 +118,9 @@ postPreview2 =
 
 
 -- Update --
-
 --how do you get a specific profile after a user clicks on their page
+
+
 getProfileCompleted : String -> Model -> Result Http.Error User -> ( Model, Cmd Msg )
 getProfileCompleted username model result =
     case result of
@@ -137,13 +149,13 @@ update message model =
         ToggleLike ->
             ( { model | postsMade = List.map updatePostPreviewLikes model.postsMade }, Cmd.none )
 
-        --need lazy execution
+        --need lazy execution 
         ToggleFollow ->
-            if model.followed then
-                ( { model | followed = not model.followed, numfollowers = model.numfollowers - 1 }, Cmd.none )
+            if model.profile.following then
+                ( { model | following = not model.following, numfollowers = model.numfollowers - 1 }, Cmd.none )
 
             else
-                ( { model | followed = not model.followed, numfollowers = model.numfollowers + 1 }, Cmd.none )
+                ( { model | following = not model.following, numfollowers = model.numfollowers + 1 }, Cmd.none )
 
         LoadProfile username result ->
             getProfileCompleted username model result
@@ -163,7 +175,7 @@ viewFollowButton model =
     --use from Post
     let
         buttonClass =
-            if model.followed then
+            if model.profile.following then
                 [ class "btn btn-sm btn-outline-secondary action-btn", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleFollow ]
 
             else
@@ -172,7 +184,7 @@ viewFollowButton model =
     button buttonClass
         [ i [ class "ion-plus-round" ] []
         , text " \u{00A0} Follow Eric Simons "
-        , span [ class "counter" ] [ text ("(" ++ String.fromInt model.numfollowers ++ ")") ]
+        , span [ class "counter" ] [ text ("(" ++ String.fromInt model.profile.numfollowers ++ ")") ]
         ]
 
 
@@ -228,9 +240,9 @@ view model =
                 [ div [ class "container" ]
                     [ div [ class "row" ]
                         [ div [ class "col-md-10 col-md-offset-1" ]
-                            [ img [ src model.authorimage, class "user-img" ] []
-                            , h4 [] [ text model.authorname ]
-                            , p [] [ text model.authorbio ]
+                            [ img [ src model.profile.image, class "user-img" ] []
+                            , h4 [] [ text model.profile.username ]
+                            , p [] [ text model.profile.bio ]
                             , text " "
                             , viewFollowButton model
 
