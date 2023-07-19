@@ -191,19 +191,6 @@ saveArticle article =
         }
 
 
-updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
-updateArticleBySlug updateArticle article feed =
-    List.map
-        (\currArticle ->
-            if article.slug == currArticle.slug then
-                updateArticle article
-
-            else
-                article
-        )
-        feed
-
-
 toggleLike : Article -> Article
 toggleLike post =
     if post.favorited then
@@ -211,6 +198,19 @@ toggleLike post =
 
     else
         { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
+
+
+updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
+updateArticleBySlug updateArticle article feed =
+    List.map
+        (\currArticle ->
+            if currArticle.slug == article.slug then
+                updateArticle currArticle
+
+            else
+                currArticle
+        )
+        feed
 
 
 updatePostPreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
