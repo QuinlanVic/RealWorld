@@ -9,7 +9,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, id, src, style, type_)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed)
+import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
 import Json.Encode as Encode
 import Response exposing (mapModel)
@@ -39,9 +39,13 @@ type alias Feed =
     List Article
 
 
+type alias Tags =
+    List String
+
+
 type alias Model =
     { feed : Maybe Feed --postpreview may exist or not lol
-    , tags : List String
+    , tags : Maybe Tags --tag may exist or not hehe
     }
 
 
@@ -61,10 +65,22 @@ articleDecoder =
         |> required "author" authorDecoder
 
 
+tagDecoder : Decoder Tags
+tagDecoder =
+    field "tags" (list string)
+
+
+encodeArticle : Article -> Encode.Value
+encodeArticle article =
+    --used to encode Article slug sent to the server via Article request body
+    Encode.object
+        [ ( "slug", Encode.string article.slug ) ]
+
+
 initialModel : Model
 initialModel =
     { feed = Just [ postPreview1, postPreview2 ]
-    , tags = [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
+    , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
     }
 
 
@@ -76,9 +92,30 @@ fetchArticles =
         }
 
 
+fetchTags : Cmd Msg
+fetchTags =
+    Http.get
+        { url = baseUrl ++ "api/tags"
+        , expect = Http.expectJson LoadTags tagDecoder
+        }
+
+
+favouriteArticle : Article -> Cmd Msg
+favouriteArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.post
+        { body = body
+        , expect = Http.expectJson LoadArticles (list (field "article" articleDecoder))
+        , url = baseUrl ++ "api/" ++ article.slug ++ "/favorite"
+        }
+
+
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( initialModel, fetchArticles )
+    ( initialModel, Cmd.batch [ fetchArticles, fetchTags ] )
 
 
 author1 : Editor.Author
@@ -94,11 +131,11 @@ author1 =
 
 postPreview1 : Article
 postPreview1 =
-    { slug = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+    { slug = "slug1"
+    , title = "How to build webapps that scale"
+    , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
                         and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
                         the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
-    , title = "How to build webapps that scale"
-    , description = ""
     , body = ""
     , tagList = [ "" ]
     , createdAt = "January 20th"
@@ -122,11 +159,11 @@ author2 =
 
 postPreview2 : Article
 postPreview2 =
-    { slug = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+    { slug = "slug2"
+    , title = "The song you won't ever stop singing. No matter how hard you try."
+    , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
                         and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
                         the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
-    , title = "The song you won't ever stop singing. No matter how hard you try."
-    , description = ""
     , body = ""
     , tagList = [ "" ]
     , createdAt = "January 20th"
@@ -194,6 +231,12 @@ update msg model =
         LoadArticles (Err _) ->
             ( model, Cmd.none )
 
+        LoadTags (Ok tags) ->
+            ( { model | tags = Just tags }, Cmd.none )
+
+        LoadTags (Err _) ->
+            ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions articles =
@@ -202,21 +245,6 @@ subscriptions articles =
 
 
 --View--
-
-
-viewTag : String -> Html msg
-viewTag tag =
-    a [ href "#", class "label label-pill label-default" ] [ text tag ]
-
-
-viewTags : List String -> Html msg
-viewTags tags =
-    case tags of
-        [] ->
-            text ""
-
-        _ ->
-            div [ class "tag-list" ] (List.map viewTag tags)
 
 
 viewLoveButton : Article -> Html Msg
@@ -235,6 +263,11 @@ viewLoveButton postPreview =
         ]
 
 
+viewTag : String -> Html msg
+viewTag tag =
+    a [ href "#", class "label label-pill label-default" ] [ text tag ]
+
+
 viewPostPreview : Article -> Html Msg
 viewPostPreview post =
     div [ class "post-preview" ]
@@ -249,7 +282,7 @@ viewPostPreview post =
             ]
         , a [ Routes.href Routes.Post, class "preview-link" ]
             [ h1 [] [ text post.title ]
-            , p [] [ text post.slug ]
+            , p [] [ text post.description ]
             , span [] [ text "Read more..." ]
             ]
         ]
@@ -266,6 +299,28 @@ viewPosts maybeFeed =
             --put something nice here :)
             div [ class "loading-feed" ]
                 [ text "Loading Feed..." ]
+
+
+
+-- viewTags : List String -> Html msg
+-- viewTags tags =
+--     case tags of
+--         [] ->
+--             text ""
+--         _ ->
+--             div [ class "tag-list" ] (List.map viewTag tags)
+
+
+viewTags : Maybe Tags -> Html Msg
+viewTags maybeTags =
+    case maybeTags of
+        Just tags ->
+            div [ class "tag-list" ]
+                (List.map viewTag tags)
+
+        Nothing ->
+            div [ class "loading-tags" ]
+                [ text "Loading tags..." ]
 
 
 view : Model -> Html Msg
@@ -322,6 +377,7 @@ view model =
 type Msg
     = ToggleLike Article
     | LoadArticles (Result Http.Error Feed)
+    | LoadTags (Result Http.Error Tags)
 
 
 main : Program () Model Msg
