@@ -44,7 +44,8 @@ type alias Tags =
 
 
 type alias Model =
-    { feed : Maybe Feed --postpreview may exist or not lol
+    { globalfeed : Maybe Feed --postpreview may exist or not lol
+    , yourfeed : Maybe Feed
     , tags : Maybe Tags --tag may exist or not hehe
     }
 
@@ -79,7 +80,8 @@ encodeArticle article =
 
 initialModel : Model
 initialModel =
-    { feed = Just [ postPreview1, postPreview2 ]
+    { globalfeed = Just [ postPreview1, postPreview2 ]
+    , yourfeed = Just []
     , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
     }
 
@@ -222,11 +224,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ToggleLike article ->
-            ( { model | feed = updatePostPreviewLikes toggleLike article model.feed }, favouriteArticle article )
+            ( { model | globalfeed = updatePostPreviewLikes toggleLike article model.globalfeed }, favouriteArticle article )
 
         -- need lazy execution
-        LoadArticles (Ok feed) ->
-            ( { model | feed = Just feed }, Cmd.none )
+        LoadArticles (Ok globalfeed) ->
+            ( { model | globalfeed = Just globalfeed }, Cmd.none )
 
         LoadArticles (Err _) ->
             ( model, Cmd.none )
@@ -235,6 +237,12 @@ update msg model =
             ( { model | tags = Just tags }, Cmd.none )
 
         LoadTags (Err _) ->
+            ( model, Cmd.none )
+
+        LoadYourFeed (Ok yourfeed) ->
+            ( { model | yourfeed = Just yourfeed }, Cmd.none )
+
+        LoadYourFeed (Err _) ->
             ( model, Cmd.none )
 
 
@@ -346,6 +354,7 @@ viewTags maybeTags =
 --                     [ text "Global Feed" ]
 --                 ]
 --         ]
+--
 
 
 view : Model -> Html Msg
@@ -363,10 +372,11 @@ view model =
                 [ div [ class "row" ]
                     [ div [ class "col-md-9" ]
                         [ div [ class "feed-toggle" ]
-                            --  , viewTwoFeeds (islogggedIn)
+                            --  , viewTwoFeeds (isloggedIn)
                             [ ul [ class "nav nav-pills outline-active" ]
                                 [ li [ class "nav-item" ]
                                     [ a [ class "nav-link disabled", href "#" ]
+                                        -- onClick LoadYourFeed
                                         [ text "Your Feed" ]
                                     ]
                                 , li [ class "nav-item" ]
@@ -375,7 +385,7 @@ view model =
                                     ]
                                 ]
                             ]
-                        , viewPosts model.feed
+                        , viewPosts model.globalfeed
                         ]
                     , div [ class "col-md-3" ]
                         [ div [ class "sidebar" ]
@@ -404,6 +414,7 @@ type Msg
     = ToggleLike Article
     | LoadArticles (Result Http.Error Feed)
     | LoadTags (Result Http.Error Tags)
+    | LoadYourFeed (Result Http.Error Feed)
 
 
 main : Program () Model Msg
