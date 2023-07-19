@@ -1,10 +1,10 @@
-module Index exposing (Model, Msg, init, main, update, view)
+module Index exposing (Article, Model, Msg, init, main, update, view)
 
 -- import Exts.Html exposing (nbsp)
 
 import Auth exposing (baseUrl)
 import Browser
-import Editor exposing (Author, authorDecoder)
+import Editor exposing (Author, articleDecoder, authorDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, src, style, type_)
 import Html.Events exposing (onClick)
@@ -323,6 +323,31 @@ viewTags maybeTags =
                 [ text "Loading tags..." ]
 
 
+
+-- Only show the Global Feed if the user is not logged in (Maybe this will go into the )
+-- viewTwoFeeds : LoggedIn -> Html Msg
+-- viewTwoFeeds loggedIn =
+--     if loggedIn then
+--         [ ul [ class "nav nav-pills outline-active" ]
+--             [ li [ class "nav-item" ]
+--                 [ a [ class "nav-link disabled", href "#" ]
+--                     [ text "Your Feed" ]
+--                 ]
+--             , li [ class "nav-item" ]
+--                 [ a [ class "nav-link active", href "#" ]
+--                     [ text "Global Feed" ]
+--                 ]
+--             ]
+--         ]
+--     else
+--         [ ul [ class "nav nav-pills outline-active" ]
+--             li [ class "nav-item" ]
+--                 [ a [ class "nav-link active", href "#" ]
+--                     [ text "Global Feed" ]
+--                 ]
+--         ]
+
+
 view : Model -> Html Msg
 view model =
     div []
@@ -338,6 +363,7 @@ view model =
                 [ div [ class "row" ]
                     [ div [ class "col-md-9" ]
                         [ div [ class "feed-toggle" ]
+                            --  , viewTwoFeeds (islogggedIn)
                             [ ul [ class "nav nav-pills outline-active" ]
                                 [ li [ class "nav-item" ]
                                     [ a [ class "nav-link disabled", href "#" ]

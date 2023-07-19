@@ -3,6 +3,7 @@ module Login exposing (Msg, init, update, view)
 -- import Browser
 
 import Auth exposing (User, baseUrl, initialModel, trimString, userDecoder, validateEmail, validatePassword)
+import Browser.Navigation as Navigation
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
@@ -10,8 +11,8 @@ import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
-import Post exposing (Model)
-import Routes 
+import Routes exposing (Route(..))
+import Url
 
 
 
@@ -50,6 +51,11 @@ saveUser user =
         , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
         , url = baseUrl ++ "api/users/login"
         }
+        |> Cmd.map (Debug.log "LoginSuccess" >> always Login)
+
+
+
+-- Send Login message
 
 
 encodeUser : User -> Encode.Value
@@ -116,14 +122,6 @@ init =
     ( initialModel, Cmd.none )
 
 
-fetchUser : Cmd Msg
-fetchUser =
-    Http.get
-        { url = baseUrl ++ "api/users"
-        , expect = Http.expectJson LoadUser userDecoder
-        }
-
-
 
 --Update--
 
@@ -149,6 +147,8 @@ update message user =
             in
             if isLoginValid validatedUser then
                 ( validatedUser, saveUser validatedUser )
+                --Cmd.batch , Navigation.pushUrl (Url.toString Routes.Index) ] )
+                --redirect to index page :)
 
             else
                 ( validatedUser, Cmd.none )
@@ -203,7 +203,7 @@ view user =
                 greeting =
                     "Hello, " ++ user.username ++ "!"
             in
-            if loggedIn then
+            if user.signedUpOrloggedIn then
                 --testing
                 div [ id "greeting" ]
                     [ h3 [ class "text-center" ] [ text greeting ]

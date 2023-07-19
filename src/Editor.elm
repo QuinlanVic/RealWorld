@@ -1,7 +1,7 @@
-module Editor exposing (Article, Author, Msg, articleDecoder, authorDecoder, init, initialModel, update, view)
+module Editor exposing (Article, Author, Msg, articleDecoder, authorDecoder, getArticleCompleted, init, initialModel, update, view)
 
 -- import Exts.Html exposing (nbsp)
--- import Browser
+-- import Browser 
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
@@ -10,7 +10,6 @@ import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, required)
 import Json.Encode as Encode
-import Post exposing (Msg)
 import Routes
 
 
@@ -165,8 +164,8 @@ validateBody input =
     if String.isEmpty input then
         Just "Input is required"
 
-    else if String.length input < 1000 then
-        Just "Article has to be at least 1000 characters long"
+    else if String.length input < 500 then
+        Just "Article has to be at least 500 characters long"
 
     else
         Nothing

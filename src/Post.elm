@@ -3,9 +3,14 @@ module Post exposing (Model, Msg, init, initialModel, update, view)
 -- import Exts.Html exposing (nbsp)
 -- import Browser
 
+import Editor exposing (Article, articleDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
 import Html.Events exposing (onClick, onInput, onMouseLeave, onMouseOver, onSubmit)
+import Http
+import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (custom, hardcoded, required)
+import Json.Encode as Encode
 import Routes
 
 
@@ -47,13 +52,39 @@ initialModel =
     }
 
 
+
+-- fetchArticle : Article -> Cmd Msg
+-- fetchArticle article =
+--     Http.get
+--         { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
+--         , expect = Http.expectJson LoadArticle (field "article" articleDecoder)
+--         }
+
+baseUrl : String
+baseUrl =
+    "http://localhost:8000/" 
+
+getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
+getArticleCompleted article result =
+    case result of
+        Ok getArticle ->
+            --confused here
+            ( getArticle |> Debug.log "got the article", Cmd.none )
+
+        --| created = True
+        Err error ->
+            ( article, Cmd.none )
+
+
 init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
+    -- get a specific article
     ( initialModel, Cmd.none )
 
 
 
+--fetchArticle
 -- Update --
 
 
@@ -98,6 +129,11 @@ update message model =
 
         SaveComment ->
             ( saveNewComment model, Cmd.none )
+
+
+
+-- LoadArticle article ->
+--     getArticleCompleted article
 
 
 subscriptions : Model -> Sub Msg
@@ -415,6 +451,7 @@ type Msg
 
 
 
+-- | LoadArticle (Result Http.Error Article)
 -- main : Program () Model Msg
 -- main =
 --     -- view initialModel

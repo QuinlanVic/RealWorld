@@ -3,9 +3,12 @@ module Profile exposing (Model, Msg, init, update, view)
 -- import Exts.Html exposing (nbsp)
 -- import Browser
 
+import Auth exposing (User, userDecoder)
+import Editor exposing (Author)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
 import Html.Events exposing (onClick, onMouseLeave, onMouseOver)
+import Http
 import Post exposing (Msg(..), initialModel)
 import Routes
 
@@ -15,26 +18,25 @@ import Routes
 
 
 type alias Model =
-    --put Posts inside? (List Post)
-    { authorimage : String
-    , authorname : String
-    , authorbio : String
-    , numfollowers : Int
-    , followed : Bool
+    --put Posts inside? (List Post) & add User to basic Model :)
+    { profile : Author
     , postsMade : List PostPreview
-    , hover : Bool
+    }
+
+
+defaultProfile : Author
+defaultProfile =
+    { username = "Eric Simons"
+    , bio = " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
+    , image = "http://i.imgur.com/Qr71crq.jpg"
+    , following = False
     }
 
 
 initialModel : Model
 initialModel =
-    { authorimage = "http://i.imgur.com/Qr71crq.jpg"
-    , authorname = "Eric Simons"
-    , authorbio = " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
-    , numfollowers = 10
-    , followed = False
+    { profile = defaultProfile
     , postsMade = [ postPreview1, postPreview2 ]
-    , hover = False
     }
 
 
@@ -42,6 +44,10 @@ init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
     ( initialModel, Cmd.none )
+
+
+
+-- need to fetch the default profile
 
 
 type alias PostPreview =
@@ -54,6 +60,19 @@ type alias PostPreview =
     , numlikes : Int
     , liked : Bool
     }
+
+
+baseUrl : String
+baseUrl =
+    "http://localhost:8000/"
+
+
+fetchProfile : Cmd Msg
+fetchProfile =
+    Http.get
+        { url = baseUrl ++ "api/profiles/{" -- ++ username ++ "}"
+        , expect = Http.expectJson LoadProfile userDecoder
+        }
 
 
 postPreview1 : PostPreview
@@ -90,6 +109,18 @@ postPreview2 =
 -- Update --
 
 
+getProfileCompleted : Model -> Result Http.Error User -> ( Model, Cmd Msg )
+getProfileCompleted profile result =
+    case result of
+        Ok getProfile ->
+            --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
+            ( getProfile, Cmd.none )
+
+        --|> Debug.log "got the user"
+        Err error ->
+            ( { profile | errmsg = Debug.toString error }, Cmd.none )
+
+
 updatePostPreviewLikes : PostPreview -> PostPreview
 updatePostPreviewLikes postpreview =
     --very inefficient
@@ -113,6 +144,9 @@ update message model =
 
             else
                 ( { model | followed = not model.followed, numfollowers = model.numfollowers + 1 }, Cmd.none )
+
+        LoadProfile result ->
+            getProfileCompleted model result
 
 
 subscriptions : Model -> Sub Msg
@@ -291,6 +325,7 @@ view model =
 type Msg
     = ToggleLike
     | ToggleFollow
+    | LoadProfile (Result Http.Error User)
 
 
 

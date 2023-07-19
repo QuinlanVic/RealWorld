@@ -24,6 +24,10 @@ baseUrl =
     "http://localhost:8000/"
 
 
+
+--PUT/user
+
+
 saveUser : User -> Cmd Msg
 saveUser user =
     let
@@ -52,13 +56,25 @@ getUserCompleted user result =
             ( { user | errmsg = Debug.toString error }, Cmd.none )
 
 
+encodeMaybeString : Maybe String -> Encode.Value
+encodeMaybeString maybeString =
+    case maybeString of
+        Just string ->
+            Encode.string string
+
+        Nothing ->
+            Encode.null
+
+
 encodeUser : User -> Encode.Value
 encodeUser user =
-    --used to encode user sent to the server via POST request body (for registering)
+    --used to encode user sent to the server via PUT request body (for registering)
     Encode.object
-        [ ( "username", Encode.string user.username )
-        , ( "email", Encode.string user.email )
+        [ ( "email", Encode.string user.email )
         , ( "password", Encode.string user.password )
+        , ( "username", Encode.string user.username )
+        , ( "bio", encodeMaybeString user.bio )
+        , ( "image", encodeMaybeString user.image )
         ]
 
 
