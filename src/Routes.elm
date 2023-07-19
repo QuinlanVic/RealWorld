@@ -14,7 +14,7 @@ type Route
     | Editor
     | Login
     | Post
-    | Profile
+    | Profile String 
     | Settings
 
 
@@ -50,8 +50,8 @@ routeToUrl route =
         Post ->
             "/article"
 
-        Profile ->
-            "/profile"
+        Profile username ->
+            "profile"
 
         Settings ->
             "/settings"

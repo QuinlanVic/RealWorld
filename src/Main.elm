@@ -279,7 +279,7 @@ setNewPage maybeRoute model =
             in
             ( { model | page = Post postModel, currentPage = "Post" }, Cmd.map PostMessage postCmd )
 
-        Just Routes.Profile ->
+        Just (Routes.Profile username) ->
             let
                 ( profileModel, profileCmd ) =
                     Profile.init

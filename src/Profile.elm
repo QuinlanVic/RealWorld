@@ -67,11 +67,11 @@ baseUrl =
     "http://localhost:8000/"
 
 
-fetchProfile : Cmd Msg
-fetchProfile =
+fetchProfile : String -> Cmd Msg
+fetchProfile username =
     Http.get
-        { url = baseUrl ++ "api/profiles/{" -- ++ username ++ "}"
-        , expect = Http.expectJson LoadProfile userDecoder
+        { url = baseUrl ++ "api/profiles/{" ++ username ++ "}"
+        , expect = Http.expectJson (LoadProfile username) userDecoder
         }
 
 
@@ -108,17 +108,17 @@ postPreview2 =
 
 -- Update --
 
-
-getProfileCompleted : Model -> Result Http.Error User -> ( Model, Cmd Msg )
-getProfileCompleted profile result =
+--how do you get a specific profile after a user clicks on their page
+getProfileCompleted : String -> Model -> Result Http.Error User -> ( Model, Cmd Msg )
+getProfileCompleted username model result =
     case result of
-        Ok getProfile ->
+        Ok userProfile ->
             --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( getProfile, Cmd.none )
+            ( userProfile, Cmd.none )
 
         --|> Debug.log "got the user"
         Err error ->
-            ( { profile | errmsg = Debug.toString error }, Cmd.none )
+            ( model, Cmd.none )
 
 
 updatePostPreviewLikes : PostPreview -> PostPreview
@@ -145,8 +145,8 @@ update message model =
             else
                 ( { model | followed = not model.followed, numfollowers = model.numfollowers + 1 }, Cmd.none )
 
-        LoadProfile result ->
-            getProfileCompleted model result
+        LoadProfile username result ->
+            getProfileCompleted username model result
 
 
 subscriptions : Model -> Sub Msg
@@ -325,7 +325,7 @@ view model =
 type Msg
     = ToggleLike
     | ToggleFollow
-    | LoadProfile (Result Http.Error User)
+    | LoadProfile String (Result Http.Error User)
 
 
 
