@@ -118,12 +118,15 @@ baseUrl : String
 baseUrl =
     "http://localhost:8000/"
 
+
+
 -- fetchArticle : Article -> Cmd Msg
 -- fetchArticle article =
 --     Http.get
 --         { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
 --         , expect = Http.expectJson LoadArticle (field "article" articleDecoder)
 --         }
+
 
 fetchArticle : Cmd Msg
 fetchArticle =
@@ -177,14 +180,14 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         ToggleLike ->
-            if model.liked then
-                ( { model | liked = not model.liked, numlikes = model.numlikes - 1 }, Cmd.none )
+            if model.article.favorited then
+                ( { model | article = not model.article.liked, article = model.numlikes - 1 }, Cmd.none )
 
             else
                 ( { model | liked = not model.liked, numlikes = model.numlikes + 1 }, Cmd.none )
 
         ToggleFollow ->
-            if model.followed then
+            if model.author.following then
                 ( { model | followed = not model.followed, numfollowers = model.numfollowers - 1 }, Cmd.none )
 
             else
@@ -247,7 +250,7 @@ viewLoveButton model =
     button buttonClass
         [ i [ class "ion-heart" ] []
         , text " \u{00A0} Favorite Post "
-        , span [ class "counter" ] [ text ("(" ++ String.fromInt model.numlikes ++ ")") ]
+        , span [ class "counter" ] [ text ("(" ++ String.fromInt model.article.favoritesCount ++ ")") ]
         ]
 
 
@@ -306,15 +309,15 @@ viewComments model =
     --display all the comments and a place for adding a new comment
     div [ class "row" ]
         [ div [ class "col-md-8 col-md-offset-2" ]
-            [ viewCommentList model.comments
+            [ viewCommentList model.article.comments
             , form [ class "card comment-form", onSubmit SaveComment ]
                 [ div [ class "card-block" ]
-                    [ textarea [ class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment ] [] ]
+                    [ textarea [ class "form-control", placeholder "Write a comment...", rows 3, value model.article.newComment, onInput UpdateComment ] [] ]
 
                 --add enter on enter and shift enter to move to next row :) (otherwise input) onEnter UpdateComment
                 , div [ class "card-footer" ]
                     [ img [ src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img" ] []
-                    , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick SaveComment ] [ text " Post Comment" ]
+                    , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.article.newComment), type_ "button", onClick SaveComment ] [ text " Post Comment" ]
                     ]
                 ]
             ]
@@ -430,7 +433,12 @@ view model =
                 , hr [] []
                 , div [ class "post-actions" ]
                     [ div [ class "post-meta" ]
-                        [ a [ Routes.href Routes.Profile model.username ] [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
+                        [ a
+                            [ Routes.href Routes.Profile
+
+                            {- model.author.username -}
+                            ]
+                            [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
                             [ a [ Routes.href Routes.Profile, class "author" ] [ text "Eric Simons" ]
