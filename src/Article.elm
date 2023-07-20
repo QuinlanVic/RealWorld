@@ -176,12 +176,16 @@ saveNewComment model =
             { model | comments = model.article.comments ++ [ comment ], newComment = "" }
 
 
+updatePostPreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
+updatePostPreviewLikes updateArticle article maybeFeed =
+    Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
-        ToggleLike ->
+        ToggleLike ->  
             if model.article.favorited then
-                ( { model | article = not model.article.liked, article = model.numlikes - 1 }, Cmd.none )
+                ( { model | article = updatePostPreviewLikes toggleLike article model.globalfeed, }, Cmd.none )
 
             else
                 ( { model | liked = not model.liked, numlikes = model.numlikes + 1 }, Cmd.none )
