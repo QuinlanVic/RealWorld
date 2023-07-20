@@ -4,7 +4,7 @@ module OldMain exposing (main)
 -- import Editor
 -- import Index
 -- import Login
--- import Post
+-- import Article
 -- import Profile
 -- import Settings
 
@@ -15,7 +15,7 @@ import Editor
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick)
-import Post
+import Article
 import Profile
 import Routes
 import Settings
@@ -25,7 +25,7 @@ import Url exposing (Url)
 type CurrentPage
     = LoginOrSomethingLikeIt Auth.User
     | Edit Editor.Article
-    | Post Post.Model
+    | Article Article.Model
     | Profile Profile.Model
     | Settings Auth.User 
     | NotFound

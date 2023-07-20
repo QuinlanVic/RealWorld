@@ -1,14 +1,14 @@
-module Post exposing (Model, Msg, init, initialModel, update, view)
+module Article exposing (Model, Msg, init, initialModel, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
 
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
-import Html.Events exposing (onClick, onInput, onMouseLeave, onMouseOver, onSubmit)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (custom, hardcoded, required)
+import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes
 
@@ -28,12 +28,6 @@ type alias Author =
     }
 
 
-type alias Model =
-    { article : Article
-    , author : Author
-    }
-
-
 type alias Article =
     --whole article
     { slug : String
@@ -48,6 +42,12 @@ type alias Article =
     , author : Author
     , comments : List String
     , newComment : String
+    }
+
+
+type alias Model =
+    { article : Article
+    , author : Author
     }
 
 
@@ -114,17 +114,23 @@ articleDecoder =
         |> hardcoded ""
 
 
-fetchArticle : Article -> Cmd Msg
-fetchArticle article =
-    Http.get
-        { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
-        , expect = Http.expectJson LoadArticle (field "article" articleDecoder)
-        }
-
-
 baseUrl : String
 baseUrl =
-    "http://localhost:8000/" 
+    "http://localhost:8000/"
+
+-- fetchArticle : Article -> Cmd Msg
+-- fetchArticle article =
+--     Http.get
+--         { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
+--         , expect = Http.expectJson LoadArticle (field "article" articleDecoder)
+--         }
+
+fetchArticle : Cmd Msg
+fetchArticle =
+    Http.get
+        { url = baseUrl ++ "api/articles/"
+        , expect = Http.expectJson LoadArticle (field "article" articleDecoder)
+        }
 
 
 getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
@@ -155,7 +161,7 @@ saveNewComment : Model -> Model
 saveNewComment model =
     let
         comment =
-            String.trim model.newComment
+            String.trim model.article.newComment
 
         --remove trailing spaces form the comment
     in
@@ -164,10 +170,7 @@ saveNewComment model =
             model
 
         _ ->
-            { model
-                | comments = model.comments ++ [ comment ]
-                , newComment = ""
-            }
+            { model | comments = model.article.comments ++ [ comment ], newComment = "" }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -218,7 +221,7 @@ viewFollowButton : Model -> Html Msg
 viewFollowButton model =
     let
         buttonClass =
-            if model.followed then
+            if model.article.favorited then
                 [ class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleFollow ]
 
             else
@@ -227,7 +230,7 @@ viewFollowButton model =
     button buttonClass
         [ i [ class "ion-plus-round" ] []
         , text " \u{00A0} Follow Eric Simons "
-        , span [ class "counter" ] [ text ("(" ++ String.fromInt model.numfollowers ++ ")") ]
+        , span [ class "counter" ] [ text ("(" ++ String.fromInt model.author.numfollowers ++ ")") ]
         ]
 
 

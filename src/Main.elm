@@ -1,7 +1,8 @@
 module Main exposing (main)
 
+import Article
 import Auth
-import Browser exposing (Document, UrlRequest(..)) 
+import Browser exposing (Document, UrlRequest(..))
 import Browser.Navigation as Navigation
 import Editor
 import Html exposing (..)
@@ -9,7 +10,6 @@ import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick)
 import Index as PublicFeed
 import Login
-import Post
 import Profile
 import Routes exposing (Route(..))
 import Settings
@@ -21,7 +21,7 @@ type CurrentPage
     | Auth Auth.User
     | Editor Editor.Article
     | Login Auth.User
-    | Post Post.Model
+    | Article Article.Model
     | Profile Profile.Model
     | Settings Auth.User
     | NotFound
@@ -30,7 +30,7 @@ type CurrentPage
 
 --   LoginOrSomethingLikeIt Auth.User
 -- | Edit Editor.Article
--- | Post Post.Model
+-- | Article Article.Model
 -- | Profile Profile.Model
 -- | Settings Settings.UserSettings
 -- | NotFound
@@ -51,7 +51,7 @@ initialModel navigationKey url =
     , navigationKey = navigationKey
     , url = url
     , currentPage = ""
-    , isLoggedIn = False
+    , isLoggedIn = False -- this is what I NEED
     }
 
 
@@ -102,9 +102,9 @@ viewContent model =
               -- , h1 [] [ text "Login" ]
             )
 
-        Post postModel ->
+        Article articleModel ->
             ( "Article - Conduit"
-            , Post.view postModel |> Html.map PostMessage
+            , Article.view articleModel |> Html.map ArticleMessage
               -- , h1 [] [ text "Article" ]
             )
 
@@ -149,7 +149,7 @@ viewContent model =
 --             [ text "Auth page yo" ]
 --         , br [] []
 --         , a
---             [ onClick (Visit <| Internal { url | path = "createpost" })
+--             [ onClick (Visit <| Internal { url | path = "createarticle" })
 --             , style "cursor" "pointer"
 --             ]
 --             [ text "Feeling creative?" ]
@@ -175,7 +175,7 @@ viewHeaderLO model =
                 --could make a function for doing all of this
                 [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
 
-                -- , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
+                -- , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
                 , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
                 , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
 
@@ -202,7 +202,7 @@ viewHeader model =
             , ul [ class "nav navbar-nav pull-xs-right" ]
                 --could make a function for doing all of this
                 [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
-                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Post") ] ] --&nbsp; in Elm?
+                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
                 , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
                 , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
@@ -217,7 +217,7 @@ view model =
         ( title, content ) =
             viewContent model
     in
-    -- loggedin vs loggedout headers
+    -- loggedin vs loggedout headers (WHAT I NEED!)
     if model.isLoggedIn then
         { title = title
         , body = [ viewHeader model, content ]
@@ -238,6 +238,18 @@ view model =
 -- processPageUpdate : (pageModel -> Page) -> (pageMsg -> Msg) -> Model -> (pageModel, Cmd pageMsg) -> (Model, Cmd Msg)
 -- processPageUpdate createPage wrapMsg model (pageModel, pageCmd) =
 --     ({model | page = createPage pageModel}, Cmd.map wrapMsg pageCmd)
+
+
+type Msg
+    = NewRoute (Maybe Routes.Route)
+    | Visit UrlRequest
+    | PublicFeedMessage PublicFeed.Msg
+    | AuthMessage Auth.Msg
+    | EditorMessage Editor.Msg
+    | LoginMessage Login.Msg
+    | ArticleMessage Article.Msg
+    | ProfileMessage Profile.Msg
+    | SettingsMessage Settings.Msg
 
 
 setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
@@ -272,14 +284,14 @@ setNewPage maybeRoute model =
             in
             ( { model | page = Login loginUser, currentPage = "Login" }, Cmd.map LoginMessage loginCmd )
 
-        Just Routes.Post ->
+        Just Routes.Article ->
             let
-                ( postModel, postCmd ) =
-                    Post.init
+                ( articleModel, articleCmd ) =
+                    Article.init
             in
-            ( { model | page = Post postModel, currentPage = "Post" }, Cmd.map PostMessage postCmd )
+            ( { model | page = Article articleModel, currentPage = "Article" }, Cmd.map ArticleMessage articleCmd )
 
-        Just (Routes.Profile username) ->
+        Just Routes.Profile ->
             let
                 ( profileModel, profileCmd ) =
                     Profile.init
@@ -304,9 +316,8 @@ setNewPage maybeRoute model =
 --     )
 -- Just Routes.Editor ->
 --     ( { model | page = Edit Editor.initialModel }
---     , Navigation.pushUrl model.navigationKey "createpost"
+--     , Navigation.pushUrl model.navigationKey "createarticle"
 --     )
-
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -344,12 +355,12 @@ update msg model =
             in
             ( { model | page = Login updatedLoginUser }, Cmd.map LoginMessage loginCmd )
 
-        ( PostMessage postMsg, Post postModel ) ->
+        ( ArticleMessage articleMsg, Article articleModel ) ->
             let
-                ( updatedPostModel, postCmd ) =
-                    Post.update postMsg postModel
+                ( updatedArticleModel, articleCmd ) =
+                    Article.update articleMsg articleModel
             in
-            ( { model | page = Post updatedPostModel }, Cmd.map PostMessage postCmd )
+            ( { model | page = Article updatedArticleModel }, Cmd.map ArticleMessage articleCmd )
 
         ( ProfileMessage profileMsg, Profile profileModel ) ->
             let
@@ -381,31 +392,16 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    --going to use this to trigger when a user logs in :) (super cool)
+    -- going to use this to trigger when a user logs in? :)
     -- Browser.Navigation.onUrlChange (NvigateTo << parseUrl)
+    -- later, when dealing with subscriptions? :O
+    -- case model.page of
+    --     PublicFeed publicFeedModel ->
+    --     PublicFeed.subscriptions publicFeedModel
+    --     |> Sub.map PublicFeedMsg
+    --     _ ->
+    --     Sub.none
     Sub.none
-
-
-
--- later, when dealing with subscriptions :O
--- case model.page of
---     PublicFeed publicFeedModel ->
---     PublicFeed.subscriptions publicFeedModel
---     |> Sub.map PublicFeedMsg
---     _ ->
---     Sub.none
-
-
-type Msg
-    = NewRoute (Maybe Routes.Route)
-    | Visit UrlRequest
-    | PublicFeedMessage PublicFeed.Msg
-    | AuthMessage Auth.Msg
-    | EditorMessage Editor.Msg
-    | LoginMessage Login.Msg
-    | PostMessage Post.Msg
-    | ProfileMessage Profile.Msg
-    | SettingsMessage Settings.Msg
 
 
 
@@ -425,7 +421,6 @@ main =
 
 
 
---wrap current URL whenever the URL changes in the browser and then passes the wrapped value to update
---transform the incoming Url into Maybe Route with Routes.match then pass Maybe Route onto the NewRoute constructor
--- elm make src/Main.elm --output=main.js
+-- wrap current URL whenever the URL changes in the browser and then passes the wrapped value to update
+-- transform the incoming Url into Maybe Route with Routes.match then pass Maybe Route onto the NewRoute constructor
 -- serve using: npx serve -c serve.json

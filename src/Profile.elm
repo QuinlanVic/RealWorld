@@ -2,14 +2,16 @@ module Profile exposing (Model, Msg, init, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
--- import Editor exposing (Author)
 
-import Auth exposing (User, userDecoder)
+import Article exposing (Msg(..), initialModel)
+import Editor exposing (authorDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
 import Html.Events exposing (onClick, onMouseLeave, onMouseOver)
 import Http
-import Post exposing (Msg(..), initialModel)
+import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Encode as Encode
 import Routes
 
 
@@ -27,10 +29,22 @@ type alias Author =
     }
 
 
+type alias ArticlePreview =
+    { authorpage : String
+    , authorimage : String
+    , authorname : String
+    , date : String
+    , articletitle : String
+    , articlepreview : String
+    , numlikes : Int
+    , liked : Bool
+    }
+
+
 type alias Model =
-    --put Posts inside? (List Post) & add User to basic Model :)
+    --put Posts inside? (List Article) & add Profile to basic Model :)
     { profile : Author
-    , postsMade : List PostPreview
+    , articlesMade : List ArticlePreview
     }
 
 
@@ -47,30 +61,34 @@ defaultProfile =
 initialModel : Model
 initialModel =
     { profile = defaultProfile
-    , postsMade = [ postPreview1, postPreview2 ]
+    , articlesMade = [ articlePreview1, articlePreview2 ]
     }
+
+
+authorDecoder : Decoder Author
+authorDecoder =
+    succeed Author
+        |> required "username" string
+        |> required "bio" string
+        |> required "image" string
+        |> required "following" bool
+        |> hardcoded 10
+
+
+fetchProfile : String -> Cmd Msg
+fetchProfile username =
+    -- need to fetch the profile
+    Http.get
+        { url = baseUrl ++ "api/profiles/{" ++ username ++ "}"
+        , expect = Http.expectJson (LoadProfile username) authorDecoder
+        }
 
 
 init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
+    --fetchProfile username
     ( initialModel, Cmd.none )
-
-
-
--- need to fetch the default profile
-
-
-type alias PostPreview =
-    { authorpage : String
-    , authorimage : String
-    , authorname : String
-    , date : String
-    , articletitle : String
-    , articlepreview : String
-    , numlikes : Int
-    , liked : Bool
-    }
 
 
 baseUrl : String
@@ -78,16 +96,8 @@ baseUrl =
     "http://localhost:8000/"
 
 
-fetchProfile : String -> Cmd Msg
-fetchProfile username =
-    Http.get
-        { url = baseUrl ++ "api/profiles/{" ++ username ++ "}"
-        , expect = Http.expectJson (LoadProfile username) userDecoder
-        }
-
-
-postPreview1 : PostPreview
-postPreview1 =
+articlePreview1 : ArticlePreview
+articlePreview1 =
     { authorpage = "profileelm.html"
     , authorimage = "http://i.imgur.com/Qr71crq.jpg"
     , authorname = "Eric Simons"
@@ -101,8 +111,8 @@ postPreview1 =
     }
 
 
-postPreview2 : PostPreview
-postPreview2 =
+articlePreview2 : ArticlePreview
+articlePreview2 =
     { authorpage = "profileelm.html"
     , authorimage = "http://i.imgur.com/N4VcUeJ.jpg"
     , authorname = "Albert Pai"
@@ -121,35 +131,35 @@ postPreview2 =
 --how do you get a specific profile after a user clicks on their page
 
 
-getProfileCompleted : String -> Model -> Result Http.Error User -> ( Model, Cmd Msg )
-getProfileCompleted username model result =
+getProfileCompleted : {- String -> -} Model -> Result Http.Error Author -> ( Model, Cmd Msg )
+getProfileCompleted {- username -} model result =
     case result of
         Ok userProfile ->
             --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( userProfile, Cmd.none )
+            ( { model | profile = userProfile }, Cmd.none )
 
         --|> Debug.log "got the user"
         Err error ->
             ( model, Cmd.none )
 
 
-updatePostPreviewLikes : PostPreview -> PostPreview
-updatePostPreviewLikes postpreview =
+updateArticlePreviewLikes : ArticlePreview -> ArticlePreview
+updateArticlePreviewLikes articlepreview =
     --very inefficient
-    if postpreview.liked then
-        { postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes - 1 }
+    if articlepreview.liked then
+        { articlepreview | liked = not articlepreview.liked, numlikes = articlepreview.numlikes - 1 }
 
     else
-        { postpreview | liked = not postpreview.liked, numlikes = postpreview.numlikes + 1 }
+        { articlepreview | liked = not articlepreview.liked, numlikes = articlepreview.numlikes + 1 }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         ToggleLike ->
-            ( { model | postsMade = List.map updatePostPreviewLikes model.postsMade }, Cmd.none )
+            ( { model | articlesMade = List.map updateArticlePreviewLikes model.articlesMade }, Cmd.none )
 
-        --need lazy execution 
+        --need lazy execution
         ToggleFollow ->
             if model.profile.following then
                 ( { model | following = not model.following, numfollowers = model.numfollowers - 1 }, Cmd.none )
@@ -158,7 +168,7 @@ update message model =
                 ( { model | following = not model.following, numfollowers = model.numfollowers + 1 }, Cmd.none )
 
         LoadProfile username result ->
-            getProfileCompleted username model result
+            getProfileCompleted {- username -} model result
 
 
 subscriptions : Model -> Sub Msg
@@ -172,7 +182,7 @@ subscriptions model =
 
 viewFollowButton : Model -> Html Msg
 viewFollowButton model =
-    --use from Post
+    --use from Article
     let
         buttonClass =
             if model.profile.following then
@@ -188,12 +198,12 @@ viewFollowButton model =
         ]
 
 
-viewLoveButton : PostPreview -> Html Msg
-viewLoveButton postPreview =
-    --use from Post
+viewLoveButton : ArticlePreview -> Html Msg
+viewLoveButton articlePreview =
+    --use from Article
     let
         buttonClass =
-            if postPreview.liked then
+            if articlePreview.liked then
                 [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike ]
 
             else
@@ -201,35 +211,35 @@ viewLoveButton postPreview =
     in
     button buttonClass
         [ i [ class "ion-heart" ] []
-        , text (" " ++ String.fromInt postPreview.numlikes)
+        , text (" " ++ String.fromInt articlePreview.numlikes)
         ]
 
 
-viewPostPreview : PostPreview -> Html Msg
-viewPostPreview post =
-    div [ class "post-preview" ]
-        [ div [ class "post-meta" ]
-            [ a [ Routes.href Routes.Post ] [ img [ src post.authorimage ] [] ]
+viewPostPreview : ArticlePreview -> Html Msg
+viewPostPreview article =
+    div [ class "article-preview" ]
+        [ div [ class "article-meta" ]
+            [ a [ Routes.href Routes.Profile ] [ img [ src article.authorimage ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href Routes.Post, class "author" ] [ text post.authorname ]
-                , span [ class "date" ] [ text post.date ]
+                [ a [ Routes.href Routes.Profile, class "author" ] [ text article.authorname ]
+                , span [ class "date" ] [ text article.date ]
                 ]
-            , viewLoveButton post
+            , viewLoveButton article
             ]
-        , a [ Routes.href Routes.Post, class "preview-link" ]
-            [ h1 [] [ text post.articletitle ]
-            , p [] [ text post.articlepreview ]
+        , a [ Routes.href Routes.Article, class "preview-link" ]
+            [ h1 [] [ text article.articletitle ]
+            , p [] [ text article.articlepreview ]
             , span [] [ text "Read more..." ]
             ]
         ]
 
 
-viewPosts : List PostPreview -> Html Msg
-viewPosts postsMade =
+viewPosts : List ArticlePreview -> Html Msg
+viewPosts articlesMade =
     div []
         --ul and li = weird dot :)
-        (List.map viewPostPreview postsMade)
+        (List.map viewArticlePreview articlesMade)
 
 
 view : Model -> Html Msg
@@ -258,7 +268,7 @@ view model =
             , div [ class "container" ]
                 [ div [ class "row" ]
                     [ div [ class "col-md-10 col-md-offset-1" ]
-                        [ div [ class "posts-toggle" ]
+                        [ div [ class "articles-toggle" ]
                             [ ul [ class "nav nav-pills outline-active" ]
                                 [ li [ class "nav-item" ]
                                     [ a [ class "nav-link active", href "#" ] [ text "My Posts" ] ]
@@ -266,11 +276,11 @@ view model =
                                     [ a [ class "nav-link", href "#" ] [ text "Favorited Posts" ] ]
                                 ]
                             ]
-                        , viewPosts model.postsMade
+                        , viewPosts model.articlesMade
 
-                        -- , viewPostPreview postPreview1
-                        -- , div [class "post-preview"]
-                        --     [div [class "post-meta"]
+                        -- , viewPostPreview articlePreview1
+                        -- , div [class "article-preview"]
+                        --     [div [class "article-meta"]
                         --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
                         --         , text nbsp
                         --         , div [class "info"]
@@ -283,7 +293,7 @@ view model =
                         --         --     , text " 29"
                         --         --     ]
                         --         ]
-                        --     , a [href "post-meta", class "preview-link"]
+                        --     , a [href "article-meta", class "preview-link"]
                         --         [ h1 [] [text "How to build webapps that scale"]
                         --         , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above.
                         --                         Regardless, we're interested in the class names and the appearance of sections in the markup as opposed to the
@@ -292,22 +302,22 @@ view model =
                         --         , span [] [text "Read more..."]
                         --         ]
                         --     ]
-                        -- , viewPostPreview postPreview2
-                        -- , div [class "post-preview"]
-                        --     [div [class "post-meta"]
+                        -- , viewPostPreview articlePreview2
+                        -- , div [class "article-preview"]
+                        --     [div [class "article-meta"]
                         --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/N4VcUeJ.jpg"] []]
                         --         , text nbsp
                         --         , div [class "info"]
                         --                 [ a [href "profileelm.html", class "author"] [text "Albert Pai"]
                         --                 , span [class "date"] [text "January 20th"]
                         --                 ]
-                        --         , viewLoveButton postPreview2
+                        --         , viewLoveButton articlePreview2
                         --         -- , button [class "btn btn-outline-primary btn-sm pull-xs-right"]
                         --         --         [ i [class "ion-heart"] []
                         --         --         , text " 32"
                         --         --         ]
                         --         ]
-                        --     , a [href "postelm.html", class "preview-link"]
+                        --     , a [href "articleelm.html", class "preview-link"]
                         --         [ h1 [] [text "The song you won't ever stop singing. No matter how hard you try."]
                         --         , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above.
                         --                         Regardless, we're interested in the class names and the appearance of sections in the markup as opposed to the
@@ -337,7 +347,7 @@ view model =
 type Msg
     = ToggleLike
     | ToggleFollow
-    | LoadProfile String (Result Http.Error User)
+    | LoadProfile String (Result Http.Error Author)
 
 
 

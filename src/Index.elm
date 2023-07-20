@@ -215,19 +215,6 @@ type Msg
     | LoadYF
 
 
-saveArticle : Article -> Cmd Msg
-saveArticle article =
-    let
-        body =
-            Http.jsonBody <| Encode.object [ ( "slug", Encode.string article.slug ) ]
-    in
-    Http.post
-        { body = body
-        , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
-        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
-        }
-
-
 toggleLike : Article -> Article
 toggleLike post =
     if post.favorited then
@@ -259,9 +246,14 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ToggleLike article ->
-            ( { model | globalfeed = updatePostPreviewLikes toggleLike article model.globalfeed }, favouriteArticle article )
+            -- how to distinguish between yourfeed and globalfeed articles? (Don't, do both (FOR NOW...))
+            if article.favorited then
+                ( { model | globalfeed = updatePostPreviewLikes toggleLike article model.globalfeed, yourfeed = updatePostPreviewLikes toggleLike article model.yourfeed }, favouriteArticle article )
 
-        -- need lazy execution
+            else
+                ( { model | globalfeed = updatePostPreviewLikes toggleLike article model.globalfeed, yourfeed = updatePostPreviewLikes toggleLike article model.yourfeed }, unfavouriteArticle article )
+
+        -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
             ( { model | globalfeed = Just globalfeed }, Cmd.none )
 
@@ -321,15 +313,15 @@ viewPostPreview : Article -> Html Msg
 viewPostPreview post =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ Routes.href (Routes.Profile post.author.username) ] [ img [ src post.author.image ] [] ]
+            [ a [ Routes.href (Routes.Profile {- post.author.username -}) ] [ img [ src post.author.image ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href (Routes.Profile post.author.username), class "author" ] [ text post.author.username ]
+                [ a [ Routes.href (Routes.Profile {- post.author.username -}), class "author" ] [ text post.author.username ]
                 , span [ class "date" ] [ text post.createdAt ]
                 ]
             , viewLoveButton post
             ]
-        , a [ Routes.href Routes.Post, class "preview-link" ]
+        , a [ Routes.href Routes.Article, class "preview-link" ]
             [ h1 [] [ text post.title ]
             , p [] [ text post.description ]
             , span [] [ text "Read more..." ]
