@@ -124,7 +124,7 @@ fetchArticle article =
 
 baseUrl : String
 baseUrl =
-    "http://localhost:8000/"
+    "http://localhost:8000/" 
 
 
 getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )

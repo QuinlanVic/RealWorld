@@ -86,11 +86,20 @@ initialModel =
     }
 
 
-fetchArticles : Cmd Msg
-fetchArticles =
+fetchGlobalArticles : Cmd Msg
+fetchGlobalArticles =
     Http.get
         { url = baseUrl ++ "api/articles"
-        , expect = Http.expectJson LoadArticles (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
+        }
+
+
+fetchYourArticles : Cmd Msg
+fetchYourArticles =
+    -- need some kind of authentication to know which articles to fetch depended on the user
+    Http.get
+        { url = baseUrl ++ "api/articles/feed"
+        , expect = Http.expectJson GotYourFeed (list (field "article" articleDecoder))
         }
 
 
@@ -98,7 +107,7 @@ fetchTags : Cmd Msg
 fetchTags =
     Http.get
         { url = baseUrl ++ "api/tags"
-        , expect = Http.expectJson LoadTags tagDecoder
+        , expect = Http.expectJson GotTags tagDecoder
         }
 
 
@@ -110,14 +119,31 @@ favouriteArticle article =
     in
     Http.post
         { body = body
-        , expect = Http.expectJson LoadArticles (list (field "article" articleDecoder))
-        , url = baseUrl ++ "api/" ++ article.slug ++ "/favorite"
+        , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
+        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        }
+
+
+unfavouriteArticle : Article -> Cmd Msg
+unfavouriteArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
+        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( initialModel, Cmd.batch [ fetchArticles, fetchTags ] )
+    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] )
 
 
 author1 : Editor.Author
@@ -180,6 +206,15 @@ postPreview2 =
 --Update--
 
 
+type Msg
+    = ToggleLike Article
+    | GotGlobalFeed (Result Http.Error Feed)
+    | GotTags (Result Http.Error Tags)
+    | GotYourFeed (Result Http.Error Feed)
+    | LoadGF
+    | LoadYF
+
+
 saveArticle : Article -> Cmd Msg
 saveArticle article =
     let
@@ -188,7 +223,7 @@ saveArticle article =
     in
     Http.post
         { body = body
-        , expect = Http.expectJson LoadArticles (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
         , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
         }
 
@@ -227,23 +262,29 @@ update msg model =
             ( { model | globalfeed = updatePostPreviewLikes toggleLike article model.globalfeed }, favouriteArticle article )
 
         -- need lazy execution
-        LoadArticles (Ok globalfeed) ->
+        GotGlobalFeed (Ok globalfeed) ->
             ( { model | globalfeed = Just globalfeed }, Cmd.none )
 
-        LoadArticles (Err _) ->
+        GotGlobalFeed (Err _) ->
             ( model, Cmd.none )
 
-        LoadTags (Ok tags) ->
+        GotTags (Ok tags) ->
             ( { model | tags = Just tags }, Cmd.none )
 
-        LoadTags (Err _) ->
+        GotTags (Err _) ->
             ( model, Cmd.none )
 
-        LoadYourFeed (Ok yourfeed) ->
+        GotYourFeed (Ok yourfeed) ->
             ( { model | yourfeed = Just yourfeed }, Cmd.none )
 
-        LoadYourFeed (Err _) ->
+        GotYourFeed (Err _) ->
             ( model, Cmd.none )
+
+        LoadGF ->
+            ( model, fetchGlobalArticles )
+
+        LoadYF ->
+            ( model, fetchYourArticles )
 
 
 subscriptions : Model -> Sub Msg
@@ -279,7 +320,7 @@ viewTag tag =
 viewPostPreview : Article -> Html Msg
 viewPostPreview post =
     div [ class "post-preview" ]
-        [ div [ class "post-meta" ]  
+        [ div [ class "post-meta" ]
             [ a [ Routes.href (Routes.Profile post.author.username) ] [ img [ src post.author.image ] [] ]
             , text " "
             , div [ class "info" ]
@@ -338,11 +379,11 @@ viewTags maybeTags =
 --     if loggedIn then
 --         [ ul [ class "nav nav-pills outline-active" ]
 --             [ li [ class "nav-item" ]
---                 [ a [ class "nav-link disabled", href "#" ]
+--                 [ a [ class "nav-link disabled", href "#", onClick LoadYF ]
 --                     [ text "Your Feed" ]
 --                 ]
 --             , li [ class "nav-item" ]
---                 [ a [ class "nav-link active", href "#" ]
+--                 [ a [ class "nav-link active", href "#", onClick LoadGF ]
 --                     [ text "Global Feed" ]
 --                 ]
 --             ]
@@ -376,11 +417,11 @@ view model =
                             [ ul [ class "nav nav-pills outline-active" ]
                                 [ li [ class "nav-item" ]
                                     [ a [ class "nav-link disabled", href "#" ]
-                                        -- onClick LoadYourFeed
+                                        -- onClick LoadYF
                                         [ text "Your Feed" ]
                                     ]
                                 , li [ class "nav-item" ]
-                                    [ a [ class "nav-link active", href "#" ]
+                                    [ a [ class "nav-link active", href "#", onClick LoadGF ]
                                         [ text "Global Feed" ]
                                     ]
                                 ]
@@ -408,13 +449,6 @@ view model =
                 ]
             ]
         ]
-
-
-type Msg
-    = ToggleLike Article
-    | LoadArticles (Result Http.Error Feed)
-    | LoadTags (Result Http.Error Tags)
-    | LoadYourFeed (Result Http.Error Feed)
 
 
 main : Program () Model Msg
