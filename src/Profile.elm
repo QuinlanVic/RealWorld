@@ -131,6 +131,15 @@ articlePreview2 =
 --how do you get a specific profile after a user clicks on their page
 
 
+toggleFollow : Author -> Author
+toggleFollow author =
+    if author.following then
+        { author | following = not author.following, numfollowers = author.numfollowers - 1 }
+
+    else
+        { author | following = not author.following, numfollowers = author.numfollowers + 1 }
+
+
 getProfileCompleted : {- String -> -} Model -> Result Http.Error Author -> ( Model, Cmd Msg )
 getProfileCompleted {- username -} model result =
     case result of
@@ -161,11 +170,12 @@ update message model =
 
         --need lazy execution
         ToggleFollow ->
-            if model.profile.following then
-                ( { model | following = not model.following, numfollowers = model.numfollowers - 1 }, Cmd.none )
+            -- if model.profile.following then
+            --     ( { model | following = not model.following, numfollowers = model.numfollowers - 1 }, Cmd.none )
 
-            else
-                ( { model | following = not model.following, numfollowers = model.numfollowers + 1 }, Cmd.none )
+            -- else
+            --     ( { model | following = not model.following, numfollowers = model.numfollowers + 1 }, Cmd.none )
+                ( { model | profile = toggleFollow model.profile }, Cmd.none )
 
         LoadProfile username result ->
             getProfileCompleted {- username -} model result
@@ -215,8 +225,8 @@ viewLoveButton articlePreview =
         ]
 
 
-viewPostPreview : ArticlePreview -> Html Msg
-viewPostPreview article =
+viewArticlePreview : ArticlePreview -> Html Msg
+viewArticlePreview article =
     div [ class "article-preview" ]
         [ div [ class "article-meta" ]
             [ a [ Routes.href Routes.Profile ] [ img [ src article.authorimage ] [] ]
@@ -235,8 +245,8 @@ viewPostPreview article =
         ]
 
 
-viewPosts : List ArticlePreview -> Html Msg
-viewPosts articlesMade =
+viewArticles : List ArticlePreview -> Html Msg
+viewArticles articlesMade =
     div []
         --ul and li = weird dot :)
         (List.map viewArticlePreview articlesMade)
@@ -276,9 +286,9 @@ view model =
                                     [ a [ class "nav-link", href "#" ] [ text "Favorited Posts" ] ]
                                 ]
                             ]
-                        , viewPosts model.articlesMade
+                        , viewArticles model.articlesMade
 
-                        -- , viewPostPreview articlePreview1
+                        -- , viewArticlePreview articlePreview1
                         -- , div [class "article-preview"]
                         --     [div [class "article-meta"]
                         --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
@@ -302,7 +312,7 @@ view model =
                         --         , span [] [text "Read more..."]
                         --         ]
                         --     ]
-                        -- , viewPostPreview articlePreview2
+                        -- , viewArticlePreview articlePreview2
                         -- , div [class "article-preview"]
                         --     [div [class "article-meta"]
                         --         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/N4VcUeJ.jpg"] []]
