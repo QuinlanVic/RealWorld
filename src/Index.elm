@@ -44,7 +44,7 @@ type alias Tags =
 
 
 type alias Model =
-    { globalfeed : Maybe Feed --postpreview may exist or not lol
+    { globalfeed : Maybe Feed --articlePreview may exist or not lol
     , yourfeed : Maybe Feed
     , tags : Maybe Tags --tag may exist or not hehe
     }
@@ -80,7 +80,7 @@ encodeArticle article =
 
 initialModel : Model
 initialModel =
-    { globalfeed = Just [ postPreview1, postPreview2 ]
+    { globalfeed = Just [ articlePreview1, articlePreview2 ]
     , yourfeed = Just []
     , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
     }
@@ -157,8 +157,8 @@ author1 =
     }
 
 
-postPreview1 : Article
-postPreview1 =
+articlePreview1 : Article
+articlePreview1 =
     { slug = "slug1"
     , title = "How to build webapps that scale"
     , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
@@ -185,8 +185,8 @@ author2 =
     }
 
 
-postPreview2 : Article
-postPreview2 =
+articlePreview2 : Article
+articlePreview2 =
     { slug = "slug2"
     , title = "The song you won't ever stop singing. No matter how hard you try."
     , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
@@ -216,12 +216,12 @@ type Msg
 
 
 toggleLike : Article -> Article
-toggleLike post =
-    if post.favorited then
-        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 }
+toggleLike article =
+    if article.favorited then
+        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount - 1 }
 
     else
-        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
+        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount + 1 }
 
 
 updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
@@ -237,8 +237,8 @@ updateArticleBySlug updateArticle article feed =
         feed
 
 
-updatePostPreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
-updatePostPreviewLikes updateArticle article maybeFeed =
+updatearticlePreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
+updatearticlePreviewLikes updateArticle article maybeFeed =
     Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
 
 
@@ -248,10 +248,10 @@ update msg model =
         ToggleLike article ->
             -- how to distinguish between yourfeed and globalfeed articles? (Don't, do both (FOR NOW...))
             if article.favorited then
-                ( { model | globalfeed = updatePostPreviewLikes toggleLike article model.globalfeed, yourfeed = updatePostPreviewLikes toggleLike article model.yourfeed }, favouriteArticle article )
+                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favouriteArticle article )
 
             else
-                ( { model | globalfeed = updatePostPreviewLikes toggleLike article model.globalfeed, yourfeed = updatePostPreviewLikes toggleLike article model.yourfeed }, unfavouriteArticle article )
+                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavouriteArticle article )
 
         -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
@@ -289,18 +289,18 @@ subscriptions articles =
 
 
 viewLoveButton : Article -> Html Msg
-viewLoveButton postPreview =
+viewLoveButton articlePreview =
     let
         buttonClass =
-            if postPreview.favorited then
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick (ToggleLike postPreview) ]
+            if articlePreview.favorited then
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick (ToggleLike articlePreview) ]
 
             else
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick (ToggleLike postPreview) ]
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick (ToggleLike articlePreview) ]
     in
     button buttonClass
         [ i [ class "ion-heart" ] []
-        , text (" " ++ String.fromInt postPreview.favoritesCount)
+        , text (" " ++ String.fromInt articlePreview.favoritesCount)
         ]
 
 
@@ -309,32 +309,32 @@ viewTag tag =
     a [ href "#", class "label label-pill label-default" ] [ text tag ]
 
 
-viewPostPreview : Article -> Html Msg
-viewPostPreview post =
+viewarticlePreview : Article -> Html Msg
+viewarticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ Routes.href (Routes.Profile {- post.author.username -}) ] [ img [ src post.author.image ] [] ]
+            [ a [ Routes.href (Routes.Profile {- article.author.username -}) ] [ img [ src article.author.image ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href (Routes.Profile {- post.author.username -}), class "author" ] [ text post.author.username ]
-                , span [ class "date" ] [ text post.createdAt ]
+                [ a [ Routes.href (Routes.Profile {- article.author.username -}), class "author" ] [ text article.author.username ]
+                , span [ class "date" ] [ text article.createdAt ]
                 ]
-            , viewLoveButton post
+            , viewLoveButton article
             ]
         , a [ Routes.href Routes.Article, class "preview-link" ]
-            [ h1 [] [ text post.title ]
-            , p [] [ text post.description ]
+            [ h1 [] [ text article.title ]
+            , p [] [ text article.description ]
             , span [] [ text "Read more..." ]
             ]
         ]
 
 
-viewPosts : Maybe Feed -> Html Msg
-viewPosts maybeFeed =
+viewArticles : Maybe Feed -> Html Msg
+viewArticles maybeFeed =
     case maybeFeed of
         Just feed ->
             div []
-                (List.map viewPostPreview feed)
+                (List.map viewarticlePreview feed)
 
         Nothing ->
             --put something nice here :)
@@ -418,7 +418,7 @@ view model =
                                     ]
                                 ]
                             ]
-                        , viewPosts model.globalfeed
+                        , viewArticles model.globalfeed
                         ]
                     , div [ class "col-md-3" ]
                         [ div [ class "sidebar" ]

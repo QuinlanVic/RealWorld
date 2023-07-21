@@ -29,22 +29,29 @@ type alias Author =
     }
 
 
-type alias ArticlePreview =
-    { authorpage : String
-    , authorimage : String
-    , authorname : String
-    , date : String
-    , articletitle : String
-    , articlepreview : String
-    , numlikes : Int
-    , liked : Bool
+type alias Article =
+    --whole article
+    { slug : String
+    , title : String
+    , description : String
+    , body : String
+    , tagList : List String
+    , createdAt : String
+    , updatedAt : String
+    , favorited : Bool
+    , favoritesCount : Int
+    , author : Author
     }
 
 
+type alias Feed =
+    List Article
+
+
 type alias Model =
-    --put Posts inside? (List Article) & add Profile to basic Model :)
+    --put Articles inside? (Feed = List Article) & add Profile to basic Model :)
     { profile : Author
-    , articlesMade : List ArticlePreview
+    , articlesMade : Maybe Feed
     }
 
 
@@ -55,6 +62,40 @@ defaultProfile =
     , image = "http://i.imgur.com/Qr71crq.jpg"
     , following = False
     , numfollowers = 10
+    }
+
+
+articlePreview1 : Article
+articlePreview1 =
+    { slug = "slug1"
+    , title = "How to build webapps that scale"
+    , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
+                        the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
+    , body = ""
+    , tagList = [ "" ]
+    , createdAt = "January 20th"
+    , updatedAt = ""
+    , favorited = False
+    , favoritesCount = 29
+    , author = defaultProfile
+    }
+
+
+articlePreview2 : Article
+articlePreview2 =
+    { slug = "slug2"
+    , title = "The song you won't ever stop singing. No matter how hard you try."
+    , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
+                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
+                        the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
+    , body = ""
+    , tagList = [ "" ]
+    , createdAt = "January 20th"
+    , updatedAt = ""
+    , favorited = False
+    , favoritesCount = 32
+    , author = defaultProfile
     }
 
 
@@ -84,6 +125,35 @@ fetchProfile username =
         }
 
 
+
+-- favouriteArticle : Article -> Cmd Msg
+-- favouriteArticle article =
+--     let
+--         body =
+--             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+--     in
+--     Http.post
+--         { body = body
+--         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
+--         , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+--         }
+-- unfavouriteArticle : Article -> Cmd Msg
+-- unfavouriteArticle article =
+--     let
+--         body =
+--             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+--     in
+--     Http.request
+--         { method = "DELETE"
+--         , headers = []
+--         , body = body
+--         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
+--         , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+--         , timeout = Nothing
+--         , tracker = Nothing
+--         }
+
+
 init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
@@ -96,39 +166,15 @@ baseUrl =
     "http://localhost:8000/"
 
 
-articlePreview1 : ArticlePreview
-articlePreview1 =
-    { authorpage = "profileelm.html"
-    , authorimage = "http://i.imgur.com/Qr71crq.jpg"
-    , authorname = "Eric Simons"
-    , date = "January 20th"
-    , articletitle = "How to build webapps that scale"
-    , articlepreview = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
-                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
-                        the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
-    , numlikes = 29
-    , liked = False
-    }
-
-
-articlePreview2 : ArticlePreview
-articlePreview2 =
-    { authorpage = "profileelm.html"
-    , authorimage = "http://i.imgur.com/N4VcUeJ.jpg"
-    , authorname = "Albert Pai"
-    , date = "January 20th"
-    , articletitle = "The song you won't ever stop singing. No matter how hard you try."
-    , articlepreview = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
-                        and the appearance of sections in the markup as opposed to the actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and 
-                        the trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""
-    , numlikes = 32
-    , liked = False
-    }
-
-
 
 -- Update --
 --how do you get a specific profile after a user clicks on their page
+
+
+type Msg
+    = ToggleLike
+    | ToggleFollow
+    | LoadProfile String (Result Http.Error Author)
 
 
 toggleFollow : Author -> Author
@@ -152,10 +198,10 @@ getProfileCompleted {- username -} model result =
             ( model, Cmd.none )
 
 
-updateArticlePreviewLikes : ArticlePreview -> ArticlePreview
+updateArticlePreviewLikes : Article -> Article
 updateArticlePreviewLikes articlepreview =
     --very inefficient
-    if articlepreview.liked then
+    if articlepreview.favorited then
         { articlepreview | liked = not articlepreview.liked, numlikes = articlepreview.numlikes - 1 }
 
     else
@@ -172,10 +218,9 @@ update message model =
         ToggleFollow ->
             -- if model.profile.following then
             --     ( { model | following = not model.following, numfollowers = model.numfollowers - 1 }, Cmd.none )
-
             -- else
             --     ( { model | following = not model.following, numfollowers = model.numfollowers + 1 }, Cmd.none )
-                ( { model | profile = toggleFollow model.profile }, Cmd.none )
+            ( { model | profile = toggleFollow model.profile }, Cmd.none )
 
         LoadProfile username result ->
             getProfileCompleted {- username -} model result
@@ -208,12 +253,12 @@ viewFollowButton model =
         ]
 
 
-viewLoveButton : ArticlePreview -> Html Msg
+viewLoveButton : Article -> Html Msg
 viewLoveButton articlePreview =
     --use from Article
     let
         buttonClass =
-            if articlePreview.liked then
+            if articlePreview.favorited then
                 [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike ]
 
             else
@@ -221,11 +266,11 @@ viewLoveButton articlePreview =
     in
     button buttonClass
         [ i [ class "ion-heart" ] []
-        , text (" " ++ String.fromInt articlePreview.numlikes)
+        , text (" " ++ String.fromInt articlePreview.favoritesCount)
         ]
 
 
-viewArticlePreview : ArticlePreview -> Html Msg
+viewArticlePreview : Article -> Html Msg
 viewArticlePreview article =
     div [ class "article-preview" ]
         [ div [ class "article-meta" ]
@@ -245,7 +290,7 @@ viewArticlePreview article =
         ]
 
 
-viewArticles : List ArticlePreview -> Html Msg
+viewArticles : Feed -> Html Msg
 viewArticles articlesMade =
     div []
         --ul and li = weird dot :)
@@ -281,9 +326,9 @@ view model =
                         [ div [ class "articles-toggle" ]
                             [ ul [ class "nav nav-pills outline-active" ]
                                 [ li [ class "nav-item" ]
-                                    [ a [ class "nav-link active", href "#" ] [ text "My Posts" ] ]
+                                    [ a [ class "nav-link active", href "#" ] [ text "My Articles" ] ]
                                 , li [ class "nav-item" ]
-                                    [ a [ class "nav-link", href "#" ] [ text "Favorited Posts" ] ]
+                                    [ a [ class "nav-link", href "#" ] [ text "Favorited Articles" ] ]
                                 ]
                             ]
                         , viewArticles model.articlesMade
@@ -352,13 +397,6 @@ view model =
                 ]
             ]
         ]
-
-
-type Msg
-    = ToggleLike
-    | ToggleFollow
-    | LoadProfile String (Result Http.Error Author)
-
 
 
 -- main : Program () Model Msg
