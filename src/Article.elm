@@ -160,45 +160,95 @@ init =
 -- Update --
 
 
+makeUpdatesToComment : Article -> String -> Article
+makeUpdatesToComment article comment =
+    { article | newComment = comment }
+
+
+updateComment : Model -> String -> Model
+updateComment model comment =
+    { model | article = makeUpdatesToComment model.article comment }
+
+
+saveComment : Article -> String -> Article
+saveComment article comment =
+    -- take in an article and a comment and update its fields appropriately
+    { article | comments = article.comments ++ [ comment ], newComment = "" }
+
+
 saveNewComment : Model -> Model
 saveNewComment model =
     let
         comment =
             String.trim model.article.newComment
 
-        --remove trailing spaces form the comment
+        --remove trailing spaces from the comment
     in
     case comment of
         "" ->
             model
 
         _ ->
-            { model | comments = model.article.comments ++ [ comment ], newComment = "" }
+            { model | article = saveComment model.article comment }
 
 
-updatePostPreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
-updatePostPreviewLikes updateArticle article maybeFeed =
-    Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
+toggleLike : Article -> Article
+toggleLike post =
+    -- List.map
+    --     (\currArticle ->
+    --         if currArticle.slug == article.slug then
+    --             updateArticle currArticle
+    --         else
+    --             currArticle
+    --     )
+    --     feed
+    -- favoritesCount should update automatically when the server returns the new Article
+    if post.favorited then
+        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 }
+
+    else
+        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
+
+
+toggleFollow : Author -> Author
+toggleFollow author =
+    if author.following then
+        { author | following = not author.following, numfollowers = author.numfollowers - 1 }
+
+    else
+        { author | following = not author.following, numfollowers = author.numfollowers + 1 }
+
+
+updateArticle : (Article -> Article) -> Article -> Article
+updateArticle makeChanges article =
+    --only one article so we do not have to worry about getting a specific one :)
+    makeChanges article
+
+
+updateAuthor : (Author -> Author) -> Author -> Author
+updateAuthor makeChanges author =
+    makeChanges author
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
-        ToggleLike ->  
-            if model.article.favorited then
-                ( { model | article = updatePostPreviewLikes toggleLike article model.globalfeed, }, Cmd.none )
-
-            else
-                ( { model | liked = not model.liked, numlikes = model.numlikes + 1 }, Cmd.none )
+        ToggleLike ->
+            -- if model.article.favorited then
+            --     ( { model | article = updateArticle toggleLike model.article }, Cmd.none )
+            -- else
+            --     ( { model | article = updateArticle toggleLike model.article }, Cmd.none )
+            ( { model | article = updateArticle toggleLike model.article }, Cmd.none )
 
         ToggleFollow ->
-            if model.author.following then
-                ( { model | followed = not model.followed, numfollowers = model.numfollowers - 1 }, Cmd.none )
-
-            else
-                ( { model | followed = not model.followed, numfollowers = model.numfollowers + 1 }, Cmd.none )
+            -- if model.author.following then
+            --     ( { model | author = updateAuthor toggleFollow model.author }, Cmd.none )
+            -- else
+            --     ( { model | author = updateAuthor toggleFollow model.author }, Cmd.none )
+            ( { model | author = updateAuthor toggleFollow model.author }, Cmd.none )
 
         UpdateComment comment ->
-            ( { model | newComment = comment }, Cmd.none )
+            ( updateComment model comment, Cmd.none )
 
         SaveComment ->
             ( saveNewComment model, Cmd.none )
@@ -245,7 +295,7 @@ viewLoveButton : Model -> Html Msg
 viewLoveButton model =
     let
         buttonClass =
-            if model.liked then
+            if model.article.favorited then
                 [ class "btn btn-sm btn-outline-primary", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike ]
 
             else
