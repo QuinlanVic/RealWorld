@@ -3,8 +3,6 @@ module Profile exposing (Model, Msg, init, update, view)
 -- import Exts.Html exposing (nbsp)
 -- import Browser
 
-import Article exposing (Msg(..), initialModel)
-import Editor exposing (authorDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
 import Html.Events exposing (onClick, onMouseLeave, onMouseOver)
@@ -52,6 +50,7 @@ type alias Model =
     --put Articles inside? (Feed = List Article) & add Profile to basic Model :)
     { profile : Author
     , articlesMade : Maybe Feed
+    , favoritedArticles : Maybe Feed 
     }
 
 
@@ -103,8 +102,25 @@ initialModel : Model
 initialModel =
     { profile = defaultProfile
     , articlesMade = Just [ articlePreview1, articlePreview2 ]
+    , favoritedArticles = Just [] 
     }
 
+
+articleDecoder : Decoder Article
+articleDecoder =
+    succeed Article
+        |> required "slug" string
+        |> required "title" string
+        |> required "description" string
+        |> required "body" string
+        |> required "tagList" (list string)
+        |> required "createdAt" string
+        |> required "updatedAt" string
+        |> required "favorited" bool
+        |> required "favoritesCount" int
+        -- "author": {
+        |> required "author" authorDecoder
+  
 
 authorDecoder : Decoder Author
 authorDecoder =
@@ -116,6 +132,13 @@ authorDecoder =
         |> hardcoded 10
 
 
+encodeArticle : Article -> Encode.Value
+encodeArticle article =
+    --used to encode Article slug sent to the server via Article request body
+    Encode.object
+        [ ( "slug", Encode.string article.slug ) ] 
+
+
 fetchProfile : String -> Cmd Msg
 fetchProfile username =
     -- need to fetch the profile
@@ -125,33 +148,52 @@ fetchProfile username =
         }
 
 
+fetchProfileArticles : String -> Cmd Msg
+fetchProfileArticles username =
+    -- get the articles the author of the profile has created 
+    Http.get  
+        { url = baseUrl ++ "apr/articles?author=" ++ username
+        , expect = Http.expectJson GotProfileArticles (list (field "article" articleDecoder)) 
+        }
 
--- favouriteArticle : Article -> Cmd Msg
--- favouriteArticle article =
---     let
---         body =
---             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
---     in
---     Http.post
---         { body = body
---         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
---         , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
---         }
--- unfavouriteArticle : Article -> Cmd Msg
--- unfavouriteArticle article =
---     let
---         body =
---             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
---     in
---     Http.request
---         { method = "DELETE"
---         , headers = []
---         , body = body
---         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
---         , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
---         , timeout = Nothing
---         , tracker = Nothing
---         }
+
+fetchFavoritedArticles : String -> Cmd Msg 
+fetchFavoritedArticles username =
+    -- get the articles the user has favorited from the author of the profile
+    Http.get 
+        { url = baseUrl ++ "apr/articles?favorited=" ++ username
+        , expect = Http.expectJson GotFavoritedArticles (list (field "article" articleDecoder)) 
+        } 
+
+
+favouriteArticle : Article -> Cmd Msg
+favouriteArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.post
+        { body = body
+        , expect = Http.expectJson GotProfileArticles (list (field "article" articleDecoder))
+        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        }
+
+
+unfavouriteArticle : Article -> Cmd Msg
+unfavouriteArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson GotProfileArticles (list (field "article" articleDecoder))
+        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
 init : ( Model, Cmd Msg )
@@ -172,9 +214,13 @@ baseUrl =
 
 
 type Msg
-    = ToggleLike
-    | ToggleFollow
+    = ToggleLike Article 
+    | ToggleFollow 
     | LoadProfile String (Result Http.Error Author)
+    | GotProfileArticles (Result Http.Error Feed)
+    | GotFavoritedArticles (Result Http.Error Feed)
+    | LoadArticlesMade 
+    | LoadFavoritedArticles 
 
 
 toggleFollow : Author -> Author
@@ -197,33 +243,73 @@ getProfileCompleted {- username -} model result =
         Err error ->
             ( model, Cmd.none )
 
- 
-updateArticlePreviewLikes : Feed -> Article
-updateArticlePreviewLikes articlepreview =
-    --very inefficient
-    if articlepreview.favorited then
-        { articlepreview | favorited = not articlepreview.favorited, favoritesCount = articlepreview.favoritesCount - 1 }
+
+toggleLike : Article -> Article
+toggleLike article =
+    if article.favorited then
+        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount - 1 }
 
     else
-        { articlepreview | favorited = not articlepreview.favorited, favoritesCount = articlepreview.favoritesCount + 1 }
+        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount + 1 }
+
+
+updateAuthor : (Author -> Author) -> Author -> Author
+updateAuthor makeChanges author =
+    makeChanges author
+
+
+updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed 
+updateArticleBySlug updateArticle article feed =
+    List.map
+        (\currArticle ->
+            if currArticle.slug == article.slug then
+                updateArticle currArticle
+
+            else
+                currArticle
+        )
+        feed
+
+ 
+updateArticlePreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed 
+updateArticlePreviewLikes updateArticle article maybeFeed =
+    Maybe.map (updateArticleBySlug updateArticle article) maybeFeed 
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
-        ToggleLike ->
-            ( { model | articlesMade = List.map updateArticlePreviewLikes model.articlesMade }, Cmd.none )
+        ToggleLike article ->
+           if article.favorited then
+                ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, favouriteArticle article )
+
+            else
+                ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, unfavouriteArticle article )
 
         --need lazy execution
         ToggleFollow ->
-            -- if model.profile.following then
-            --     ( { model | following = not model.following, numfollowers = model.numfollowers - 1 }, Cmd.none )
-            -- else
-            --     ( { model | following = not model.following, numfollowers = model.numfollowers + 1 }, Cmd.none )
-            ( { model | profile = toggleFollow model.profile }, Cmd.none )
+            ( { model | profile = updateAuthor toggleFollow model.profile }, Cmd.none ) 
 
         LoadProfile username result ->
             getProfileCompleted {- username -} model result
+
+        GotProfileArticles (Ok articlesMade) ->
+            ( { model | articlesMade = Just articlesMade }, Cmd.none )
+        
+        GotProfileArticles (Err _) ->
+            ( model, Cmd.none )
+        
+        GotFavoritedArticles (Ok favoritedArticles) ->
+            ( { model | favoritedArticles = Just favoritedArticles }, Cmd.none )
+        
+        GotFavoritedArticles (Err _) ->
+            ( model, Cmd.none )
+        
+        LoadArticlesMade ->
+            ( model, fetchProfileArticles model.profile.username )
+        
+        LoadFavoritedArticles ->
+            ( model, fetchFavoritedArticles model.profile.username )
 
 
 subscriptions : Model -> Sub Msg
@@ -259,14 +345,14 @@ viewLoveButton articlePreview =
     let
         buttonClass =
             if articlePreview.favorited then
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleLike ]
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", style "background-color" "#d00", style "color" "#fff", style "border-color" "black", type_ "button", onClick (ToggleLike articlePreview) ]
 
             else
-                [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick ToggleLike ]
+                [ class "btn btn-outline-primary btn-sm pull-xs-right", type_ "button", onClick (ToggleLike articlePreview) ]
     in
     button buttonClass
         [ i [ class "ion-heart" ] []
-        , text (" " ++ String.fromInt articlePreview.favoritesCount)
+        , text (" " ++ String.fromInt articlePreview.favoritesCount)  
         ]
 
 
@@ -291,10 +377,16 @@ viewArticlePreview article =
 
 
 viewArticles : Maybe Feed -> Html Msg
-viewArticles articlesMade =
-    div []
-        --ul and li = weird dot :)
-        (List.map viewArticlePreview articlesMade)
+viewArticles maybeArticlesMade =
+    case maybeArticlesMade of 
+        Just articles ->
+            div []
+                --ul and li = weird dot :)
+                (List.map viewArticlePreview articles)
+        
+        Nothing -> 
+            div [ class "loading-feed" ]
+                [ text "Loading Feed..." ]
 
 
 view : Model -> Html Msg
@@ -326,8 +418,9 @@ view model =
                         [ div [ class "articles-toggle" ]
                             [ ul [ class "nav nav-pills outline-active" ]
                                 [ li [ class "nav-item" ]
-                                    [ a [ class "nav-link active", href "#" ] [ text "My Articles" ] ]
+                                    [ a [ class "nav-link active", href "#", onClick LoadArticlesMade ] [ text "My Articles" ] ]
                                 , li [ class "nav-item" ]
+                                    -- onClick LoadFavoritedArticles
                                     [ a [ class "nav-link", href "#" ] [ text "Favorited Articles" ] ]
                                 ]
                             ]

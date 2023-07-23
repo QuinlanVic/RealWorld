@@ -160,6 +160,14 @@ init =
 -- Update --
 
 
+type Msg
+    = ToggleLike
+    | ToggleFollow
+    | UpdateComment String
+    | SaveComment
+    | GotArticle (Result Http.Error Article)
+
+
 makeUpdatesToComment : Article -> String -> Article
 makeUpdatesToComment article comment =
     { article | newComment = comment }
@@ -572,15 +580,6 @@ view model =
                 ]
             ]
         ]
-
-
-type Msg
-    = ToggleLike
-    | ToggleFollow
-    | UpdateComment String
-    | SaveComment
-    | GotArticle (Result Http.Error Article)
-
 
 
 -- | GotArticle (Result Http.Error Article)

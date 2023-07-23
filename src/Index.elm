@@ -4,7 +4,7 @@ module Index exposing (Article, Model, Msg, init, main, update, view)
 
 import Auth exposing (baseUrl)
 import Browser
-import Editor exposing (Author, articleDecoder, authorDecoder)
+import Editor exposing (Author, authorDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, src, style, type_)
 import Html.Events exposing (onClick)
