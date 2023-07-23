@@ -119,21 +119,82 @@ baseUrl =
     "http://localhost:8000/"
 
 
-
--- fetchArticle : Article -> Cmd Msg
--- fetchArticle article =
---     Http.get
---         { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
---         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
---         }
+encodeArticle : Article -> Encode.Value
+encodeArticle article =
+    --used to encode Article slug sent to the server via Article request body
+    Encode.object
+        [ ( "slug", Encode.string article.slug ) ]
 
 
-fetchArticle : Cmd Msg
-fetchArticle =
-    Http.get
-        { url = baseUrl ++ "api/articles/"
+encodeAuthor : Author -> Encode.Value
+encodeAuthor author =
+    --used to encode user sent to the server via PUT request body (for registering)
+    Encode.object
+        [ ( "username", Encode.string author.username )
+        , ( "bio", Encode.string author.bio )
+        , ( "image", Encode.string author.image )
+        ]
+
+
+favoriteArticle : Article -> Cmd Msg
+favoriteArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.post
+        { body = body
         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        } 
+
+
+unfavoriteArticle : Article -> Cmd Msg
+unfavoriteArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder) 
+        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
         }
+
+
+followUser : Author -> Cmd Msg 
+followUser author =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "author", encodeAuthor <| author ) ]
+    in
+    Http.post
+        { body = body
+        , expect = Http.expectJson GotAuthor (field "author" authorDecoder) 
+        , url = baseUrl ++ "api/profiles/{" ++ author.username ++ "}/follow" 
+        } 
+
+
+unfollowUser : Author -> Cmd Msg
+unfollowUser author =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeAuthor <| author ) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson GotAuthor (field "author" authorDecoder) 
+        , url = baseUrl ++ "api/profiles/{" ++ author.username ++ "}/follow"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
 
 
 getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
@@ -148,15 +209,22 @@ getArticleCompleted article result =
             ( article, Cmd.none )
 
 
+-- fetchArticle : Article -> Cmd Msg
+-- fetchArticle article =
+--     Http.get
+--         { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
+--         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+--         }
+
+
 init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
-    -- get a specific article
-    ( initialModel, fetchArticle )
+    -- get a specific article ( fetchArticle )
+    ( initialModel, Cmd.none ) 
 
 
 
---fetchArticle
 -- Update --
 
 
@@ -165,7 +233,8 @@ type Msg
     | ToggleFollow
     | UpdateComment String
     | SaveComment
-    | GotArticle (Result Http.Error Article)
+    | GotArticle (Result Http.Error Article) 
+    | GotAuthor (Result Http.Error Author)
 
 
 makeUpdatesToComment : Article -> String -> Article
@@ -201,7 +270,7 @@ saveNewComment model =
 
 
 toggleLike : Article -> Article
-toggleLike post =
+toggleLike article =
     -- List.map
     --     (\currArticle ->
     --         if currArticle.slug == article.slug then
@@ -211,11 +280,11 @@ toggleLike post =
     --     )
     --     feed
     -- favoritesCount should update automatically when the server returns the new Article
-    if post.favorited then
-        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount - 1 }
+    if article.favorited then
+        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount - 1 }
 
     else
-        { post | favorited = not post.favorited, favoritesCount = post.favoritesCount + 1 }
+        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount + 1 }
 
 
 toggleFollow : Author -> Author
@@ -242,18 +311,16 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         ToggleLike ->
-            -- if model.article.favorited then
-            --     ( { model | article = updateArticle toggleLike model.article }, Cmd.none )
-            -- else
-            --     ( { model | article = updateArticle toggleLike model.article }, Cmd.none )
-            ( { model | article = updateArticle toggleLike model.article }, Cmd.none )
+            if model.article.favorited then
+                ( { model | article = updateArticle toggleLike model.article }, favoriteArticle model.article )
+            else
+                ( { model | article = updateArticle toggleLike model.article }, unfavoriteArticle model.article )
 
         ToggleFollow ->
-            -- if model.author.following then
-            --     ( { model | author = updateAuthor toggleFollow model.author }, Cmd.none )
-            -- else
-            --     ( { model | author = updateAuthor toggleFollow model.author }, Cmd.none )
-            ( { model | author = updateAuthor toggleFollow model.author }, Cmd.none )
+            if model.author.following then
+                ( { model | author = updateAuthor toggleFollow model.author }, followUser model.author )
+            else
+                ( { model | author = updateAuthor toggleFollow model.author }, unfollowUser model.author )
 
         UpdateComment comment ->
             ( updateComment model comment, Cmd.none )
@@ -266,11 +333,16 @@ update message model =
 
         GotArticle (Err _) ->
             ( model, Cmd.none )
+        
+        GotAuthor (Ok author) ->
+            ( { model | author = author }, Cmd.none )
+        
+        GotAuthor (Err _) ->
+            ( model, Cmd.none )
 
 
 
 -- LoadArticle ->
---     (model, fetchArticle)
 
 
 subscriptions : Model -> Sub Msg
@@ -592,4 +664,4 @@ view model =
 --         , update = update
 --         , subscriptions = subscriptions
 --         }
---Now post is a component and no longer an application
+--Now article is a component and no longer an application

@@ -259,7 +259,7 @@ setNewPage maybeRoute model =
         Just Routes.Index ->
             let
                 ( publicFeedModel, publicFeedCmd ) =
-                    PublicFeed.init ()
+                    PublicFeed.init 
             in
             ( { model | page = PublicFeed publicFeedModel, currentPage = "Home" }, Cmd.map PublicFeedMessage publicFeedCmd )
 

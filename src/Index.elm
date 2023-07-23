@@ -1,4 +1,4 @@
-module Index exposing (Article, Model, Msg, init, main, update, view)
+module Index exposing (Article, Model, Msg, init, update, view)
 
 -- import Exts.Html exposing (nbsp)
 
@@ -111,8 +111,8 @@ fetchTags =
         }
 
 
-favouriteArticle : Article -> Cmd Msg
-favouriteArticle article =
+favoriteArticle : Article -> Cmd Msg
+favoriteArticle article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
@@ -124,8 +124,8 @@ favouriteArticle article =
         }
 
 
-unfavouriteArticle : Article -> Cmd Msg
-unfavouriteArticle article =
+unfavoriteArticle : Article -> Cmd Msg
+unfavoriteArticle article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
@@ -141,8 +141,8 @@ unfavouriteArticle article =
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init () =
+init : ( Model, Cmd Msg )
+init =
     ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] )
 
 
@@ -248,10 +248,10 @@ update msg model =
         ToggleLike article ->
             -- how to distinguish between yourfeed and globalfeed articles? (Don't, do both (FOR NOW...))
             if article.favorited then
-                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favouriteArticle article )
+                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle article )
 
             else
-                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavouriteArticle article )
+                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle article )
 
         -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
@@ -443,11 +443,11 @@ view model =
         ]
 
 
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
+-- main : Program () Model Msg
+-- main =
+--     Browser.element
+--         { init = init
+--         , view = view
+--         , update = update
+--         , subscriptions = subscriptions
+--         }
