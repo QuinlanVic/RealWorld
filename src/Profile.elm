@@ -102,7 +102,7 @@ articlePreview2 =
 initialModel : Model
 initialModel =
     { profile = defaultProfile
-    , articlesMade = [ articlePreview1, articlePreview2 ]
+    , articlesMade = Just [ articlePreview1, articlePreview2 ]
     }
 
 
@@ -197,15 +197,15 @@ getProfileCompleted {- username -} model result =
         Err error ->
             ( model, Cmd.none )
 
-
-updateArticlePreviewLikes : Article -> Article
+ 
+updateArticlePreviewLikes : Feed -> Article
 updateArticlePreviewLikes articlepreview =
     --very inefficient
     if articlepreview.favorited then
-        { articlepreview | liked = not articlepreview.liked, numlikes = articlepreview.numlikes - 1 }
+        { articlepreview | favorited = not articlepreview.favorited, favoritesCount = articlepreview.favoritesCount - 1 }
 
     else
-        { articlepreview | liked = not articlepreview.liked, numlikes = articlepreview.numlikes + 1 }
+        { articlepreview | favorited = not articlepreview.favorited, favoritesCount = articlepreview.favoritesCount + 1 }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -274,23 +274,23 @@ viewArticlePreview : Article -> Html Msg
 viewArticlePreview article =
     div [ class "article-preview" ]
         [ div [ class "article-meta" ]
-            [ a [ Routes.href Routes.Profile ] [ img [ src article.authorimage ] [] ]
+            [ a [ Routes.href Routes.Profile ] [ img [ src article.author.image ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href Routes.Profile, class "author" ] [ text article.authorname ]
-                , span [ class "date" ] [ text article.date ]
+                [ a [ Routes.href Routes.Profile, class "author" ] [ text article.author.username ]
+                , span [ class "date" ] [ text article.createdAt ]
                 ]
             , viewLoveButton article
             ]
         , a [ Routes.href Routes.Article, class "preview-link" ]
-            [ h1 [] [ text article.articletitle ]
-            , p [] [ text article.articlepreview ]
+            [ h1 [] [ text article.title ]
+            , p [] [ text article.body ]
             , span [] [ text "Read more..." ]
             ]
         ]
 
 
-viewArticles : Feed -> Html Msg
+viewArticles : Maybe Feed -> Html Msg
 viewArticles articlesMade =
     div []
         --ul and li = weird dot :)
