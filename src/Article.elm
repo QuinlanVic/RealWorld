@@ -363,7 +363,7 @@ viewFollowButton model =
     -- ]
     let
         buttonClass =
-            if model.article.favorited then
+            if model.author.following then
                 [ class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleFollow ]
 
             else
@@ -556,11 +556,11 @@ viewArticle model =
 
                     {- model.author.username -}
                     ]
-                    [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
+                    [ img [ src model.author.image ] [] ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , div [ class "info" ]
-                    [ a [ Routes.href Routes.Profile, class "author" ] [ text "Eric Simons" ]
-                    , span [ class "date" ] [ text "January 20th" ]
+                    [ a [ Routes.href Routes.Profile, class "author" ] [ text model.author.username ]
+                    , span [ class "date" ] [ text model.article.createdAt ]
                     ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , viewFollowButton model
@@ -628,8 +628,8 @@ view model =
                             [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
-                            [ a [ Routes.href Routes.Profile, class "author" ] [ text "Eric Simons" ]
-                            , span [ class "date" ] [ text "January 20th" ]
+                            [ a [ Routes.href Routes.Profile, class "author" ] [ text model.author.username ]
+                            , span [ class "date" ] [ text model.article.createdAt ]
                             ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , viewFollowButton model
