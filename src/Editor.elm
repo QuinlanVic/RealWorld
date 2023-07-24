@@ -67,10 +67,8 @@ getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg
 getArticleCompleted article result =
     case result of
         Ok getArticle ->
-            --confused here
             ( getArticle |> Debug.log "got the article", Cmd.none )
 
-        --| created = True
         Err error ->
             ( article, Cmd.none )
 
@@ -202,6 +200,7 @@ update message article =
                 ( validatedArticle, Cmd.none )
 
         LoadArticle result ->
+            -- get the article and then change page to new article :)
             getArticleCompleted article result
 
 

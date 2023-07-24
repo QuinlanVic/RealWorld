@@ -59,7 +59,7 @@ type alias Comments =
 
 
 type alias Model =
-    { article : Maybe Article
+    { article : Article
     , author : Author
     , comments : Maybe Comments
     }
@@ -105,7 +105,7 @@ defaultComment =
 
 initialModel : Model
 initialModel =
-    { article = Just defaultArticle
+    { article = defaultArticle
     , author = defaultAuthor
     , comments = Just [ defaultComment ]
     }
@@ -431,6 +431,12 @@ update message model =
             --delete the article using API call AND THEN SEND BACK TO MAIN PAGE
             ( model, deleteArticle model.article )
 
+        GotComments (Ok comments) ->
+            ( { model | comments = Just comments }, Cmd.none )
+
+        GotComments (Err _) ->
+            ( model, Cmd.none )
+
 
 
 -- LoadArticle ->
@@ -513,16 +519,16 @@ viewComment comment =
         ]
 
 
-viewCommentList : Comments -> Html Msg
-viewCommentList comments =
+viewCommentList : Maybe Comments -> Html Msg
+viewCommentList maybeComments =
     --display a list of comments (if there are)
-    case comments of
-        [] ->
-            text ""
-
-        _ ->
+    case maybeComments of
+        Just comments ->
             div []
                 (List.map viewComment comments)
+
+        Nothing ->
+            text ""
 
 
 
@@ -716,7 +722,7 @@ view model =
                     [ h1 [] [ text "How to build webapps that scale" ]
                     , div [ class "post-meta" ]
                         [ a [ Routes.href Routes.Profile ]
-                            [ img [ src "http://i.imgur.com/Qr71crq.jpg" ] [] ]
+                            [ img [ src model.author.image ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
                             [ a [ Routes.href Routes.Profile, class "author" ] [ text model.author.username ]
@@ -745,8 +751,6 @@ view model =
         ]
 
 
-
--- | GotArticle (Result Http.Error Article)
 -- main : Program () Model Msg
 -- main =
 --     -- view initialModel

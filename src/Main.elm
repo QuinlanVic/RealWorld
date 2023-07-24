@@ -57,177 +57,9 @@ initialModel navigationKey url =
 
 init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init () url navigationKey =
-    -- program supplies initial Url when the app boots
+    -- browser supplies initial Url when the app boots
     -- Convert url into a route and construct initialmodel -> pass to setNewPage to set initial page
     setNewPage (Routes.match url) (initialModel navigationKey url)
-
-
-
----- VIEW ----
-
-
-viewContent :
-    Model
-    -> ( String, Html Msg ) --Model
-viewContent model =
-    let
-        url =
-            model.url
-
-        -- isLoggedIn =
-        --     model.isLoggedIn
-    in
-    case model.page of
-        PublicFeed publicFeedModel ->
-            ( "Conduit - Conduit"
-            , PublicFeed.view publicFeedModel |> Html.map PublicFeedMessage
-              -- , h1 [] [ text "Public Feed" ]
-            )
-
-        Auth authUser ->
-            ( "Auth - Conduit"
-            , Auth.view authUser |> Html.map AuthMessage
-              -- , h1 [] [ text "Auth" ]
-            )
-
-        Editor editorArticle ->
-            ( "Editor - Conduit"
-            , Editor.view editorArticle |> Html.map EditorMessage
-              -- , h1 [] [ text "Editor" ]
-            )
-
-        Login loginUser ->
-            ( "Login - Conduit"
-            , Login.view loginUser |> Html.map LoginMessage
-              -- , h1 [] [ text "Login" ]
-            )
-
-        Article articleModel ->
-            ( "Article - Conduit"
-            , Article.view articleModel |> Html.map ArticleMessage
-              -- , h1 [] [ text "Article" ]
-            )
-
-        Profile profileModel ->
-            ( "Profile - Conduit"
-            , Profile.view profileModel |> Html.map ProfileMessage
-              -- , h1 [] [ text "Profile" ]
-            )
-
-        Settings settingsUserSettings ->
-            ( "Settings - Conduit"
-            , Settings.view settingsUserSettings |> Html.map SettingsMessage
-              -- , h1 [] [ text "Settings" ]
-            )
-
-        NotFound ->
-            ( "Not Found - Conduit"
-            , div [ class "not-found" ]
-                [ h1 [] [ text "Page Not Found" ] ]
-            )
-
-
-
--- LoginOrSomethingLikeIt user ->
---     ( "What up, homie?"
---     , Html.map AuthMessage (Auth.view user)
---     )
--- Edit article ->
---     ( "Be The Change You Want To See In The Article"
---     , Html.map EditorMessage <| Editor.view article
---     )
--- _ ->
---     ( "Unimplemented ....... yet!"
---     , div
---         []
---         [ text "UNIMPLEMENTED but check this out:"
---         , br [] []
---         , a
---             [ onClick (Visit <| Internal { url | path = "signup" })
---             , style "cursor" "pointer"
---             ]
---             [ text "Auth page yo" ]
---         , br [] []
---         , a
---             [ onClick (Visit <| Internal { url | path = "createarticle" })
---             , style "cursor" "pointer"
---             ]
---             [ text "Feeling creative?" ]
---         ]
---     )
-
-
-viewHeaderLO : Model -> Html Msg
-viewHeaderLO model =
-    --Logged out universal header used on all pages BUT changes the active element depending on the page
-    let
-        isActivePage pageName =
-            if model.currentPage == pageName then
-                "nav-item active"
-
-            else
-                "nav-item"
-    in
-    nav [ class "navbar navbar-light" ]
-        [ div [ class "container" ]
-            [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
-            , ul [ class "nav navbar-nav pull-xs-right" ]
-                --could make a function for doing all of this
-                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
-
-                -- , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
-                , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
-                , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
-
-                -- , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
-                ]
-            ]
-        ]
-
-
-viewHeader : Model -> Html Msg
-viewHeader model =
-    --Logged in universal header used on all pages BUT changes the active element depending on the page
-    let
-        isActivePage pageName =
-            if model.currentPage == pageName then
-                "nav-item active"
-
-            else
-                "nav-item"
-    in
-    nav [ class "navbar navbar-light" ]
-        [ div [ class "container" ]
-            [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
-            , ul [ class "nav navbar-nav pull-xs-right" ]
-                --could make a function for doing all of this
-                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
-                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
-                , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
-                , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
-                , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
-                ]
-            ]
-        ]
-
-
-view : Model -> Document Msg
-view model =
-    let
-        ( title, content ) =
-            viewContent model
-    in
-    -- loggedin vs loggedout headers (WHAT I NEED!)
-    if True then
-        -- model.isLoggedIn
-        { title = title
-        , body = [ viewHeader model, content ]
-        }
-
-    else
-        { title = title
-        , body = [ viewHeaderLO model, content ]
-        }
 
 
 
@@ -406,11 +238,183 @@ subscriptions model =
 
 
 
+---- VIEW ----
+
+
+viewContent :
+    Model
+    -> ( String, Html Msg ) --Model
+viewContent model =
+    let
+        url =
+            model.url
+
+        -- isLoggedIn =
+        --     model.isLoggedIn
+    in
+    case model.page of
+        PublicFeed publicFeedModel ->
+            ( "Conduit - Conduit"
+            , PublicFeed.view publicFeedModel |> Html.map PublicFeedMessage
+              -- , h1 [] [ text "Public Feed" ]
+            )
+
+        Auth authUser ->
+            ( "Auth - Conduit"
+            , Auth.view authUser |> Html.map AuthMessage
+              -- , h1 [] [ text "Auth" ]
+            )
+
+        Editor editorArticle ->
+            ( "Editor - Conduit"
+            , Editor.view editorArticle |> Html.map EditorMessage
+              -- , h1 [] [ text "Editor" ]
+            )
+
+        Login loginUser ->
+            ( "Login - Conduit"
+            , Login.view loginUser |> Html.map LoginMessage
+              -- , h1 [] [ text "Login" ]
+            )
+
+        Article articleModel ->
+            ( "Article - Conduit"
+            , Article.view articleModel |> Html.map ArticleMessage
+              -- , h1 [] [ text "Article" ]
+            )
+
+        Profile profileModel ->
+            ( "Profile - Conduit"
+            , Profile.view profileModel |> Html.map ProfileMessage
+              -- , h1 [] [ text "Profile" ]
+            )
+
+        Settings settingsUserSettings ->
+            ( "Settings - Conduit"
+            , Settings.view settingsUserSettings |> Html.map SettingsMessage
+              -- , h1 [] [ text "Settings" ]
+            )
+
+        NotFound ->
+            ( "Not Found - Conduit"
+            , div [ class "not-found" ]
+                [ h1 [] [ text "Page Not Found" ] ]
+            )
+
+
+
+-- LoginOrSomethingLikeIt user ->
+--     ( "What up, homie?"
+--     , Html.map AuthMessage (Auth.view user)
+--     )
+-- Edit article ->
+--     ( "Be The Change You Want To See In The Article"
+--     , Html.map EditorMessage <| Editor.view article
+--     )
+-- _ ->
+--     ( "Unimplemented ....... yet!"
+--     , div
+--         []
+--         [ text "UNIMPLEMENTED but check this out:"
+--         , br [] []
+--         , a
+--             [ onClick (Visit <| Internal { url | path = "signup" })
+--             , style "cursor" "pointer"
+--             ]
+--             [ text "Auth page yo" ]
+--         , br [] []
+--         , a
+--             [ onClick (Visit <| Internal { url | path = "createarticle" })
+--             , style "cursor" "pointer"
+--             ]
+--             [ text "Feeling creative?" ]
+--         ]
+--     )
+
+
+viewHeaderLO : Model -> Html Msg
+viewHeaderLO model =
+    --Logged out universal header used on all pages BUT changes the active element depending on the page
+    let
+        isActivePage pageName =
+            if model.currentPage == pageName then
+                "nav-item active"
+
+            else
+                "nav-item"
+    in
+    nav [ class "navbar navbar-light" ]
+        [ div [ class "container" ]
+            [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
+            , ul [ class "nav navbar-nav pull-xs-right" ]
+                --could make a function for doing all of this
+                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
+
+                -- , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
+                , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
+                , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
+
+                -- , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
+                ]
+            ]
+        ]
+
+
+viewHeader : Model -> Html Msg
+viewHeader model =
+    --Logged in universal header used on all pages BUT changes the active element depending on the page
+    let
+        isActivePage pageName =
+            if model.currentPage == pageName then
+                "nav-item active"
+
+            else
+                "nav-item"
+    in
+    nav [ class "navbar navbar-light" ]
+        [ div [ class "container" ]
+            [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
+            , ul [ class "nav navbar-nav pull-xs-right" ]
+                --could make a function for doing all of this
+                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
+                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
+                , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
+                , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
+                , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
+                ]
+            ]
+        ]
+
+
+view : Model -> Document Msg
+view model =
+    let
+        ( title, content ) =
+            viewContent model
+    in
+    -- loggedin vs loggedout headers (WHAT I NEED!)
+    if True then
+        -- model.isLoggedIn
+        { title = title
+        , body = [ viewHeader model, content ]
+        }
+
+    else
+        { title = title
+        , body = [ viewHeaderLO model, content ]
+        }
+
+
+
 ---- PROGRAM ----
 
 
 main : Program () Model Msg
 main =
+    -- init gets the current Url from the browsers navigation bar
+    -- click on link = intercepted as a UrlRequest, does not load new HTML, url gets sent to onUrlChange
+    -- onUrlChange wraps the current URL whenever the URL changes in the browser and then passes the wrapped value to update
+    -- it transforms the incoming Url into Maybe Route with Routes.match then pass Maybe Route onto the NewRoute constructor
     Browser.application
         { init = init
         , view = view
@@ -422,6 +426,4 @@ main =
 
 
 
--- wrap current URL whenever the URL changes in the browser and then passes the wrapped value to update
--- transform the incoming Url into Maybe Route with Routes.match then pass Maybe Route onto the NewRoute constructor
 -- serve using: npx serve -c serve.json
