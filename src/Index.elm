@@ -213,7 +213,7 @@ type Msg
     | GotYourFeed (Result Http.Error Feed)
     | LoadGF
     | LoadYF
-
+    | FetchArticle String 
 
 toggleLike : Article -> Article
 toggleLike article =
@@ -277,6 +277,9 @@ update msg model =
 
         LoadYF ->
             ( model, fetchYourArticles )
+        
+        FetchArticle slug ->
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -321,7 +324,9 @@ viewarticlePreview article =
                 ]
             , viewLoveButton article
             ]
-        , a [ Routes.href Routes.Article, class "preview-link" ]
+        , a [ Routes.href Routes.Article, class "preview-link", onClick (FetchArticle article.slug) ] 
+            -- how does Routes.Article not interfere or like what happens inbetween firing of message
+            -- and final fetching and url changing with the same model being returned in Index's update?
             [ h1 [] [ text article.title ]
             , p [] [ text article.description ]
             , span [] [ text "Read more..." ]

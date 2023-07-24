@@ -8,13 +8,17 @@ import Editor
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick)
+import Http
+import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Encode as Encode
 import Index as PublicFeed
 import Login
 import Profile
 import Routes exposing (Route(..))
 import Settings
 import Url exposing (Url)
-
+ 
 
 type CurrentPage
     = PublicFeed PublicFeed.Model
@@ -62,6 +66,18 @@ init () url navigationKey =
     setNewPage (Routes.match url) (initialModel navigationKey url)
 
 
+baseUrl : String
+baseUrl =
+    "http://localhost:8000/"
+
+
+fetchArticle : Editor.Article -> Cmd Msg
+fetchArticle article =
+    Http.get
+        { url = baseUrl ++ "api/articles/" ++ article.slug
+        , expect = Http.expectJson GotArticle (field "article" Editor.articleDecoder)
+        }
+
 
 ---- UPDATE ----
 -- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
@@ -83,6 +99,7 @@ type Msg
     | ArticleMessage Article.Msg
     | ProfileMessage Profile.Msg
     | SettingsMessage Settings.Msg
+    | GotArticle (Result Http.Error Editor.Article)
 
 
 setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
@@ -161,11 +178,11 @@ update msg model =
             setNewPage maybeRoute model
 
         -- intercept the global message from publicfeed that we want
-        ( PublicFeedMessage (PublicFeed.LoadGF slug), _ ) ->
+        ( PublicFeedMessage (PublicFeed.FetchArticle slug), _ ) ->
             ( model, fetchArticle slug )
 
         ( GotArticle article, _ ) ->
-            ( { model | page = Article { article = article, page = blah, comments = "no way jose" } }, Cmd.none )
+            ( { model | page = Article { article = article } }, Cmd.none ) 
 
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
             let
