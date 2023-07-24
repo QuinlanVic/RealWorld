@@ -270,13 +270,16 @@ update msg model =
             ( { model | yourfeed = Just yourfeed }, Cmd.none )
 
         GotYourFeed (Err _) ->
-            ( model, Cmd.none )
+            ( model , Cmd.none )
 
         LoadGF ->
             ( model, fetchGlobalArticles )
 
         LoadYF ->
             ( model, fetchYourArticles )
+        
+        FetchArticle slug ->
+            ( model, )
 
 
 subscriptions : Model -> Sub Msg
@@ -313,7 +316,7 @@ viewarticlePreview : Article -> Html Msg
 viewarticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ Routes.href (Routes.Profile {- article.author.username -}) ] [ img [ src article.author.image ] [] ]
+            [ a [ Routes.href (Routes.Profile {- article.author.username -}), onClick (FetchArticle article.slug) ] [ img [ src article.author.image ] [] ]
             , text " "
             , div [ class "info" ]
                 [ a [ Routes.href (Routes.Profile {- article.author.username -}), class "author" ] [ text article.author.username ]

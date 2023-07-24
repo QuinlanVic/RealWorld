@@ -262,12 +262,12 @@ editArticle article =
 
 
 
--- fetchArticle : Article -> Cmd Msg
--- fetchArticle article =
---     Http.get
---         { url = baseUrl ++ "api/articles/" ++ article.slug
---         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
---         }
+fetchArticle : Article -> Cmd Msg
+fetchArticle article =
+    Http.get
+        { url = baseUrl ++ "api/articles/" ++ article.slug
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+        }
 
 
 getComments : Article -> Cmd Msg
