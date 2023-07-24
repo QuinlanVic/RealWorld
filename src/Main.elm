@@ -160,6 +160,13 @@ update msg model =
         ( NewRoute maybeRoute, _ ) ->
             setNewPage maybeRoute model
 
+        -- intercept the global message from publicfeed that we want
+        ( PublicFeedMessage (PublicFeed.LoadGF slug), _ ) ->
+            ( model, fetchArticle slug )
+
+        ( GotArticle article, _ ) ->
+            ( { model | page = Article { article = article, page = blah, comments = "no way jose" } }, Cmd.none )
+
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
             let
                 ( updatedPublicFeedModel, publicFeedCmd ) =
