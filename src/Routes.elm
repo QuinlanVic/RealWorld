@@ -9,6 +9,8 @@ import Url.Parser as Parser exposing (Parser)
 
 
 type Route
+    -- URL parsing = extract information from the url 
+    -- Going to add strings and stuff that they input to know what specific page to go to :)
     = Index
     | Auth
     | Editor
