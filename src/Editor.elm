@@ -1,7 +1,7 @@
 module Editor exposing (Article, Author, Msg, articleDecoder, authorDecoder, getArticleCompleted, init, initialModel, update, view)
 
 -- import Exts.Html exposing (nbsp)
--- import Browser 
+-- import Browser
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
@@ -41,6 +41,7 @@ type alias Article =
     , created : Bool
     , titleError : Maybe String
     , bodyError : Maybe String
+    , descError : Maybe String
     }
 
 
@@ -111,6 +112,7 @@ articleDecoder =
         |> hardcoded False
         |> hardcoded (Just "")
         |> hardcoded (Just "")
+        |> hardcoded (Just "")
 
 
 defaultAuthor : Author
@@ -137,6 +139,7 @@ initialModel =
     , created = False
     , titleError = Just ""
     , bodyError = Just ""
+    , descError = Just ""
     }
 
 
@@ -175,14 +178,14 @@ update : Msg -> Article -> ( Article, Cmd Msg )
 update message article =
     case message of
         SaveTitle title ->
-            ( { article | titleError = validateTitle title }, Cmd.none )
+            ( { article | title = title, titleError = validateTitle title }, Cmd.none )
 
         --update record syntax
         SaveDescription description ->
-            ( { article | description = description }, Cmd.none )
+            ( { article | description = description, descError = validateTitle description }, Cmd.none )
 
         SaveBody body ->
-            ( { article | bodyError = validateBody body }, Cmd.none )
+            ( { article | body = body, bodyError = validateBody body }, Cmd.none )
 
         SaveTags tagList ->
             ( { article | tagList = tagList }, Cmd.none )
@@ -190,7 +193,7 @@ update message article =
         CreateArticle ->
             let
                 validatedArticle =
-                    { article | titleError = validateTitle article.title, bodyError = validateBody article.body }
+                    { article | titleError = validateTitle article.title, bodyError = validateBody article.body, descError = validateTitle article.description }
             in
             if isFormValid validatedArticle then
                 ( validatedArticle, saveArticle validatedArticle )
@@ -204,7 +207,7 @@ update message article =
 
 isFormValid : Article -> Bool
 isFormValid article =
-    Maybe.withDefault "" article.titleError == "" && Maybe.withDefault "" article.bodyError == ""
+    Maybe.withDefault "" article.titleError == "" && Maybe.withDefault "" article.bodyError == "" && Maybe.withDefault "" article.descError == ""
 
 
 subscriptions : Article -> Sub Msg
@@ -227,20 +230,24 @@ view article =
                             [ div [ style "color" "red" ] [ text (Maybe.withDefault "" article.titleError) ]
                             , fieldset [ class "form-group" ]
                                 [ input [ class "form-control form-control-lg", type_ "text", placeholder "Article Title", onInput SaveTitle ] [] ]
+                            , div [ style "color" "red" ] [ text (Maybe.withDefault "" article.descError) ]
+                            , fieldset [ class "form-group" ]
+                                [ input [ class "form-control", type_ "text", placeholder "What's this article about?", onInput SaveDescription ] [] ]
                             , div [ style "color" "red" ] [ text (Maybe.withDefault "" article.bodyError) ]
                             , fieldset [ class "form-group" ]
-                                [ textarea [ class "form-control", rows 8, placeholder "Write your Article (in markdown)", onInput SaveBody ] [] ]
+                                [ textarea [ class "form-control", rows 8, placeholder "Write your article (in markdown)", onInput SaveBody ] [] ]
                             , fieldset [ class "form-group" ]
-                                [ input [ class "form-control", type_ "text", placeholder "Enter tagList" ] [] --, onInput SaveTags (have to do it for a list of strings (split into strings to be passed into list))
-                                , div [ class "tag-list" ]
-                                    [ span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " programming" ] --function
-                                    , text " "
-                                    , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " javascript" ]
-                                    , text " "
-                                    , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " webdev" ]
-                                    ]
+                                [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] [] --, onInput SaveTags (have to do it for a list of strings (split into strings to be passed into list))
+
+                                -- , div [ class "tag-list" ]
+                                --     [ span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " programming" ] --function
+                                --     , text " "
+                                --     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " javascript" ]
+                                --     , text " "
+                                --     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " webdev" ]
+                                --     ]
                                 ]
-                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick CreateArticle ] [ text "Create Article" ]
+                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick CreateArticle ] [ text "Publish Article" ]
                             ]
                         ]
                     ]
