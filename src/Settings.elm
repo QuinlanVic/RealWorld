@@ -36,7 +36,7 @@ saveUser user =
         , headers = []
         , body = body
         , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
-        , url = baseUrl ++ "api/users"
+        , url = baseUrl ++ "api/user"
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -46,7 +46,7 @@ getUser : Cmd Msg
 getUser =
     --GET logged in user upon loadin
     Http.get
-        { url = baseUrl ++ "user"
+        { url = baseUrl ++ "api/user"
         , expect = Http.expectJson LoadUser (field "user" userDecoder)
         }
 

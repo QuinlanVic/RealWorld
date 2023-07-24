@@ -120,7 +120,7 @@ favoriteArticle article =
     Http.post
         { body = body
         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
-        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
         }
 
 
@@ -135,7 +135,7 @@ unfavoriteArticle article =
         , headers = []
         , body = body
         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
-        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
         , timeout = Nothing
         , tracker = Nothing
         }

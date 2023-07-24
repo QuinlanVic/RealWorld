@@ -145,8 +145,8 @@ favoriteArticle article =
     Http.post
         { body = body
         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
-        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
-        } 
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        }
 
 
 unfavoriteArticle : Article -> Cmd Msg
@@ -159,14 +159,14 @@ unfavoriteArticle article =
         { method = "DELETE"
         , headers = []
         , body = body
-        , expect = Http.expectJson GotArticle (field "article" articleDecoder) 
-        , url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}/favorite"
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
         , timeout = Nothing
         , tracker = Nothing
         }
 
 
-followUser : Author -> Cmd Msg 
+followUser : Author -> Cmd Msg
 followUser author =
     let
         body =
@@ -174,9 +174,9 @@ followUser author =
     in
     Http.post
         { body = body
-        , expect = Http.expectJson GotAuthor (field "author" authorDecoder) 
-        , url = baseUrl ++ "api/profiles/{" ++ author.username ++ "}/follow" 
-        } 
+        , expect = Http.expectJson GotAuthor (field "author" authorDecoder)
+        , url = baseUrl ++ "api/profiles/" ++ author.username ++ "/follow"
+        }
 
 
 unfollowUser : Author -> Cmd Msg
@@ -189,12 +189,11 @@ unfollowUser author =
         { method = "DELETE"
         , headers = []
         , body = body
-        , expect = Http.expectJson GotAuthor (field "author" authorDecoder) 
-        , url = baseUrl ++ "api/profiles/{" ++ author.username ++ "}/follow"
+        , expect = Http.expectJson GotAuthor (field "author" authorDecoder)
+        , url = baseUrl ++ "api/profiles/" ++ author.username ++ "/follow"
         , timeout = Nothing
         , tracker = Nothing
         }
-
 
 
 getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
@@ -209,10 +208,11 @@ getArticleCompleted article result =
             ( article, Cmd.none )
 
 
+
 -- fetchArticle : Article -> Cmd Msg
 -- fetchArticle article =
 --     Http.get
---         { url = baseUrl ++ "api/articles/{" ++ article.slug ++ "}"
+--         { url = baseUrl ++ "api/articles/" ++ article.slug
 --         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
 --         }
 
@@ -221,7 +221,7 @@ init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
     -- get a specific article ( fetchArticle )
-    ( initialModel, Cmd.none ) 
+    ( initialModel, Cmd.none )
 
 
 
@@ -233,7 +233,7 @@ type Msg
     | ToggleFollow
     | UpdateComment String
     | SaveComment
-    | GotArticle (Result Http.Error Article) 
+    | GotArticle (Result Http.Error Article)
     | GotAuthor (Result Http.Error Author)
 
 
@@ -313,12 +313,14 @@ update message model =
         ToggleLike ->
             if model.article.favorited then
                 ( { model | article = updateArticle toggleLike model.article }, favoriteArticle model.article )
+
             else
                 ( { model | article = updateArticle toggleLike model.article }, unfavoriteArticle model.article )
 
         ToggleFollow ->
             if model.author.following then
                 ( { model | author = updateAuthor toggleFollow model.author }, followUser model.author )
+
             else
                 ( { model | author = updateAuthor toggleFollow model.author }, unfollowUser model.author )
 
@@ -333,10 +335,10 @@ update message model =
 
         GotArticle (Err _) ->
             ( model, Cmd.none )
-        
+
         GotAuthor (Ok author) ->
             ( { model | author = author }, Cmd.none )
-        
+
         GotAuthor (Err _) ->
             ( model, Cmd.none )
 
@@ -652,6 +654,7 @@ view model =
                 ]
             ]
         ]
+
 
 
 -- | GotArticle (Result Http.Error Article)
