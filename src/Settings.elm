@@ -35,7 +35,7 @@ saveUser user =
         { method = "PUT"
         , headers = []
         , body = body
-        , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
+        , expect = Http.expectJson GotUser (field "user" userDecoder) -- wrap JSON received in GotUser Msg
         , url = baseUrl ++ "api/user"
         , timeout = Nothing
         , tracker = Nothing
@@ -47,7 +47,7 @@ getUser =
     --GET logged in user upon loadin
     Http.get
         { url = baseUrl ++ "api/user"
-        , expect = Http.expectJson LoadUser (field "user" userDecoder)
+        , expect = Http.expectJson GotUser (field "user" userDecoder)
         }
 
 
@@ -111,7 +111,7 @@ init =
 -- fetchUser =
 --     Http.get
 --         { url = baseUrl ++ "api/users"
---         , expect = Http.expectJson LoadUser userDecoder -- wrap JSON received in LoadUser Msg
+--         , expect = Http.expectJson GotUser userDecoder -- wrap JSON received in GotUser Msg
 --         }
 --Update--
 
@@ -152,7 +152,7 @@ update message user =
         LogOut ->
             ( user, Cmd.none )
 
-        LoadUser result ->
+        GotUser result ->
             getUserCompleted user result
 
 
@@ -239,7 +239,7 @@ type Msg
     | SaveEmail String
     | SavePassword String
     | UpdateSettings
-    | LoadUser (Result Http.Error User)
+    | GotUser (Result Http.Error User)
     | LogOut
 
 

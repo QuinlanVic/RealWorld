@@ -99,7 +99,7 @@ fetchYourArticles =
     -- need some kind of authentication to know which articles to fetch depended on the user
     Http.get
         { url = baseUrl ++ "api/articles/feed"
-        , expect = Http.expectJson GotYourFeed (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotYourFeed (field "articles" (list articleDecoder)) 
         }
 
 

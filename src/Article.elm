@@ -45,9 +45,23 @@ type alias Article =
     }
 
 
-type alias Model =
-    { article : Article
+type alias Comment =
+    { id : Int
+    , createdAt : String
+    , updatedAt : String
+    , body : String
     , author : Author
+    }
+
+
+type alias Comments =
+    List Comment
+
+
+type alias Model =
+    { article : Maybe Article
+    , author : Author
+    , comments : Maybe Comments
     }
 
 
@@ -79,10 +93,21 @@ defaultAuthor =
     }
 
 
+defaultComment : Comment
+defaultComment =
+    { id = 0
+    , createdAt = "Dec 29th"
+    , updatedAt = ""
+    , body = "With supporting text below as a natural lead-in to additional content."
+    , author = defaultAuthor
+    }
+
+
 initialModel : Model
 initialModel =
-    { article = defaultArticle
+    { article = Just defaultArticle
     , author = defaultAuthor
+    , comments = Just [ defaultComment ]
     }
 
 
@@ -112,6 +137,16 @@ articleDecoder =
         |> required "author" authorDecoder
         |> hardcoded [ "" ]
         |> hardcoded ""
+
+
+commentDecoder : Decoder Comment
+commentDecoder =
+    succeed Comment
+        |> required "id" int
+        |> required "createdAt" string
+        |> required "updatedAt" string
+        |> required "body" string
+        |> required "author" authorDecoder
 
 
 baseUrl : String
@@ -208,6 +243,24 @@ getArticleCompleted article result =
             ( article, Cmd.none )
 
 
+editArticle : Article -> Cmd Msg
+editArticle article =
+    --PUT/articles/slug
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.request
+        { method = "PUT"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in LoadArticle Msg
+        , url = baseUrl ++ "api/articles" ++ article.slug
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
 
 -- fetchArticle : Article -> Cmd Msg
 -- fetchArticle article =
@@ -215,6 +268,31 @@ getArticleCompleted article result =
 --         { url = baseUrl ++ "api/articles/" ++ article.slug
 --         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
 --         }
+
+
+getComments : Article -> Cmd Msg
+getComments article =
+    Http.get
+        { url = baseUrl ++ "api/articles/" ++ article.slug ++ "/comments"
+        , expect = Http.expectJson GotComments (field "comments" (list commentDecoder))
+        }
+
+
+deleteArticle : Article -> Cmd Msg
+deleteArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/" ++ article.slug
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
 init : ( Model, Cmd Msg )
@@ -235,6 +313,9 @@ type Msg
     | SaveComment
     | GotArticle (Result Http.Error Article)
     | GotAuthor (Result Http.Error Author)
+    | EditArticle
+    | DeleteArticle
+    | GotComments (Result Http.Error Comments)
 
 
 makeUpdatesToComment : Article -> String -> Article
@@ -279,7 +360,7 @@ toggleLike article =
     --             currArticle
     --     )
     --     feed
-    -- favoritesCount should update automatically when the server returns the new Article
+    -- favoritesCount should update automatically when the server returns the new Article!!!!
     if article.favorited then
         { article | favorited = not article.favorited, favoritesCount = article.favoritesCount - 1 }
 
@@ -342,6 +423,14 @@ update message model =
         GotAuthor (Err _) ->
             ( model, Cmd.none )
 
+        EditArticle ->
+            --send to Editor page with appropriate article information
+            ( model, editArticle model.article )
+
+        DeleteArticle ->
+            --delete the article using API call AND THEN SEND BACK TO MAIN PAGE
+            ( model, deleteArticle model.article )
+
 
 
 -- LoadArticle ->
@@ -400,21 +489,21 @@ viewLoveButton model =
         ]
 
 
-viewComment : String -> Html Msg
+viewComment : Comment -> Html Msg
 viewComment comment =
     --display a comment
     div [ class "card" ]
         --(div)
         [ div [ class "card-block" ]
-            [ p [ class "card-text" ] [ text comment ]
+            [ p [ class "card-text" ] [ text comment.body ]
             ]
         , div [ class "card-footer" ]
             [ a [ Routes.href Routes.Profile, class "comment-author" ]
-                [ img [ src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img" ] [] ]
+                [ img [ src comment.author.image, class "comment-author-img" ] [] ]
             , text " \u{00A0} "
-            , a [ Routes.href Routes.Profile, class "comment-author" ] [ text "Jacob Schmidt" ]
+            , a [ Routes.href Routes.Profile, class "comment-author" ] [ text comment.author.username ]
             , text " "
-            , span [ class "date-posted" ] [ text "Dec 29th" ]
+            , span [ class "date-posted" ] [ text comment.createdAt ]
             , span [ class "mod-options" ]
                 [ i [ class "ion-edit" ] []
                 , text " "
@@ -424,7 +513,7 @@ viewComment comment =
         ]
 
 
-viewCommentList : List String -> Html Msg
+viewCommentList : Comments -> Html Msg
 viewCommentList comments =
     --display a list of comments (if there are)
     case comments of
@@ -455,7 +544,7 @@ viewComments model =
     --display all the comments and a place for adding a new comment
     div [ class "row" ]
         [ div [ class "col-md-8 col-md-offset-2" ]
-            [ viewCommentList model.article.comments
+            [ viewCommentList model.comments
             , form [ class "card comment-form", onSubmit SaveComment ]
                 [ div [ class "card-block" ]
                     [ textarea [ class "form-control", placeholder "Write a comment...", rows 3, value model.article.newComment, onInput UpdateComment ] [] ]
