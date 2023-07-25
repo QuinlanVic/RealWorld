@@ -86,7 +86,6 @@ defaultArticle =
 
 defaultAuthor : Author
 defaultAuthor =
-    -- authorpage = "profileelm.html"
     { username = "Eric Simons"
     , bio = ""
     , image = "http://i.imgur.com/Qr71crq.jpg"
@@ -138,11 +137,6 @@ articleDecoder =
         |> required "author" authorDecoder
 
 
-
--- |> hardcoded [ "" ]
--- |> hardcoded ""
-
-
 commentDecoder : Decoder Comment
 commentDecoder =
     succeed Comment
@@ -160,16 +154,16 @@ baseUrl =
 
 encodeArticle : Article -> Encode.Value
 encodeArticle article =
-    --used to encode Article slug sent to the server via Article request body
+    --used to encode Article slug sent to the server via request body
     Encode.object
         [ ( "slug", Encode.string article.slug ) ]
 
 
-encodeComment : Comment -> Encode.Value
+encodeComment : String -> Encode.Value
 encodeComment comment =
-    --used to encode Article slug sent to the server via Article request body
+    --used to encode comment sent to the server via request body
     Encode.object
-        [ ( "body", Encode.string comment.body ) ]
+        [ ( "body", Encode.string comment ) ]
 
 
 encodeAuthor : Author -> Encode.Value
@@ -273,6 +267,7 @@ editArticle article =
 
 
 
+-- Now done in main :)
 -- fetchArticle : Article -> Cmd Msg
 -- fetchArticle article =
 --     Http.get
@@ -289,7 +284,7 @@ fetchComments slug =
         }
 
 
-createComment : String -> Comment -> Cmd Msg
+createComment : String -> String -> Cmd Msg
 createComment slug comment =
     let
         body =
@@ -348,7 +343,7 @@ type Msg
     = ToggleLike
     | ToggleFollow
     | UpdateComment String
-    | SaveComment
+    | SaveComment String
     | GotArticle (Result Http.Error Article)
     | GotAuthor (Result Http.Error Author)
     | EditArticle
@@ -358,31 +353,32 @@ type Msg
     | DeleteResponse (Result Http.Error ())
 
 
-updateComment : Model -> String -> Model
-updateComment model comment =
-    { model | newComment = comment } 
+addComment : Comment -> Maybe Comments -> Maybe Comments
+addComment newComment oldComments =
+    case oldComments of
+        Just comments ->
+            Just (List.append comments [ newComment ])
+
+        Nothing ->
+            Just [ newComment ]
 
 
-saveComment : Model -> String -> Model 
-saveComment model comment =
-    -- take in an article and a comment and update its fields appropriately
-    { model | comments = model.comments ++ [ comment ], newComment = "" }
-
-
-saveNewComment : Model -> Model
-saveNewComment model =
+checkNewComment : String -> Bool
+checkNewComment newComment =
     let
         comment =
-            String.trim model.newComment
+            String.trim newComment
 
         --remove trailing spaces from the comment
     in
     case comment of
         "" ->
-            model
+            -- invalid comment as it is empty
+            False
 
         _ ->
-            { model | comments = saveComment model.article comment } 
+            -- add new comment
+            True
 
 
 toggleLike : Article -> Article
@@ -435,10 +431,16 @@ update message model =
                 ( { model | author = updateAuthor toggleFollow model.author }, unfollowUser model.author )
 
         UpdateComment comment ->
-            ( updateComment model comment, Cmd.none )
+            -- update the comment as the user types it :)
+            ( { model | newComment = comment }, Cmd.none )
 
-        SaveComment ->
-            ( saveNewComment model, Cmd.none )
+        SaveComment comment ->
+            if checkNewComment comment then
+                ( model, createComment model.article.slug comment )
+
+            else
+                -- if the new comment is empty then return the old model but reset the newComment field
+                ( { model | newComment = "" }, Cmd.none )
 
         GotArticle (Ok article) ->
             ( { model | article = article }, Cmd.none )
@@ -467,13 +469,16 @@ update message model =
             ( model, Cmd.none )
 
         GotComment (Ok comment) ->
-            ( { model | comments = List.append (Just model.comments) [ comment ] }, Cmd.none )
+            -- add new comment and set newComment to empty
+            ( { model | comments = addComment comment model.comments, newComment = "" }, Cmd.none )
 
         GotComment (Err _) ->
-            ( model, Cmd.none )
+            -- return the same model but set newComment to empty
+            ( { model | newComment = "" }, Cmd.none )
 
         DeleteResponse _ ->
-            ( model, Cmd.none )
+            -- after you delete a comment, fetch the new set of comments whether it was successful or not
+            ( model, fetchComments model.article.slug )
 
 
 
@@ -588,14 +593,14 @@ viewComments model =
     div [ class "row" ]
         [ div [ class "col-md-8 col-md-offset-2" ]
             [ viewCommentList model.comments
-            , form [ class "card comment-form", onSubmit SaveComment ]
+            , form [ class "card comment-form" ]
                 [ div [ class "card-block" ]
                     [ textarea [ class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment ] [] ]
 
                 --add enter on enter and shift enter to move to next row :) (otherwise input) onEnter UpdateComment
                 , div [ class "card-footer" ]
                     [ img [ src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img" ] []
-                    , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick SaveComment ] [ text " Post Comment" ]
+                    , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick (SaveComment model.newComment) ] [ text " Post Comment" ]
                     ]
                 ]
             ]

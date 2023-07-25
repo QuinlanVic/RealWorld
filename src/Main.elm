@@ -173,7 +173,7 @@ setNewPage maybeRoute model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
-        -- Debug.log "RECEIVED MESSAGE" msg
+        -- Debug.log "RECEIVED MESSAGE" msg 
         ( NewRoute maybeRoute, _ ) ->
             setNewPage maybeRoute model
 
@@ -182,7 +182,7 @@ update msg model =
             ( model, Cmd.batch [fetchArticle slug ])
 
         ( GotArticle (Ok article), _ ) ->
-            ( { model | page = Article { article = article, author = article.author, comments = Just [], newComment "" } }, Cmd.none ) 
+            ( { model | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" } }, Cmd.none ) 
         
         (GotArticle (Err _), _) -> 
             ( model, Cmd.none )

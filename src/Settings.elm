@@ -121,7 +121,7 @@ update message user =
     case message of
         SavePic image ->
             ( { user | image = Just image }, Cmd.none )
-
+ 
         SaveName username ->
             ( { user | username = username }, Cmd.none )
 
