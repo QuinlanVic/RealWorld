@@ -71,10 +71,10 @@ baseUrl =
     "http://localhost:8000/"
 
 
-fetchArticle : Editor.Article -> Cmd Msg
-fetchArticle article =
+fetchArticle : String -> Cmd Msg
+fetchArticle slug =
     Http.get
-        { url = baseUrl ++ "api/articles/" ++ article.slug
+        { url = baseUrl ++ "api/articles/" ++ slug
         , expect = Http.expectJson GotArticle (field "article" Editor.articleDecoder)
         }
 
@@ -179,10 +179,13 @@ update msg model =
 
         -- intercept the global message from publicfeed that we want
         ( PublicFeedMessage (PublicFeed.FetchArticle slug), _ ) ->
-            ( model, fetchArticle slug )
+            ( model, Cmd.batch [fetchArticle slug ])
 
-        ( GotArticle article, _ ) ->
-            ( { model | page = Article { article = article } }, Cmd.none ) 
+        ( GotArticle (Ok article), _ ) ->
+            ( { model | page = Article { article = article, author = article.author, comments = Just [], newComment "" } }, Cmd.none ) 
+        
+        (GotArticle (Err _), _) -> 
+            ( model, Cmd.none )
 
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
             let

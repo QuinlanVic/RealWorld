@@ -1,4 +1,4 @@
-module Article exposing (Model, Msg, init, initialModel, update, view)
+module Article exposing (Model, Msg, commentDecoder, init, initialModel, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
@@ -24,7 +24,6 @@ type alias Author =
     , bio : String
     , image : String
     , following : Bool
-    , numfollowers : Int
     }
 
 
@@ -40,8 +39,9 @@ type alias Article =
     , favorited : Bool
     , favoritesCount : Int
     , author : Author
-    , comments : List String
-    , newComment : String
+
+    -- , comments : List String
+    -- , newComment : String
     }
 
 
@@ -62,6 +62,7 @@ type alias Model =
     { article : Article
     , author : Author
     , comments : Maybe Comments
+    , newComment : String
     }
 
 
@@ -77,8 +78,9 @@ defaultArticle =
     , favorited = False
     , favoritesCount = 29
     , author = defaultAuthor
-    , comments = [ "With supporting text below as a natural lead-in to additional content." ]
-    , newComment = ""
+
+    -- , comments = [ "With supporting text below as a natural lead-in to additional content." ]
+    -- , newComment = ""
     }
 
 
@@ -89,7 +91,6 @@ defaultAuthor =
     , bio = ""
     , image = "http://i.imgur.com/Qr71crq.jpg"
     , following = False
-    , numfollowers = 10
     }
 
 
@@ -108,6 +109,7 @@ initialModel =
     { article = defaultArticle
     , author = defaultAuthor
     , comments = Just [ defaultComment ]
+    , newComment = ""
     }
 
 
@@ -118,7 +120,6 @@ authorDecoder =
         |> required "bio" string
         |> required "image" string
         |> required "following" bool
-        |> hardcoded 10
 
 
 articleDecoder : Decoder Article
@@ -135,8 +136,11 @@ articleDecoder =
         |> required "favoritesCount" int
         -- "author": {
         |> required "author" authorDecoder
-        |> hardcoded [ "" ]
-        |> hardcoded ""
+
+
+
+-- |> hardcoded [ "" ]
+-- |> hardcoded ""
 
 
 commentDecoder : Decoder Comment
@@ -161,6 +165,13 @@ encodeArticle article =
         [ ( "slug", Encode.string article.slug ) ]
 
 
+encodeComment : Comment -> Encode.Value
+encodeComment comment =
+    --used to encode Article slug sent to the server via Article request body
+    Encode.object
+        [ ( "body", Encode.string comment.body ) ]
+
+
 encodeAuthor : Author -> Encode.Value
 encodeAuthor author =
     --used to encode user sent to the server via PUT request body (for registering)
@@ -178,7 +189,7 @@ favoriteArticle article =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
     in
     Http.post
-        { body = body
+        { body = body -- do not need a body but send it anyway?
         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
         }
@@ -262,19 +273,45 @@ editArticle article =
 
 
 
-fetchArticle : Article -> Cmd Msg
-fetchArticle article =
+-- fetchArticle : Article -> Cmd Msg
+-- fetchArticle article =
+--     Http.get
+--         { url = baseUrl ++ "api/articles/" ++ article.slug
+--         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+--         }
+
+
+fetchComments : String -> Cmd Msg
+fetchComments slug =
     Http.get
-        { url = baseUrl ++ "api/articles/" ++ article.slug
-        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+        { url = baseUrl ++ "api/articles" ++ slug ++ "/comments"
+        , expect = Http.expectJson GotComments (field "comments" (list commentDecoder))
         }
 
 
-getComments : Article -> Cmd Msg
-getComments article =
-    Http.get
-        { url = baseUrl ++ "api/articles/" ++ article.slug ++ "/comments"
-        , expect = Http.expectJson GotComments (field "comments" (list commentDecoder))
+createComment : String -> Comment -> Cmd Msg
+createComment slug comment =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "comment", encodeComment <| comment ) ]
+    in
+    Http.post
+        { body = body
+        , expect = Http.expectJson GotComment (field "comment" commentDecoder)
+        , url = baseUrl ++ "api/articles/" ++ slug ++ "/comments"
+        }
+
+
+deleteComment : String -> Int -> Cmd Msg
+deleteComment slug id =
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , body = Http.emptyBody
+        , expect = Http.expectWhatever DeleteResponse
+        , url = baseUrl ++ "api/articles/" ++ slug ++ "/comments" ++ String.fromInt id
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
@@ -298,8 +335,9 @@ deleteArticle article =
 init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
-    -- get a specific article ( fetchArticle )
-    ( initialModel, Cmd.none )
+    -- get a specific article ( fetchArticle ) in Main and then
+    -- fetch the comments for that article here
+    ( initialModel, fetchComments initialModel.article.slug )
 
 
 
@@ -316,29 +354,26 @@ type Msg
     | EditArticle
     | DeleteArticle
     | GotComments (Result Http.Error Comments)
-
-
-makeUpdatesToComment : Article -> String -> Article
-makeUpdatesToComment article comment =
-    { article | newComment = comment }
+    | GotComment (Result Http.Error Comment)
+    | DeleteResponse (Result Http.Error ())
 
 
 updateComment : Model -> String -> Model
 updateComment model comment =
-    { model | article = makeUpdatesToComment model.article comment }
+    { model | newComment = comment } 
 
 
-saveComment : Article -> String -> Article
-saveComment article comment =
+saveComment : Model -> String -> Model 
+saveComment model comment =
     -- take in an article and a comment and update its fields appropriately
-    { article | comments = article.comments ++ [ comment ], newComment = "" }
+    { model | comments = model.comments ++ [ comment ], newComment = "" }
 
 
 saveNewComment : Model -> Model
 saveNewComment model =
     let
         comment =
-            String.trim model.article.newComment
+            String.trim model.newComment
 
         --remove trailing spaces from the comment
     in
@@ -347,34 +382,28 @@ saveNewComment model =
             model
 
         _ ->
-            { model | article = saveComment model.article comment }
+            { model | comments = saveComment model.article comment } 
 
 
 toggleLike : Article -> Article
 toggleLike article =
-    -- List.map
-    --     (\currArticle ->
-    --         if currArticle.slug == article.slug then
-    --             updateArticle currArticle
-    --         else
-    --             currArticle
-    --     )
-    --     feed
     -- favoritesCount should update automatically when the server returns the new Article!!!!
     if article.favorited then
-        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount - 1 }
+        -- favoritesCount = article.favoritesCount - 1
+        { article | favorited = not article.favorited }
 
     else
-        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount + 1 }
+        -- , favoritesCount = article.favoritesCount + 1
+        { article | favorited = not article.favorited }
 
 
 toggleFollow : Author -> Author
 toggleFollow author =
     if author.following then
-        { author | following = not author.following, numfollowers = author.numfollowers - 1 }
+        { author | following = not author.following }
 
     else
-        { author | following = not author.following, numfollowers = author.numfollowers + 1 }
+        { author | following = not author.following }
 
 
 updateArticle : (Article -> Article) -> Article -> Article
@@ -437,6 +466,15 @@ update message model =
         GotComments (Err _) ->
             ( model, Cmd.none )
 
+        GotComment (Ok comment) ->
+            ( { model | comments = List.append (Just model.comments) [ comment ] }, Cmd.none )
+
+        GotComment (Err _) ->
+            ( model, Cmd.none )
+
+        DeleteResponse _ ->
+            ( model, Cmd.none )
+
 
 
 -- LoadArticle ->
@@ -469,7 +507,6 @@ viewFollowButton model =
     button buttonClass
         [ i [ class "ion-plus-round" ] []
         , text (" \u{00A0} Follow " ++ model.author.username ++ " ")
-        , span [ class "counter" ] [ text ("(" ++ String.fromInt model.author.numfollowers ++ ")") ]
         ]
 
 
@@ -553,12 +590,12 @@ viewComments model =
             [ viewCommentList model.comments
             , form [ class "card comment-form", onSubmit SaveComment ]
                 [ div [ class "card-block" ]
-                    [ textarea [ class "form-control", placeholder "Write a comment...", rows 3, value model.article.newComment, onInput UpdateComment ] [] ]
+                    [ textarea [ class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment ] [] ]
 
                 --add enter on enter and shift enter to move to next row :) (otherwise input) onEnter UpdateComment
                 , div [ class "card-footer" ]
                     [ img [ src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img" ] []
-                    , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.article.newComment), type_ "button", onClick SaveComment ] [ text " Post Comment" ]
+                    , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick SaveComment ] [ text " Post Comment" ]
                     ]
                 ]
             ]
@@ -749,6 +786,7 @@ view model =
                 ]
             ]
         ]
+
 
 
 -- main : Program () Model Msg
