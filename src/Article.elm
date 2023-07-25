@@ -511,7 +511,18 @@ viewFollowButton model =
     in
     button buttonClass
         [ i [ class "ion-plus-round" ] []
-        , text (" \u{00A0} Follow " ++ model.author.username ++ " ")
+        , text
+            (" \u{00A0} "
+                ++ (if model.author.following then
+                        "Unfollow"
+
+                    else
+                        "Follow"
+                   )
+                ++ " "
+                ++ model.author.username
+                ++ " "
+            )
         ]
 
 
@@ -532,7 +543,16 @@ viewLoveButton model =
     in
     button buttonClass
         [ i [ class "ion-heart" ] []
-        , text " \u{00A0} Favorite Post "
+        , text
+            (" \u{00A0} "
+                ++ (if model.article.favorited then
+                        "Unfavorite"
+
+                    else
+                        "Favorite"
+                   )
+                ++ " Post "
+            )
         , span [ class "counter" ] [ text ("(" ++ String.fromInt model.article.favoritesCount ++ ")") ]
         ]
 
