@@ -335,10 +335,9 @@ type Msg
     | SavePassword String
     | Signup
     | LoadUser (Result Http.Error User)
+    
 
 
-
--- | Error String
 -- main : Program () User Msg
 -- main =
 --     Browser.element

@@ -46,6 +46,7 @@ type alias Model =
     , url : Url
     , currentPage : String
     , isLoggedIn : Bool
+    -- add a user to your main model :)
     }
 
 

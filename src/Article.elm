@@ -624,6 +624,8 @@ viewComments model =
 
                 --add enter on enter and shift enter to move to next row :) (otherwise input) onEnter UpdateComment
                 , div [ class "card-footer" ]
+                    -- this has to be the user's image!
+                    -- onClick redirect to user's own profile
                     [ img [ src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img" ] []
                     , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick (SaveComment model.newComment) ] [ text " Post Comment" ]
                     ]
@@ -712,12 +714,12 @@ viewArticle model =
                     files, swipe gestures for our interface, installing the app on your own device, deploying to the iOS & Android app stores, and so much more.""" ]
                 ]
             ]
-        , hr [] []
+        , hr [] [] 
         , div [ class "post-actions" ]
             [ div [ class "post-meta" ]
                 [ a
                     [ Routes.href Routes.Profile
-
+                    -- add onClick to author's profile page 
                     {- model.author.username -}
                     ]
                     [ img [ src (maybeImageBio model.author.image) ] [] ]
@@ -788,7 +790,7 @@ view model =
                 [ div [ class "container" ]
                     [ h1 [] [ text "How to build webapps that scale" ]
                     , div [ class "post-meta" ]
-                        [ a [ Routes.href Routes.Profile ]
+                        [ a [ Routes.href Routes.Profile ] -- add onClick to author's profile page 
                             [ img [ src (maybeImageBio model.author.image) ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
