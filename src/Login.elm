@@ -3,7 +3,6 @@ module Login exposing (Msg, init, update, view)
 -- import Browser
 
 import Auth exposing (User, baseUrl, initialModel, trimString, userDecoder, validateEmail, validatePassword)
-import Browser.Navigation as Navigation
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
@@ -12,7 +11,6 @@ import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succ
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes exposing (Route(..))
-import Url
 
 
 
@@ -48,7 +46,7 @@ saveUser user =
     in
     Http.post
         { body = body
-        , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
+        , expect = Http.expectJson GotUser (field "user" userDecoder) -- wrap JSON received in GotUser Msg
         , url = baseUrl ++ "api/users/login"
         }
         |> Cmd.map (Debug.log "LoginSuccess" >> always Login)
@@ -85,35 +83,6 @@ encodeUser user =
 --         |> hardcoded (Just "")
 -- hardcoded tells JSON decoder to use a static value as an argument in the underlying decoder function instead
 --of extracting a property from the JSON object
-
-
-getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
-getUserCompleted user result =
-    case result of
-        Ok getUser ->
-            --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( { getUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
-
-        --|> Debug.log "got the user"
-        Err error ->
-            ( { user | errmsg = Debug.toString error }, Cmd.none )
-
-
-
--- initialModel : User
--- initialModel = --reuse from Auth.elm
---     { email = ""
---     , token = ""
---     , username = ""
---     , bio = Just ""
---     , image = Just ""
---     , password = ""
---     , signedUpOrloggedIn = False
---     , errmsg = ""
---     , usernameError = Just ""
---     , emailError = Just ""
---     , passwordError = Just ""
---     }
 
 
 init : ( User, Cmd Msg )
@@ -153,8 +122,12 @@ update message user =
             else
                 ( validatedUser, Cmd.none )
 
-        LoadUser result ->
-            getUserCompleted user result
+        GotUser (Ok gotUser) ->
+            ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
+        
+        GotUser (Err _) ->
+            ( user, Cmd.none )
+            
 
 
 
@@ -166,9 +139,9 @@ isLoginValid user =
     Maybe.withDefault "" user.emailError == "" && Maybe.withDefault "" user.passwordError == ""
 
 
-subscriptions : User -> Sub Msg
-subscriptions user =
-    Sub.none
+-- subscriptions : User -> Sub Msg
+-- subscriptions user =
+--     Sub.none
 
 
 
@@ -282,7 +255,7 @@ type Msg
     = SaveEmail String
     | SavePassword String
     | Login
-    | LoadUser (Result Http.Error User)
+    | GotUser (Result Http.Error User)
 
 
 

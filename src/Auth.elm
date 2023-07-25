@@ -2,7 +2,7 @@ module Auth exposing (Msg, User, baseUrl, init, initialModel, isFormValid, trimS
 
 -- import Exts.Html exposing (nbsp)
 
-import Browser
+-- import Browser
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -12,7 +12,6 @@ import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Regex exposing (Regex, fromString)
 import Routes
-import String exposing (replace)
 
 
 
@@ -57,17 +56,6 @@ saveUser user =
         , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
         , url = baseUrl ++ "api/users"
         }
-
-
-getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
-getUserCompleted user result =
-    case result of
-        Ok getUser ->
-            --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( { getUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
-
-        Err error ->
-            ( { user | errmsg = Debug.toString error }, Cmd.none )
 
 
 encodeUser : User -> Encode.Value
@@ -214,8 +202,11 @@ update message user =
             else
                 ( validatedUser, Cmd.none )
 
-        LoadUser result ->
-            getUserCompleted user result
+        LoadUser (Ok gotUser) ->
+            ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none)
+        
+        LoadUser (Err _) ->
+            ( user, Cmd.none)
 
 
 isFormValid : User -> Bool
@@ -224,12 +215,9 @@ isFormValid user =
 
 
 
--- Error errormsg -> user
-
-
-subscriptions : User -> Sub Msg
-subscriptions user =
-    Sub.none
+-- subscriptions : User -> Sub Msg
+-- subscriptions user =
+--     Sub.none
 
 
 

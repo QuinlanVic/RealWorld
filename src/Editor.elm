@@ -1,4 +1,4 @@
-module Editor exposing (Article, Author, Msg, articleDecoder, authorDecoder, getArticleCompleted, init, initialModel, update, view)
+module Editor exposing (Article, Author, Msg, articleDecoder, authorDecoder, init, initialModel, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
@@ -7,8 +7,8 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (custom, hardcoded, required)
+import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes
 
@@ -61,16 +61,6 @@ saveArticle article =
         , expect = Http.expectJson LoadArticle (field "article" articleDecoder) -- wrap JSON received in LoadArtifcle Msg
         , url = baseUrl ++ "api/articles"
         }
-
-
-getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
-getArticleCompleted article result =
-    case result of
-        Ok getArticle ->
-            ( getArticle |> Debug.log "got the article", Cmd.none )
-
-        Err error ->
-            ( article, Cmd.none )
 
 
 encodeArticle : Article -> Encode.Value
@@ -199,9 +189,13 @@ update message article =
             else
                 ( validatedArticle, Cmd.none )
 
-        LoadArticle result ->
+        LoadArticle (Ok gotArticle) ->
             -- get the article and then change page to new article :)
-            getArticleCompleted article result
+            ( gotArticle, Cmd.none )
+        
+        LoadArticle (Err _) ->
+            ( article, Cmd.none )
+        
 
 
 isFormValid : Article -> Bool
@@ -209,9 +203,9 @@ isFormValid article =
     Maybe.withDefault "" article.titleError == "" && Maybe.withDefault "" article.bodyError == "" && Maybe.withDefault "" article.descError == ""
 
 
-subscriptions : Article -> Sub Msg
-subscriptions article =
-    Sub.none
+-- subscriptions : Article -> Sub Msg
+-- subscriptions article =
+--     Sub.none
 
 
 

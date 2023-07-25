@@ -5,9 +5,9 @@ module Profile exposing (Model, Msg, init, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
-import Html.Events exposing (onClick, onMouseLeave, onMouseOver)
+import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
+import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes
@@ -144,7 +144,7 @@ fetchProfile username =
     -- need to fetch the profile
     Http.get
         { url = baseUrl ++ "api/profiles/" ++ username
-        , expect = Http.expectJson (LoadProfile username) authorDecoder
+        , expect = Http.expectJson GotProfile authorDecoder
         }
 
 
@@ -216,7 +216,7 @@ baseUrl =
 type Msg
     = ToggleLike Article
     | ToggleFollow
-    | LoadProfile String (Result Http.Error Author)
+    | GotProfile (Result Http.Error Author)
     | GotProfileArticles (Result Http.Error Feed)
     | GotFavoritedArticles (Result Http.Error Feed)
     | LoadArticlesMade
@@ -230,18 +230,6 @@ toggleFollow author =
 
     else
         { author | following = not author.following, numfollowers = author.numfollowers + 1 }
-
-
-getProfileCompleted : {- String -> -} Model -> Result Http.Error Author -> ( Model, Cmd Msg )
-getProfileCompleted {- username -} model result =
-    case result of
-        Ok userProfile ->
-            --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( { model | profile = userProfile }, Cmd.none )
-
-        --|> Debug.log "got the user"
-        Err error ->
-            ( model, Cmd.none )
 
 
 toggleLike : Article -> Article
@@ -290,8 +278,11 @@ update message model =
         ToggleFollow ->
             ( { model | profile = updateAuthor toggleFollow model.profile }, Cmd.none )
 
-        LoadProfile username result ->
-            getProfileCompleted {- username -} model result
+        GotProfile (Ok userProfile) ->
+            ( { model | profile = userProfile }, Cmd.none )
+        
+        GotProfile (Err _) ->
+            ( model, Cmd.none )
 
         GotProfileArticles (Ok articlesMade) ->
             ( { model | articlesMade = Just articlesMade }, Cmd.none )
@@ -312,9 +303,9 @@ update message model =
             ( model, fetchFavoritedArticles model.profile.username )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
+-- subscriptions : Model -> Sub Msg
+-- subscriptions model =
+--     Sub.none
 
 
 

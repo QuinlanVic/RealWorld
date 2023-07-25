@@ -279,12 +279,13 @@ update msg model =
             ( model, fetchYourArticles )
         
         FetchArticle slug ->
+            -- intercepted in Main.elm now 
             ( model, Cmd.none )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions articles =
-    Sub.none
+-- subscriptions : Model -> Sub Msg
+-- subscriptions articles =
+--     Sub.none
 
 
 

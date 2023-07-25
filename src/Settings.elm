@@ -5,15 +5,13 @@ module Settings exposing (Msg, init, update, view)
 
 import Auth exposing (User, initialModel, isFormValid, trimString, validateEmail, validatePassword, validateUsername)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
+import Html.Attributes exposing (class, href, placeholder, rows, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes
-import String exposing (replace)
-
 
 
 --Model--
@@ -49,17 +47,6 @@ getUser =
         { url = baseUrl ++ "api/user"
         , expect = Http.expectJson GotUser (field "user" userDecoder)
         }
-
-
-getUserCompleted : User -> Result Http.Error User -> ( User, Cmd Msg )
-getUserCompleted user result =
-    case result of
-        Ok gotUser ->
-            --confused here (return new model from the server with hardcoded password, errmsg and signedup values as those are not a part of the user record returned from the server?)
-            ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
-
-        Err error ->
-            ( { user | errmsg = Debug.toString error }, Cmd.none )
 
 
 encodeMaybeString : Maybe String -> Encode.Value
@@ -151,14 +138,17 @@ update message user =
 
         LogOut ->
             ( user, Cmd.none )
+            
+        GotUser (Ok gotUser) ->
+            ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
+        
+        GotUser (Err error) -> 
+            ( { user | errmsg = Debug.toString error }, Cmd.none )
 
-        GotUser result ->
-            getUserCompleted user result
 
-
-subscriptions : User -> Sub Msg
-subscriptions user =
-    Sub.none
+-- subscriptions : User -> Sub Msg
+-- subscriptions user =
+--     Sub.none
 
 
 

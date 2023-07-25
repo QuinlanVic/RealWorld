@@ -236,18 +236,6 @@ unfollowUser author =
         }
 
 
-getArticleCompleted : Article -> Result Http.Error Article -> ( Article, Cmd Msg )
-getArticleCompleted article result =
-    case result of
-        Ok getArticle ->
-            --confused here
-            ( getArticle |> Debug.log "got the article", Cmd.none )
-
-        --| created = True
-        Err error ->
-            ( article, Cmd.none )
-
-
 editArticle : Article -> Cmd Msg
 editArticle article =
     --PUT/articles/slug
@@ -481,13 +469,9 @@ update message model =
             ( model, fetchComments model.article.slug )
 
 
-
--- LoadArticle ->
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
+-- subscriptions : Model -> Sub Msg
+-- subscriptions model =
+--     Sub.none
 
 
 
