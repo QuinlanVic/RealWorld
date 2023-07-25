@@ -142,8 +142,8 @@ update message user =
         GotUser (Ok gotUser) ->
             ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
         
-        GotUser (Err error) -> 
-            ( { user | errmsg = Debug.toString error }, Cmd.none )
+        GotUser (Err _) -> 
+            ( user, Cmd.none )
 
 
 -- subscriptions : User -> Sub Msg

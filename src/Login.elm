@@ -130,10 +130,6 @@ update message user =
             
 
 
-
--- Error errormsg -> user
-
-
 isLoginValid : User -> Bool
 isLoginValid user =
     Maybe.withDefault "" user.emailError == "" && Maybe.withDefault "" user.passwordError == ""

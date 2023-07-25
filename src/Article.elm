@@ -1,6 +1,5 @@
 module Article exposing (Article, Model, Msg, articleDecoder, commentDecoder, init, initialModel, update, view)
 
--- import Exts.Html exposing (nbsp)
 -- import Browser
 
 import Html exposing (..)
@@ -13,8 +12,6 @@ import Json.Encode as Encode
 import Routes
 
 
-
---extra Exts.Html installed with "elm package install krisajenkins/elm-exts" for using nbsp
 -- Model --
 
 
@@ -112,6 +109,11 @@ initialModel =
     }
 
 
+baseUrl : String
+baseUrl =
+    "http://localhost:8000/"
+
+
 authorDecoder : Decoder Author
 authorDecoder =
     succeed Author
@@ -147,11 +149,6 @@ commentDecoder =
         |> required "author" authorDecoder
 
 
-baseUrl : String
-baseUrl =
-    "http://localhost:8000/"
-
-
 encodeArticle : Article -> Encode.Value
 encodeArticle article =
     --used to encode Article slug sent to the server via request body
@@ -175,6 +172,7 @@ encodeAuthor author =
         , ( "image", Encode.string author.image )
         ]
 
+-- SERVER CALLS
 
 favoriteArticle : Article -> Cmd Msg
 favoriteArticle article =
@@ -254,6 +252,22 @@ editArticle article =
         }
 
 
+deleteArticle : Article -> Cmd Msg
+deleteArticle article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/" ++ article.slug
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
 
 -- Now done in main :)
 -- fetchArticle : Article -> Cmd Msg
@@ -298,22 +312,7 @@ deleteComment slug id =
         }
 
 
-deleteArticle : Article -> Cmd Msg
-deleteArticle article =
-    let
-        body =
-            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
-    in
-    Http.request
-        { method = "DELETE"
-        , headers = []
-        , body = body
-        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
-        , url = baseUrl ++ "api/articles/" ++ article.slug
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
+-- END OF SERVER CALLS
 
 init : ( Model, Cmd Msg )
 init =
@@ -332,6 +331,7 @@ type Msg
     | ToggleFollow
     | UpdateComment String
     | SaveComment String
+    | DeleteComment Int 
     | GotArticle (Result Http.Error Article)
     | GotAuthor (Result Http.Error Author)
     | EditArticle
@@ -429,6 +429,10 @@ update message model =
             else
                 -- if the new comment is empty then return the old model but reset the newComment field
                 ( { model | newComment = "" }, Cmd.none )
+        
+        DeleteComment id ->
+            -- pass the slug of the article and id of the comment to delete 
+            ( model, deleteComment model.article.slug id )
 
         GotArticle (Ok article) ->
             ( { model | article = article }, Cmd.none )
@@ -557,9 +561,7 @@ viewComment comment =
             , text " "
             , span [ class "date-posted" ] [ text comment.createdAt ]
             , span [ class "mod-options" ]
-                [ i [ class "ion-edit" ] []
-                , text " "
-                , i [ class "ion-trash-a" ] []
+                [ i [ class "ion-trash-a", onClick (DeleteComment comment.id) ] []
                 ]
             ]
         ]
