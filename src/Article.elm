@@ -1,4 +1,4 @@
-module Article exposing (Model, Msg, commentDecoder, init, initialModel, update, view)
+module Article exposing (Article, Model, Msg, articleDecoder, commentDecoder, init, initialModel, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser

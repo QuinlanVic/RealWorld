@@ -9,16 +9,16 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick)
 import Http
+import Index as PublicFeed
 import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
-import Index as PublicFeed
 import Login
 import Profile
 import Routes exposing (Route(..))
 import Settings
 import Url exposing (Url)
- 
+
 
 type CurrentPage
     = PublicFeed PublicFeed.Model
@@ -75,8 +75,9 @@ fetchArticle : String -> Cmd Msg
 fetchArticle slug =
     Http.get
         { url = baseUrl ++ "api/articles/" ++ slug
-        , expect = Http.expectJson GotArticle (field "article" Editor.articleDecoder)
+        , expect = Http.expectJson GotArticle (field "article" Article.articleDecoder)
         }
+
 
 
 ---- UPDATE ----
@@ -99,7 +100,7 @@ type Msg
     | ArticleMessage Article.Msg
     | ProfileMessage Profile.Msg
     | SettingsMessage Settings.Msg
-    | GotArticle (Result Http.Error Editor.Article)
+    | GotArticle (Result Http.Error Article.Article)
 
 
 setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
@@ -173,18 +174,18 @@ setNewPage maybeRoute model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
-        -- Debug.log "RECEIVED MESSAGE" msg 
+        -- Debug.log "RECEIVED MESSAGE" msg
         ( NewRoute maybeRoute, _ ) ->
             setNewPage maybeRoute model
 
         -- intercept the global message from publicfeed that we want
         ( PublicFeedMessage (PublicFeed.FetchArticle slug), _ ) ->
-            ( model, Cmd.batch [fetchArticle slug ])
+            ( model, Cmd.batch [ fetchArticle slug ] )
 
         ( GotArticle (Ok article), _ ) ->
-            ( { model | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" } }, Cmd.none ) 
-        
-        (GotArticle (Err _), _) -> 
+            ( { model | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" } }, Cmd.none )
+
+        ( GotArticle (Err _), _ ) ->
             ( model, Cmd.none )
 
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
