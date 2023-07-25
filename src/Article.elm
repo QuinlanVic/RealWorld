@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
+import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes
@@ -18,8 +18,8 @@ import Routes
 type alias Author =
     --inside article what we need to fetch
     { username : String
-    , bio : String
-    , image : String
+    , bio : Maybe String
+    , image : Maybe String
     , following : Bool
     }
 
@@ -84,8 +84,8 @@ defaultArticle =
 defaultAuthor : Author
 defaultAuthor =
     { username = "Eric Simons"
-    , bio = ""
-    , image = "http://i.imgur.com/Qr71crq.jpg"
+    , bio = Just ""
+    , image = Just "http://i.imgur.com/Qr71crq.jpg"
     , following = False
     }
 
@@ -118,8 +118,8 @@ authorDecoder : Decoder Author
 authorDecoder =
     succeed Author
         |> required "username" string
-        |> required "bio" string
-        |> required "image" string
+        |> required "bio" (nullable string)
+        |> required "image" (nullable string)
         |> required "following" bool
 
 
@@ -163,13 +163,23 @@ encodeComment comment =
         [ ( "body", Encode.string comment ) ]
 
 
+encodeMaybeString : Maybe String -> Encode.Value
+encodeMaybeString maybeString =
+    case maybeString of
+        Just string ->
+            Encode.string string
+
+        Nothing ->
+            Encode.null
+
+
 encodeAuthor : Author -> Encode.Value
 encodeAuthor author =
     --used to encode user sent to the server via PUT request body (for registering)
     Encode.object
         [ ( "username", Encode.string author.username )
-        , ( "bio", Encode.string author.bio )
-        , ( "image", Encode.string author.image )
+        , ( "bio", encodeMaybeString author.bio )
+        , ( "image", encodeMaybeString author.image )
         ]
 
 -- SERVER CALLS
@@ -245,7 +255,7 @@ editArticle article =
         { method = "PUT"
         , headers = []
         , body = body
-        , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in LoadArticle Msg
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in GotArticle Msg
         , url = baseUrl ++ "api/articles" ++ article.slug
         , timeout = Nothing
         , tracker = Nothing
@@ -545,6 +555,15 @@ viewLoveButton model =
         ]
 
 
+maybeImageBio : Maybe String -> String
+maybeImageBio maybeIB =
+    case maybeIB of
+        Just imagebio ->
+            imagebio
+        Nothing ->
+            "" 
+
+
 viewComment : Comment -> Html Msg
 viewComment comment =
     --display a comment
@@ -555,7 +574,7 @@ viewComment comment =
             ]
         , div [ class "card-footer" ]
             [ a [ Routes.href Routes.Profile, class "comment-author" ]
-                [ img [ src comment.author.image, class "comment-author-img" ] [] ]
+                [ img [ src (maybeImageBio comment.author.image), class "comment-author-img" ] [] ]
             , text " \u{00A0} "
             , a [ Routes.href Routes.Profile, class "comment-author" ] [ text comment.author.username ]
             , text " "
@@ -701,7 +720,7 @@ viewArticle model =
 
                     {- model.author.username -}
                     ]
-                    [ img [ src model.author.image ] [] ]
+                    [ img [ src (maybeImageBio model.author.image) ] [] ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , div [ class "info" ]
                     [ a [ Routes.href Routes.Profile, class "author" ] [ text model.author.username ]
@@ -770,7 +789,7 @@ view model =
                     [ h1 [] [ text "How to build webapps that scale" ]
                     , div [ class "post-meta" ]
                         [ a [ Routes.href Routes.Profile ]
-                            [ img [ src model.author.image ] [] ]
+                            [ img [ src (maybeImageBio model.author.image) ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
                             [ a [ Routes.href Routes.Profile, class "author" ] [ text model.author.username ]

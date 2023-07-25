@@ -200,7 +200,7 @@ update msg model =
                 ( updatedAuthUser, authCmd ) =
                     Auth.update authMsg authUser
             in
-            ( { model | page = Auth updatedAuthUser }, Cmd.map AuthMessage authCmd )
+            ( { model | page = Auth updatedAuthUser }, Cmd.map AuthMessage authCmd ) 
 
         ( EditorMessage editorMsg, Editor editorArticle ) ->
             let
