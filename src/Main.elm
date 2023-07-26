@@ -162,7 +162,7 @@ setNewPage maybeRoute model =
                 ( articleModel, articleCmd ) =
                     Article.init
             in
-            ( { model | page = Article articleModel, currentPage = "Article" }, Cmd.map ArticleMessage articleCmd )
+            ( { model | page = Article articleModel }, Cmd.map ArticleMessage articleCmd )
 
         -- tricky
         Just Routes.Profile ->
@@ -184,24 +184,13 @@ setNewPage maybeRoute model =
             ( { model | page = NotFound, currentPage = "NotFound" }, Cmd.none )
 
 
-
--- Just Routes.Auth ->
---     ( { model | page = LoginOrSomethingLikeIt Auth.initialModel }
---     , Navigation.pushUrl model.navigationKey "signup"
---     )
--- Just Routes.Editor ->
---     ( { model | page = Edit Editor.initialModel }
---     , Navigation.pushUrl model.navigationKey "createarticle"
---     )
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
         -- Debug.log "RECEIVED MESSAGE" msg
         ( NewRoute maybeRoute, _ ) ->
             setNewPage maybeRoute model
-
+        -- Index
         -- intercept the global message from publicfeed that we want
         -- rid of?
         ( PublicFeedMessage (PublicFeed.FetchArticle slug), _ ) ->
@@ -209,7 +198,11 @@ update msg model =
 
         -- got the article, now pass it to Article's model
         ( GotArticle (Ok article), _ ) ->
-            ( { model | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" } }, Cmd.none )
+            ( { model 
+                | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" } 
+              }
+              , Cmd.none 
+            )
 
         -- error, just display the same page as before (Probably could do more here)
         ( GotArticle (Err _), _ ) ->
@@ -220,29 +213,32 @@ update msg model =
                 ( updatedPublicFeedModel, publicFeedCmd ) =
                     PublicFeed.update publicFeedMsg publicFeedModel
             in
-            ( { model | page = PublicFeed updatedPublicFeedModel }, Cmd.map PublicFeedMessage publicFeedCmd )
-
+            ( { model 
+                | page = PublicFeed updatedPublicFeedModel 
+                , currentPage = "Home"
+              }, Cmd.map PublicFeedMessage publicFeedCmd )
+        -- Auth
         ( AuthMessage authMsg, Auth authUser ) ->
             let
                 ( updatedAuthUser, authCmd ) =
                     Auth.update authMsg authUser
             in
             ( { model | page = Auth updatedAuthUser }, Cmd.map AuthMessage authCmd )
-
+        -- Editor
         ( EditorMessage editorMsg, Editor editorArticle ) ->
             let
                 ( updatedEditorArticle, editorCmd ) =
                     Editor.update editorMsg editorArticle
             in
             ( { model | page = Editor updatedEditorArticle }, Cmd.map EditorMessage editorCmd )
-
+        -- Login
         ( LoginMessage loginMsg, Login loginUser ) ->
             let
                 ( updatedLoginUser, loginCmd ) =
                     Login.update loginMsg loginUser
             in
             ( { model | page = Login updatedLoginUser }, Cmd.map LoginMessage loginCmd )
-
+        -- Article
         -- intercept the global message from publicfeed that we want
         ( ArticleMessage (Article.FetchProfile username), _ ) ->
             ( model, fetchProfile username )
@@ -262,14 +258,14 @@ update msg model =
                     Article.update articleMsg articleModel
             in
             ( { model | page = Article updatedArticleModel }, Cmd.map ArticleMessage articleCmd )
-
+        -- Profile
         ( ProfileMessage profileMsg, Profile profileModel ) ->
             let
                 ( updatedProfileModel, profileCmd ) =
                     Profile.update profileMsg profileModel
             in
             ( { model | page = Profile updatedProfileModel }, Cmd.map ProfileMessage profileCmd )
-
+        -- Settings
         ( SettingsMessage settingsMsg, Settings settingsUserSettings ) ->
             let
                 ( updatedSettingsUserSettings, settingsCmd ) =
@@ -370,34 +366,14 @@ viewContent model =
             )
 
 
+maybeImageBio : Maybe String -> String
+maybeImageBio maybeIB =
+    case maybeIB of
+        Just imagebio ->
+            imagebio
 
--- LoginOrSomethingLikeIt user ->
---     ( "What up, homie?"
---     , Html.map AuthMessage (Auth.view user)
---     )
--- Edit article ->
---     ( "Be The Change You Want To See In The Article"
---     , Html.map EditorMessage <| Editor.view article
---     )
--- _ ->
---     ( "Unimplemented ....... yet!"
---     , div
---         []
---         [ text "UNIMPLEMENTED but check this out:"
---         , br [] []
---         , a
---             [ onClick (Visit <| Internal { url | path = "signup" })
---             , style "cursor" "pointer"
---             ]
---             [ text "Auth page yo" ]
---         , br [] []
---         , a
---             [ onClick (Visit <| Internal { url | path = "createarticle" })
---             , style "cursor" "pointer"
---             ]
---             [ text "Feeling creative?" ]
---         ]
---     )
+        Nothing ->
+            ""
 
 
 viewHeaderLO : Model -> Html Msg
@@ -422,7 +398,7 @@ viewHeaderLO model =
                 , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
                 , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
 
-                -- , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
+                -- , li [ class (isActivePage "User") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
                 ]
             ]
         ]
@@ -443,12 +419,13 @@ viewHeader model =
         [ div [ class "container" ]
             [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
-                --could make a function for doing all of this
+                -- could make a function for doing all of this
                 [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
                 , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
-                , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
-                , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
+
+                -- add user's profile information
+                -- , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href Routes.Profile ] [ img [ src (maybeImageBio model.user.image), class "user-img" ] [], text " Settings" ] ]
                 ]
             ]
         ]

@@ -12,6 +12,7 @@ import Json.Encode as Encode
 import Routes
 
 
+
 -- Model --
 
 
@@ -182,7 +183,10 @@ encodeAuthor author =
         , ( "image", encodeMaybeString author.image )
         ]
 
+
+
 -- SERVER CALLS
+
 
 favoriteArticle : Article -> Cmd Msg
 favoriteArticle article =
@@ -218,11 +222,11 @@ followUser : Author -> Cmd Msg
 followUser author =
     let
         body =
-            Http.jsonBody <| Encode.object [ ( "author", encodeAuthor <| author ) ]
+            Http.jsonBody <| Encode.object [ ( "profile", encodeAuthor <| author ) ]
     in
     Http.post
         { body = body
-        , expect = Http.expectJson GotAuthor (field "author" authorDecoder)
+        , expect = Http.expectJson GotAuthor (field "profile" authorDecoder)
         , url = baseUrl ++ "api/profiles/" ++ author.username ++ "/follow"
         }
 
@@ -279,6 +283,7 @@ deleteArticle article =
         }
 
 
+
 -- Now done in main :)
 -- fetchArticle : Article -> Cmd Msg
 -- fetchArticle article =
@@ -291,7 +296,7 @@ deleteArticle article =
 fetchComments : String -> Cmd Msg
 fetchComments slug =
     Http.get
-        { url = baseUrl ++ "api/articles" ++ slug ++ "/comments"
+        { url = baseUrl ++ "api/articles/" ++ slug ++ "/comments"
         , expect = Http.expectJson GotComments (field "comments" (list commentDecoder))
         }
 
@@ -322,7 +327,9 @@ deleteComment slug id =
         }
 
 
+
 -- END OF SERVER CALLS
+
 
 init : ( Model, Cmd Msg )
 init =
@@ -341,7 +348,7 @@ type Msg
     | ToggleFollow
     | UpdateComment String
     | SaveComment String
-    | DeleteComment Int 
+    | DeleteComment Int
     | GotArticle (Result Http.Error Article)
     | GotAuthor (Result Http.Error Author)
     | EditArticle
@@ -349,7 +356,7 @@ type Msg
     | GotComments (Result Http.Error Comments)
     | GotComment (Result Http.Error Comment)
     | DeleteResponse (Result Http.Error ())
-    | FetchProfile String 
+    | FetchProfile String
 
 
 addComment : Comment -> Maybe Comments -> Maybe Comments
@@ -440,9 +447,9 @@ update message model =
             else
                 -- if the new comment is empty then return the old model but reset the newComment field
                 ( { model | newComment = "" }, Cmd.none )
-        
+
         DeleteComment id ->
-            -- pass the slug of the article and id of the comment to delete 
+            -- pass the slug of the article and id of the comment to delete
             ( model, deleteComment model.article.slug id )
 
         GotArticle (Ok article) ->
@@ -482,7 +489,7 @@ update message model =
         DeleteResponse _ ->
             -- after you delete a comment, fetch the new set of comments whether it was successful or not
             ( model, fetchComments model.article.slug )
-        
+
         FetchProfile username ->
             ( model, Cmd.none )
 
@@ -491,9 +498,6 @@ update message model =
 -- subscriptions : Model -> Sub Msg
 -- subscriptions model =
 --     Sub.none
-
-
-
 -- View --
 
 
@@ -565,8 +569,9 @@ maybeImageBio maybeIB =
     case maybeIB of
         Just imagebio ->
             imagebio
+
         Nothing ->
-            "" 
+            ""
 
 
 viewComment : Comment -> Html Msg
@@ -581,7 +586,13 @@ viewComment comment =
             [ a [ Routes.href Routes.Profile, class "comment-author" ]
                 [ img [ src (maybeImageBio comment.author.image), class "comment-author-img" ] [] ]
             , text " \u{00A0} "
-            , a [ Routes.href Routes.Profile, class "comment-author" ] [ text comment.author.username ]
+            , a
+                [ onClick (FetchProfile comment.author.username)
+
+                {- Routes.href Routes.Profile -}
+                , class "comment-author"
+                ]
+                [ text comment.author.username ]
             , text " "
             , span [ class "date-posted" ] [ text comment.createdAt ]
             , span [ class "mod-options" ]
@@ -719,13 +730,13 @@ viewArticle model =
                     files, swipe gestures for our interface, installing the app on your own device, deploying to the iOS & Android app stores, and so much more.""" ]
                 ]
             ]
-        , hr [] [] 
+        , hr [] []
         , div [ class "post-actions" ]
             [ div [ class "post-meta" ]
                 [ a
-                    [ Routes.href Routes.Profile
-                    -- add onClick to author's profile page 
-                    {- model.author.username -}
+                    [ onClick (FetchProfile model.author.username)
+
+                    -- Routes.href Routes.Profile
                     ]
                     [ img [ src (maybeImageBio model.author.image) ] [] ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
@@ -795,7 +806,8 @@ view model =
                 [ div [ class "container" ]
                     [ h1 [] [ text "How to build webapps that scale" ]
                     , div [ class "post-meta" ]
-                        [ a [ Routes.href Routes.Profile ] -- add onClick to author's profile page 
+                        [ a [ Routes.href Routes.Profile ]
+                            -- add onClick to author's profile page
                             [ img [ src (maybeImageBio model.author.image) ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]

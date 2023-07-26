@@ -128,6 +128,26 @@ profileDecoder =
         |> required "following" bool
 
 
+encodeMaybeString : Maybe String -> Encode.Value
+encodeMaybeString maybeString =
+    case maybeString of
+        Just string ->
+            Encode.string string
+
+        Nothing ->
+            Encode.null
+
+
+encodeProfile : ProfileType -> Encode.Value
+encodeProfile profile =
+    --used to encode user sent to the server via PUT request body (for registering)
+    Encode.object
+        [ ( "username", Encode.string profile.username )
+        , ( "bio", encodeMaybeString profile.bio )
+        , ( "image", encodeMaybeString profile.image )
+        ]
+
+
 encodeArticle : Article -> Encode.Value
 encodeArticle article =
     --used to encode Article slug sent to the server via Article request body
@@ -187,6 +207,36 @@ unfavouriteArticle article =
         , body = body
         , expect = Http.expectJson GotProfileArticles (list (field "article" articleDecoder))
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+followUser : ProfileType -> Cmd Msg
+followUser profile =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "profile", encodeProfile <| profile ) ]
+    in
+    Http.post
+        { body = body
+        , expect = Http.expectJson GotProfile (field "profile" profileDecoder)
+        , url = baseUrl ++ "api/profiles/" ++ profile.username ++ "/follow"
+        }
+
+
+unfollowUser : ProfileType -> Cmd Msg
+unfollowUser profile =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "profile", encodeProfile <| profile ) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , body = body
+        , expect = Http.expectJson GotProfile (field "profile" profileDecoder)
+        , url = baseUrl ++ "api/profiles/" ++ profile.username ++ "/follow"
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -276,7 +326,10 @@ update message model =
 
         --need lazy execution
         ToggleFollow ->
-            ( { model | profile = updateAuthor toggleFollow model.profile }, Cmd.none )
+            if model.profile.following then 
+                ( { model | profile = updateAuthor toggleFollow model.profile }, followUser model.profile )
+            else 
+                ( { model | profile = updateAuthor toggleFollow model.profile }, unfollowUser model.profile )
 
         GotProfile (Ok userProfile) ->
             ( { model | profile = userProfile }, Cmd.none )
