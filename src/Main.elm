@@ -75,7 +75,7 @@ init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init () url navigationKey =
     -- browser supplies initial Url when the app boots
     -- Convert url into a route and construct initialmodel -> pass to setNewPage to set initial page
-    setNewPage (Routes.match url) (initialModel navigationKey url) 
+    setNewPage (Routes.match url) (initialModel navigationKey url)
 
 
 baseUrl : String
@@ -157,7 +157,9 @@ setNewPage maybeRoute model =
             ( { model | page = Login loginUser, currentPage = "Login" }, Cmd.map LoginMessage loginCmd )
 
         -- tricky
-        Just (Routes.Article slug) -> 
+        Just (Routes.Article slug) ->
+            -- Whenever we go to the Article page now, we have to fetch the article and initialise the page
+            -- ( model, fetchArticle slug )
             let
                 ( articleModel, articleCmd ) =
                     Article.init
@@ -165,7 +167,8 @@ setNewPage maybeRoute model =
             ( { model | page = Article articleModel }, Cmd.map ArticleMessage articleCmd )
 
         -- tricky
-        Just (Routes.Profile username) -> 
+        Just (Routes.Profile username) ->
+            -- ( model, fetchProfile username )
             let
                 ( profileModel, profileCmd ) =
                     Profile.init
@@ -174,6 +177,7 @@ setNewPage maybeRoute model =
 
         -- tricky
         Just Routes.Settings ->
+            -- ( model, fetchProfile model.user.username )
             let
                 ( settingsUserSettings, settingsCmd ) =
                     Settings.init
@@ -191,12 +195,6 @@ update msg model =
         ( NewRoute maybeRoute, _ ) ->
             setNewPage maybeRoute model
 
-        -- Index
-        -- intercept the global message from publicfeed that we want
-        -- rid of?
-        ( PublicFeedMessage (PublicFeed.FetchArticleIndex slug), _ ) ->
-            ( model, fetchArticle slug )
-
         -- got the article, now pass it to Article's model
         ( GotArticle (Ok article), _ ) ->
             ( { model
@@ -209,6 +207,16 @@ update msg model =
         ( GotArticle (Err _), _ ) ->
             ( model, Cmd.none )
 
+        -- get the profile you are going to visit
+        ( GotProfile (Ok profile), _ ) ->
+            -- get the articles that they have made in the Profile.elm file
+            ( { model | page = Profile { articlesMade = Nothing, favoritedArticles = Nothing, profile = profile } }, Cmd.none )
+
+        -- error, just display the same page as before (Probably could do more)
+        ( GotProfile (Err _), _ ) ->
+            ( model, Cmd.none )
+
+        -- Index
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
             let
                 ( updatedPublicFeedModel, publicFeedCmd ) =
@@ -246,19 +254,6 @@ update msg model =
             ( { model | page = Login updatedLoginUser }, Cmd.map LoginMessage loginCmd )
 
         -- Article
-        -- intercept the global message from publicfeed that we want
-        ( ArticleMessage (Article.FetchProfileArticle username), _ ) ->
-            ( model, fetchProfile username )
-
-        -- get the profile you are going to visit
-        ( GotProfile (Ok profile), _ ) ->
-            -- get the articles that they have made in the Profile.elm file
-            ( { model | page = Profile { articlesMade = Nothing, favoritedArticles = Nothing, profile = profile } }, Cmd.none )
-
-        -- error, just display the same page as before (Probably could do more)
-        ( GotProfile (Err _), _ ) ->
-            ( model, Cmd.none )
-
         ( ArticleMessage articleMsg, Article articleModel ) ->
             let
                 ( updatedArticleModel, articleCmd ) =
