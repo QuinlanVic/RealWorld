@@ -324,17 +324,16 @@ viewarticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
             [ a
-                [ onClick (FetchProfileIndex article.author.username)
-
-                {- Routes.href (Routes.Profile article.author.username) -}
+                [ {- Routes.href (Routes.Profile article.author.username) -} href ""
+                , onClick (FetchProfileIndex article.author.username)
                 ]
                 [ img [ src article.author.image ] [] ]
             , text " "
             , div [ class "info" ]
                 [ a
-                    [ onClick (FetchProfileIndex article.author.username)
-
-                    {- Routes.href (Routes.Profile article.author.username) -}
+                    [ -- Routes.href (Routes.Profile article.author.username) 
+                      href ""
+                    ,  onClick (FetchProfileIndex article.author.username)
                     , class "author"
                     ]
                     [ text article.author.username ]
@@ -342,9 +341,12 @@ viewarticlePreview article =
                 ]
             , viewLoveButton article
             ]
-        , a [ {- Routes.href Routes.Article, -} class "preview-link", onClick (FetchArticleIndex article.slug) ]
-            -- how does Routes.Article not interfere or like what happens inbetween firing of message
-            -- and final fetching and url changing with the same model being returned in Index's update?
+        , a
+            [ -- Routes.href (Routes.Article article.slug)
+              href ""              
+            , onClick (FetchArticleIndex article.slug)
+            , class "preview-link"
+            ]
             [ h1 [] [ text article.title ]
             , p [] [ text article.description ]
             , span [] [ text "Read more..." ]

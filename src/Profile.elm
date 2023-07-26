@@ -505,9 +505,9 @@ view model =
                         [ div [ class "articles-toggle" ]
                             [ ul [ class "nav nav-pills outline-active" ]
                                 [ li [ class "nav-item" ]
-                                    [ a [ class "nav-link active", href "#", onClick LoadArticlesMade ] [ text "My Articles" ] ]
+                                    [ a [ class "nav-link active", href "", onClick LoadArticlesMade ] [ text "My Articles" ] ]
                                 , li [ class "nav-item" ]
-                                    [ a [ class "nav-link", href "#", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
+                                    [ a [ class "nav-link", href "", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
                                 ]
                             ]
                         , viewArticles model.articlesMade

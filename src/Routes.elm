@@ -51,12 +51,12 @@ routeToUrl route =
             "/login"
 
         Article slug ->
-            "/article" ++ slug
+            "/article/" ++ slug
 
         Profile username ->
             -- Profile username ->
             -- "/profiles" ++ username
-            "/profile" ++ username
+            "/profile/" ++ username
 
         Settings ->
             "/settings"
