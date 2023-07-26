@@ -3,16 +3,15 @@ module Index exposing (Article, Model, Msg(..), init, update, view)
 -- import Exts.Html exposing (nbsp)
 
 import Auth exposing (baseUrl)
-import Browser
-import Editor exposing (Author, authorDecoder)
+-- import Browser
+import Editor exposing (authorDecoder)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, id, src, style, type_)
+import Html.Attributes exposing (class, href, src, style, type_)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (custom, hardcoded, required)
+import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
-import Response exposing (mapModel)
 import Routes
 
 
@@ -213,15 +212,19 @@ type Msg
     | GotYourFeed (Result Http.Error Feed)
     | LoadGF
     | LoadYF
-    | FetchArticle String 
+    | FetchArticle String
+
 
 toggleLike : Article -> Article
 toggleLike article =
+    -- favoritesCount should update automatically when the server returns the new Article!!!!
     if article.favorited then
-        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount - 1 }
+        -- favoritesCount = article.favoritesCount - 1
+        { article | favorited = not article.favorited }
 
     else
-        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount + 1 }
+        -- , favoritesCount = article.favoritesCount + 1
+        { article | favorited = not article.favorited }
 
 
 updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
@@ -277,18 +280,16 @@ update msg model =
 
         LoadYF ->
             ( model, fetchYourArticles )
-        
+
         FetchArticle slug ->
-            -- intercepted in Main.elm now 
+            -- intercepted in Main.elm now
             ( model, Cmd.none )
+
 
 
 -- subscriptions : Model -> Sub Msg
 -- subscriptions articles =
 --     Sub.none
-
-
-
 --View--
 
 
@@ -325,7 +326,7 @@ viewarticlePreview article =
                 ]
             , viewLoveButton article
             ]
-        , a [ Routes.href Routes.Article, class "preview-link", onClick (FetchArticle article.slug) ] 
+        , a [ Routes.href Routes.Article, class "preview-link", onClick (FetchArticle article.slug) ]
             -- how does Routes.Article not interfere or like what happens inbetween firing of message
             -- and final fetching and url changing with the same model being returned in Index's update?
             [ h1 [] [ text article.title ]

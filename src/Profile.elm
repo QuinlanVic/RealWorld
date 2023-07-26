@@ -231,11 +231,14 @@ toggleFollow author =
 
 toggleLike : Article -> Article
 toggleLike article =
+    -- favoritesCount should update automatically when the server returns the new Article!!!!
     if article.favorited then
-        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount - 1 }
+        -- favoritesCount = article.favoritesCount - 1
+        { article | favorited = not article.favorited }
 
     else
-        { article | favorited = not article.favorited, favoritesCount = article.favoritesCount + 1 }
+        -- favoritesCount = article.favoritesCount + 1
+        { article | favorited = not article.favorited }
 
 
 updateAuthor : (ProfileType -> ProfileType) -> ProfileType -> ProfileType
@@ -334,7 +337,18 @@ viewFollowButton model =
     in
     button buttonClass
         [ i [ class "ion-plus-round" ] []
-        , text " \u{00A0} Follow Eric Simons "
+        , text
+            (" \u{00A0} "
+                ++ (if model.profile.following then
+                        "Unfollow"
+
+                    else
+                        "Follow"
+                   )
+                ++ " "
+                ++ model.profile.username
+                ++ " "
+            )
         ]
 
 

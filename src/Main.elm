@@ -95,8 +95,9 @@ fetchProfile : String -> Cmd Msg
 fetchProfile username =
     Http.get
         { url = baseUrl ++ "api/profiles/" ++ username
-        , expect = Http.expectJson GotProfile (field "profile" Profile.profileDecoder) 
+        , expect = Http.expectJson GotProfile (field "profile" Profile.profileDecoder)
         }
+
 
 
 ---- UPDATE ----
@@ -155,6 +156,7 @@ setNewPage maybeRoute model =
             in
             ( { model | page = Login loginUser, currentPage = "Login" }, Cmd.map LoginMessage loginCmd )
 
+        -- tricky
         Just Routes.Article ->
             let
                 ( articleModel, articleCmd ) =
@@ -162,6 +164,7 @@ setNewPage maybeRoute model =
             in
             ( { model | page = Article articleModel, currentPage = "Article" }, Cmd.map ArticleMessage articleCmd )
 
+        -- tricky
         Just Routes.Profile ->
             let
                 ( profileModel, profileCmd ) =
@@ -169,6 +172,7 @@ setNewPage maybeRoute model =
             in
             ( { model | page = Profile profileModel, currentPage = "Profile" }, Cmd.map ProfileMessage profileCmd )
 
+        -- tricky
         Just Routes.Settings ->
             let
                 ( settingsUserSettings, settingsCmd ) =
@@ -199,11 +203,14 @@ update msg model =
             setNewPage maybeRoute model
 
         -- intercept the global message from publicfeed that we want
+        -- rid of?
         ( PublicFeedMessage (PublicFeed.FetchArticle slug), _ ) ->
-            ( model, Cmd.batch [ fetchArticle slug ] )
+            ( model, fetchArticle slug )
+
         -- got the article, now pass it to Article's model
         ( GotArticle (Ok article), _ ) ->
             ( { model | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" } }, Cmd.none )
+
         -- error, just display the same page as before (Probably could do more here)
         ( GotArticle (Err _), _ ) ->
             ( model, Cmd.none )
@@ -238,13 +245,15 @@ update msg model =
 
         -- intercept the global message from publicfeed that we want
         ( ArticleMessage (Article.FetchProfile username), _ ) ->
-            ( model, Cmd.batch [ fetchProfile username ] )
+            ( model, fetchProfile username )
+
         -- get the profile you are going to visit
         ( GotProfile (Ok profile), _ ) ->
             -- get the articles that they have made in the Profile.elm file
             ( { model | page = Profile { articlesMade = Nothing, favoritedArticles = Nothing, profile = profile } }, Cmd.none )
+
         -- error, just display the same page as before (Probably could do more)
-        ( GotProfile (Err _), _ ) -> 
+        ( GotProfile (Err _), _ ) ->
             ( model, Cmd.none )
 
         ( ArticleMessage articleMsg, Article articleModel ) ->
@@ -452,6 +461,7 @@ view model =
             viewContent model
     in
     -- loggedin vs loggedout headers (WHAT I NEED!)
+    -- Also, do not show "Your Feed" if the user is logged out :)
     if True then
         -- model.isLoggedIn
         { title = title
