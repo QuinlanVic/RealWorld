@@ -157,7 +157,7 @@ setNewPage maybeRoute model =
             ( { model | page = Login loginUser, currentPage = "Login" }, Cmd.map LoginMessage loginCmd )
 
         -- tricky
-        Just Routes.Article ->
+        Just (Routes.Article slug) -> 
             let
                 ( articleModel, articleCmd ) =
                     Article.init
@@ -165,7 +165,7 @@ setNewPage maybeRoute model =
             ( { model | page = Article articleModel }, Cmd.map ArticleMessage articleCmd )
 
         -- tricky
-        Just Routes.Profile ->
+        Just (Routes.Profile username) -> 
             let
                 ( profileModel, profileCmd ) =
                     Profile.init
@@ -190,18 +190,19 @@ update msg model =
         -- Debug.log "RECEIVED MESSAGE" msg
         ( NewRoute maybeRoute, _ ) ->
             setNewPage maybeRoute model
+
         -- Index
         -- intercept the global message from publicfeed that we want
         -- rid of?
-        ( PublicFeedMessage (PublicFeed.FetchArticle slug), _ ) ->
+        ( PublicFeedMessage (PublicFeed.FetchArticleIndex slug), _ ) ->
             ( model, fetchArticle slug )
 
         -- got the article, now pass it to Article's model
         ( GotArticle (Ok article), _ ) ->
-            ( { model 
-                | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" } 
+            ( { model
+                | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" }
               }
-              , Cmd.none 
+            , Cmd.none
             )
 
         -- error, just display the same page as before (Probably could do more here)
@@ -213,10 +214,13 @@ update msg model =
                 ( updatedPublicFeedModel, publicFeedCmd ) =
                     PublicFeed.update publicFeedMsg publicFeedModel
             in
-            ( { model 
-                | page = PublicFeed updatedPublicFeedModel 
+            ( { model
+                | page = PublicFeed updatedPublicFeedModel
                 , currentPage = "Home"
-              }, Cmd.map PublicFeedMessage publicFeedCmd )
+              }
+            , Cmd.map PublicFeedMessage publicFeedCmd
+            )
+
         -- Auth
         ( AuthMessage authMsg, Auth authUser ) ->
             let
@@ -224,6 +228,7 @@ update msg model =
                     Auth.update authMsg authUser
             in
             ( { model | page = Auth updatedAuthUser }, Cmd.map AuthMessage authCmd )
+
         -- Editor
         ( EditorMessage editorMsg, Editor editorArticle ) ->
             let
@@ -231,6 +236,7 @@ update msg model =
                     Editor.update editorMsg editorArticle
             in
             ( { model | page = Editor updatedEditorArticle }, Cmd.map EditorMessage editorCmd )
+
         -- Login
         ( LoginMessage loginMsg, Login loginUser ) ->
             let
@@ -238,9 +244,10 @@ update msg model =
                     Login.update loginMsg loginUser
             in
             ( { model | page = Login updatedLoginUser }, Cmd.map LoginMessage loginCmd )
+
         -- Article
         -- intercept the global message from publicfeed that we want
-        ( ArticleMessage (Article.FetchProfile username), _ ) ->
+        ( ArticleMessage (Article.FetchProfileArticle username), _ ) ->
             ( model, fetchProfile username )
 
         -- get the profile you are going to visit
@@ -258,6 +265,7 @@ update msg model =
                     Article.update articleMsg articleModel
             in
             ( { model | page = Article updatedArticleModel }, Cmd.map ArticleMessage articleCmd )
+
         -- Profile
         ( ProfileMessage profileMsg, Profile profileModel ) ->
             let
@@ -265,6 +273,7 @@ update msg model =
                     Profile.update profileMsg profileModel
             in
             ( { model | page = Profile updatedProfileModel }, Cmd.map ProfileMessage profileCmd )
+
         -- Settings
         ( SettingsMessage settingsMsg, Settings settingsUserSettings ) ->
             let
@@ -439,7 +448,7 @@ view model =
     in
     -- loggedin vs loggedout headers (WHAT I NEED!)
     -- Also, do not show "Your Feed" if the user is logged out :)
-    if True then
+    if False then
         -- model.isLoggedIn
         { title = title
         , body = [ viewHeader model, content ]

@@ -1,9 +1,10 @@
 module Index exposing (Article, Model, Msg(..), init, update, view)
 
 -- import Exts.Html exposing (nbsp)
-
-import Auth exposing (baseUrl)
 -- import Browser
+
+import Article exposing (Msg(..))
+import Auth exposing (baseUrl)
 import Editor exposing (authorDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
@@ -212,7 +213,8 @@ type Msg
     | GotYourFeed (Result Http.Error Feed)
     | LoadGF
     | LoadYF
-    | FetchArticle String
+    | FetchArticleIndex String
+    | FetchProfileIndex String
 
 
 toggleLike : Article -> Article
@@ -281,8 +283,11 @@ update msg model =
         LoadYF ->
             ( model, fetchYourArticles )
 
-        FetchArticle slug ->
+        FetchArticleIndex slug ->
             -- intercepted in Main.elm now
+            ( model, Cmd.none )
+
+        FetchProfileIndex username ->
             ( model, Cmd.none )
 
 
@@ -318,15 +323,26 @@ viewarticlePreview : Article -> Html Msg
 viewarticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ Routes.href (Routes.Profile {- article.author.username -}) ] [ img [ src article.author.image ] [] ]
+            [ a
+                [ onClick (FetchProfileIndex article.author.username)
+
+                {- Routes.href (Routes.Profile article.author.username) -}
+                ]
+                [ img [ src article.author.image ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href (Routes.Profile {- article.author.username -}), class "author" ] [ text article.author.username ]
+                [ a
+                    [ onClick (FetchProfileIndex article.author.username)
+
+                    {- Routes.href (Routes.Profile article.author.username) -}
+                    , class "author"
+                    ]
+                    [ text article.author.username ]
                 , span [ class "date" ] [ text article.createdAt ]
                 ]
             , viewLoveButton article
             ]
-        , a [ Routes.href Routes.Article, class "preview-link", onClick (FetchArticle article.slug) ]
+        , a [ {- Routes.href Routes.Article, -} class "preview-link", onClick (FetchArticleIndex article.slug) ]
             -- how does Routes.Article not interfere or like what happens inbetween firing of message
             -- and final fetching and url changing with the same model being returned in Index's update?
             [ h1 [] [ text article.title ]

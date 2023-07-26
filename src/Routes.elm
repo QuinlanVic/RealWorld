@@ -1,22 +1,23 @@
 module Routes exposing (Route(..), href, match)
 
 -- import Browser
+
 import Html
 import Html.Attributes
 import Url exposing (Url)
-import Url.Parser as Parser exposing (Parser)
+import Url.Parser as Parser exposing ((</>), Parser)
 
 
-type Route
-    -- URL parsing = extract information from the url 
+type
+    Route
+    -- URL parsing = extract information from the url
     -- Going to add strings and stuff that they input to know what specific page to go to :)
     = Index
     | Auth
     | Editor
     | Login
-    | Article
-    | Profile
-      -- | Profile String
+    | Article String
+    | Profile String
     | Settings
 
 
@@ -27,8 +28,8 @@ routes =
         , Parser.map Auth (Parser.s "register")
         , Parser.map Editor (Parser.s "createpost")
         , Parser.map Login (Parser.s "login")
-        , Parser.map Article (Parser.s "article") --article name
-        , Parser.map Profile (Parser.s "profile") --profile username
+        , Parser.map Article (Parser.s "article" </> Parser.string) --article name
+        , Parser.map Profile (Parser.s "profile" </> Parser.string) --profile username
         , Parser.map Settings (Parser.s "settings")
         ]
 
@@ -49,13 +50,13 @@ routeToUrl route =
         Login ->
             "/login"
 
-        Article ->
-            "/article"
+        Article slug ->
+            "/article" ++ slug
 
-        Profile ->
+        Profile username ->
             -- Profile username ->
             -- "/profiles" ++ username
-            "/profile"
+            "/profile" ++ username
 
         Settings ->
             "/settings"

@@ -326,9 +326,10 @@ update message model =
 
         --need lazy execution
         ToggleFollow ->
-            if model.profile.following then 
+            if model.profile.following then
                 ( { model | profile = updateAuthor toggleFollow model.profile }, followUser model.profile )
-            else 
+
+            else
                 ( { model | profile = updateAuthor toggleFollow model.profile }, unfollowUser model.profile )
 
         GotProfile (Ok userProfile) ->
@@ -426,15 +427,15 @@ viewArticlePreview : Article -> Html Msg
 viewArticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ Routes.href Routes.Profile ] [ img [ src (maybeImageBio article.author.image) ] [] ]
+            [ a [ Routes.href (Routes.Profile article.author.username) ] [ img [ src (maybeImageBio article.author.image) ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href Routes.Profile, class "author" ] [ text article.author.username ]
+                [ a [ Routes.href (Routes.Profile article.author.username), class "author" ] [ text article.author.username ]
                 , span [ class "date" ] [ text article.createdAt ]
                 ]
             , viewLoveButton article
             ]
-        , a [ Routes.href Routes.Article, class "preview-link" ]
+        , a [ Routes.href (Routes.Article article.slug), class "preview-link" ]
             [ h1 [] [ text article.title ]
             , p [] [ text article.description ]
             , span [] [ text "Read more..." ]

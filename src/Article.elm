@@ -356,7 +356,7 @@ type Msg
     | GotComments (Result Http.Error Comments)
     | GotComment (Result Http.Error Comment)
     | DeleteResponse (Result Http.Error ())
-    | FetchProfile String
+    | FetchProfileArticle String
 
 
 addComment : Comment -> Maybe Comments -> Maybe Comments
@@ -490,7 +490,7 @@ update message model =
             -- after you delete a comment, fetch the new set of comments whether it was successful or not
             ( model, fetchComments model.article.slug )
 
-        FetchProfile username ->
+        FetchProfileArticle username ->
             ( model, Cmd.none )
 
 
@@ -583,11 +583,16 @@ viewComment comment =
             [ p [ class "card-text" ] [ text comment.body ]
             ]
         , div [ class "card-footer" ]
-            [ a [ Routes.href Routes.Profile, class "comment-author" ]
+            [ a
+                [ onClick (FetchProfileArticle comment.author.username)
+
+                {- Routes.href Routes.Profile -}
+                , class "comment-author"
+                ]
                 [ img [ src (maybeImageBio comment.author.image), class "comment-author-img" ] [] ]
             , text " \u{00A0} "
             , a
-                [ onClick (FetchProfile comment.author.username)
+                [ onClick (FetchProfileArticle comment.author.username)
 
                 {- Routes.href Routes.Profile -}
                 , class "comment-author"
@@ -734,14 +739,14 @@ viewArticle model =
         , div [ class "post-actions" ]
             [ div [ class "post-meta" ]
                 [ a
-                    [ onClick (FetchProfile model.author.username)
+                    [ onClick (FetchProfileArticle model.author.username)
 
                     -- Routes.href Routes.Profile
                     ]
                     [ img [ src (maybeImageBio model.author.image) ] [] ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , div [ class "info" ]
-                    [ a [ Routes.href Routes.Profile, class "author" ] [ text model.author.username ]
+                    [ a [ onClick (FetchProfileArticle model.author.username){-Routes.href Routes.Profile-}, class "author" ] [ text model.author.username ]
                     , span [ class "date" ] [ text model.article.createdAt ]
                     ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
@@ -804,14 +809,14 @@ view model =
         [ div [ class "post-page" ]
             [ div [ class "banner" ]
                 [ div [ class "container" ]
-                    [ h1 [] [ text "How to build webapps that scale" ]
-                    , div [ class "post-meta" ]
-                        [ a [ Routes.href Routes.Profile ]
+                    [ h1 [] [ text "How to build webapps that scale" ] 
+                    , div [ class "post-meta" ] 
+                        [ a [ {-onClick (FetchProfileArticle model.author.username)-}Routes.href (Routes.Profile model.author.username), href "" ]
                             -- add onClick to author's profile page
                             [ img [ src (maybeImageBio model.author.image) ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
-                            [ a [ Routes.href Routes.Profile, class "author" ] [ text model.author.username ]
+                            [ a [ onClick (FetchProfileArticle model.author.username){-Routes.href Routes.Profile-}, class "author" ] [ text model.author.username ]
                             , span [ class "date" ] [ text model.article.createdAt ]
                             ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
@@ -825,7 +830,7 @@ view model =
             ]
         , footer []
             [ div [ class "container" ]
-                [ a [ Routes.href Routes.Index, class "logo-font" ] [ text "conduit" ]
+                [ a [ Routes.href Routes.Index, class "logo-font" ] [ text "conduit" ] -- gohome
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
