@@ -103,6 +103,16 @@ init =
 --Update--
 
 
+type Msg
+    = SavePic String
+    | SaveName String
+    | SaveBio String
+    | SaveEmail String
+    | SavePassword String
+    | UpdateSettings
+    | GotUser (Result Http.Error User)
+    | LogOut
+
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
     case message of
@@ -220,17 +230,6 @@ view user =
                 ]
             ]
         ]
-
-
-type Msg
-    = SavePic String
-    | SaveName String
-    | SaveBio String
-    | SaveEmail String
-    | SavePassword String
-    | UpdateSettings
-    | GotUser (Result Http.Error User)
-    | LogOut
 
 
 

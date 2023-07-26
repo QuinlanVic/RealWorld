@@ -1,4 +1,4 @@
-module Profile exposing (Model, Msg, init, update, view)
+module Profile exposing (Feed, Model, Msg(..), ProfileType, articleDecoder, fetchProfileArticles, init, profileDecoder, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
@@ -7,7 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
+import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes
@@ -17,13 +17,11 @@ import Routes
 -- Model --
 
 
-type alias Author =
-    --inside article what we need to fetch
+type alias ProfileType =
     { username : String
-    , bio : String
-    , image : String
+    , bio : Maybe String
+    , image : Maybe String
     , following : Bool
-    , numfollowers : Int
     }
 
 
@@ -38,7 +36,7 @@ type alias Article =
     , updatedAt : String
     , favorited : Bool
     , favoritesCount : Int
-    , author : Author
+    , author : ProfileType
     }
 
 
@@ -48,19 +46,18 @@ type alias Feed =
 
 type alias Model =
     --put Articles inside? (Feed = List Article) & add Profile to basic Model :)
-    { profile : Author
+    { profile : ProfileType
     , articlesMade : Maybe Feed
     , favoritedArticles : Maybe Feed
     }
 
 
-defaultProfile : Author
+defaultProfile : ProfileType
 defaultProfile =
     { username = "Eric Simons"
-    , bio = " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
-    , image = "http://i.imgur.com/Qr71crq.jpg"
+    , bio = Just " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
+    , image = Just "http://i.imgur.com/Qr71crq.jpg"
     , following = False
-    , numfollowers = 10
     }
 
 
@@ -119,17 +116,16 @@ articleDecoder =
         |> required "favorited" bool
         |> required "favoritesCount" int
         -- "author": {
-        |> required "author" authorDecoder
+        |> required "author" profileDecoder
 
 
-authorDecoder : Decoder Author
-authorDecoder =
-    succeed Author
+profileDecoder : Decoder ProfileType
+profileDecoder =
+    succeed ProfileType
         |> required "username" string
-        |> required "bio" string
-        |> required "image" string
+        |> required "bio" (nullable string)
+        |> required "image" (nullable string)
         |> required "following" bool
-        |> hardcoded 10
 
 
 encodeArticle : Article -> Encode.Value
@@ -144,7 +140,7 @@ fetchProfile username =
     -- need to fetch the profile
     Http.get
         { url = baseUrl ++ "api/profiles/" ++ username
-        , expect = Http.expectJson GotProfile authorDecoder
+        , expect = Http.expectJson GotProfile profileDecoder
         }
 
 
@@ -199,8 +195,9 @@ unfavouriteArticle article =
 init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
-    --fetchProfile username
-    ( initialModel, Cmd.none )
+    -- get a specific profile ( fetchProfile username ) in Main and then
+    -- fetch the articles that they have made here
+    ( initialModel, fetchProfileArticles initialModel.profile.username )
 
 
 baseUrl : String
@@ -216,20 +213,20 @@ baseUrl =
 type Msg
     = ToggleLike Article
     | ToggleFollow
-    | GotProfile (Result Http.Error Author)
+    | GotProfile (Result Http.Error ProfileType)
     | GotProfileArticles (Result Http.Error Feed)
     | GotFavoritedArticles (Result Http.Error Feed)
     | LoadArticlesMade
     | LoadFavoritedArticles
 
 
-toggleFollow : Author -> Author
+toggleFollow : ProfileType -> ProfileType
 toggleFollow author =
     if author.following then
-        { author | following = not author.following, numfollowers = author.numfollowers - 1 }
+        { author | following = not author.following }
 
     else
-        { author | following = not author.following, numfollowers = author.numfollowers + 1 }
+        { author | following = not author.following }
 
 
 toggleLike : Article -> Article
@@ -241,7 +238,7 @@ toggleLike article =
         { article | favorited = not article.favorited, favoritesCount = article.favoritesCount + 1 }
 
 
-updateAuthor : (Author -> Author) -> Author -> Author
+updateAuthor : (ProfileType -> ProfileType) -> ProfileType -> ProfileType
 updateAuthor makeChanges author =
     makeChanges author
 
@@ -280,7 +277,7 @@ update message model =
 
         GotProfile (Ok userProfile) ->
             ( { model | profile = userProfile }, Cmd.none )
-        
+
         GotProfile (Err _) ->
             ( model, Cmd.none )
 
@@ -303,13 +300,21 @@ update message model =
             ( model, fetchFavoritedArticles model.profile.username )
 
 
+
 -- subscriptions : Model -> Sub Msg
 -- subscriptions model =
 --     Sub.none
-
-
-
 -- View --
+
+
+maybeImageBio : Maybe String -> String
+maybeImageBio maybeIB =
+    case maybeIB of
+        Just imagebio ->
+            imagebio
+
+        Nothing ->
+            ""
 
 
 viewFollowButton : Model -> Html Msg
@@ -330,7 +335,6 @@ viewFollowButton model =
     button buttonClass
         [ i [ class "ion-plus-round" ] []
         , text " \u{00A0} Follow Eric Simons "
-        , span [ class "counter" ] [ text ("(" ++ String.fromInt model.profile.numfollowers ++ ")") ]
         ]
 
 
@@ -355,7 +359,7 @@ viewArticlePreview : Article -> Html Msg
 viewArticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ Routes.href Routes.Profile ] [ img [ src article.author.image ] [] ]
+            [ a [ Routes.href Routes.Profile ] [ img [ src (maybeImageBio article.author.image) ] [] ]
             , text " "
             , div [ class "info" ]
                 [ a [ Routes.href Routes.Profile, class "author" ] [ text article.author.username ]
@@ -418,9 +422,9 @@ view model =
                 [ div [ class "container" ]
                     [ div [ class "row" ]
                         [ div [ class "col-md-10 col-md-offset-1" ]
-                            [ img [ src model.profile.image, class "user-img" ] []
+                            [ img [ src (maybeImageBio model.profile.image), class "user-img" ] []
                             , h4 [] [ text model.profile.username ]
-                            , p [] [ text model.profile.bio ]
+                            , p [] [ text (maybeImageBio model.profile.bio) ]
                             , text " "
                             , viewFollowButton model
                             ]
@@ -435,8 +439,7 @@ view model =
                                 [ li [ class "nav-item" ]
                                     [ a [ class "nav-link active", href "#", onClick LoadArticlesMade ] [ text "My Articles" ] ]
                                 , li [ class "nav-item" ]
-                                    -- onClick LoadFavoritedArticles
-                                    [ a [ class "nav-link", href "#" ] [ text "Favorited Articles" ] ]
+                                    [ a [ class "nav-link", href "#", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
                                 ]
                             ]
                         , viewArticles model.articlesMade

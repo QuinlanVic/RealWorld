@@ -1,4 +1,4 @@
-module Article exposing (Article, Model, Msg, articleDecoder, commentDecoder, init, initialModel, update, view)
+module Article exposing (Article, Model, Msg(..), articleDecoder, commentDecoder, init, initialModel, update, view)
 
 -- import Browser
 
@@ -327,7 +327,7 @@ deleteComment slug id =
 init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
-    -- get a specific article ( fetchArticle ) in Main and then
+    -- get a specific article ( fetchArticle slug ) in Main and then
     -- fetch the comments for that article here
     ( initialModel, fetchComments initialModel.article.slug )
 
@@ -349,6 +349,7 @@ type Msg
     | GotComments (Result Http.Error Comments)
     | GotComment (Result Http.Error Comment)
     | DeleteResponse (Result Http.Error ())
+    | FetchProfile String 
 
 
 addComment : Comment -> Maybe Comments -> Maybe Comments
@@ -481,6 +482,10 @@ update message model =
         DeleteResponse _ ->
             -- after you delete a comment, fetch the new set of comments whether it was successful or not
             ( model, fetchComments model.article.slug )
+        
+        FetchProfile username ->
+            ( model, Cmd.none )
+
 
 
 -- subscriptions : Model -> Sub Msg

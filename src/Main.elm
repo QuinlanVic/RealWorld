@@ -10,7 +10,7 @@ import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick)
 import Http
 import Index as PublicFeed
-import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
+import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Login
@@ -31,13 +31,13 @@ type CurrentPage
     | NotFound
 
 
-
---   LoginOrSomethingLikeIt Auth.User
--- | Edit Editor.Article
--- | Article Article.Model
--- | Profile Profile.Model
--- | Settings Settings.UserSettings
--- | NotFound
+type alias User =
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    , token : String
+    , username : String
+    , bio : Maybe String
+    , image : Maybe String
+    }
 
 
 type alias Model =
@@ -46,7 +46,17 @@ type alias Model =
     , url : Url
     , currentPage : String
     , isLoggedIn : Bool
-    -- add a user to your main model :)
+    , user : User
+    }
+
+
+defaultUser : User
+defaultUser =
+    { email = ""
+    , token = ""
+    , username = ""
+    , bio = Just ""
+    , image = Just ""
     }
 
 
@@ -57,6 +67,7 @@ initialModel navigationKey url =
     , url = url
     , currentPage = ""
     , isLoggedIn = False -- this is what I NEED
+    , user = defaultUser
     }
 
 
@@ -80,6 +91,13 @@ fetchArticle slug =
         }
 
 
+fetchProfile : String -> Cmd Msg
+fetchProfile username =
+    Http.get
+        { url = baseUrl ++ "api/profiles/" ++ username
+        , expect = Http.expectJson GotProfile (field "profile" Profile.profileDecoder) 
+        }
+
 
 ---- UPDATE ----
 -- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
@@ -102,6 +120,7 @@ type Msg
     | ProfileMessage Profile.Msg
     | SettingsMessage Settings.Msg
     | GotArticle (Result Http.Error Article.Article)
+    | GotProfile (Result Http.Error Profile.ProfileType)
 
 
 setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
@@ -182,10 +201,10 @@ update msg model =
         -- intercept the global message from publicfeed that we want
         ( PublicFeedMessage (PublicFeed.FetchArticle slug), _ ) ->
             ( model, Cmd.batch [ fetchArticle slug ] )
-
+        -- got the article, now pass it to Article's model
         ( GotArticle (Ok article), _ ) ->
             ( { model | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" } }, Cmd.none )
-
+        -- error, just display the same page as before (Probably could do more here)
         ( GotArticle (Err _), _ ) ->
             ( model, Cmd.none )
 
@@ -201,7 +220,7 @@ update msg model =
                 ( updatedAuthUser, authCmd ) =
                     Auth.update authMsg authUser
             in
-            ( { model | page = Auth updatedAuthUser }, Cmd.map AuthMessage authCmd ) 
+            ( { model | page = Auth updatedAuthUser }, Cmd.map AuthMessage authCmd )
 
         ( EditorMessage editorMsg, Editor editorArticle ) ->
             let
@@ -216,6 +235,17 @@ update msg model =
                     Login.update loginMsg loginUser
             in
             ( { model | page = Login updatedLoginUser }, Cmd.map LoginMessage loginCmd )
+
+        -- intercept the global message from publicfeed that we want
+        ( ArticleMessage (Article.FetchProfile username), _ ) ->
+            ( model, Cmd.batch [ fetchProfile username ] )
+        -- get the profile you are going to visit
+        ( GotProfile (Ok profile), _ ) ->
+            -- get the articles that they have made in the Profile.elm file
+            ( { model | page = Profile { articlesMade = Nothing, favoritedArticles = Nothing, profile = profile } }, Cmd.none )
+        -- error, just display the same page as before (Probably could do more)
+        ( GotProfile (Err _), _ ) -> 
+            ( model, Cmd.none )
 
         ( ArticleMessage articleMsg, Article articleModel ) ->
             let
