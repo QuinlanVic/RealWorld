@@ -72,7 +72,7 @@ href route =
 match : Url -> Maybe Route
 match url =
     -- match function that uses the routes parser to convert URLs
-    Parser.parse routes (Debug.log "TRYING TO MATCH URL" url)
+    Parser.parse routes url
 
 
 

@@ -324,16 +324,17 @@ viewarticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
             [ a
-                [ {- Routes.href (Routes.Profile article.author.username) -} href ""
+                [ Routes.href (Routes.Profile article.author.username)
+                --   href ""
                 , onClick (FetchProfileIndex article.author.username)
                 ]
                 [ img [ src article.author.image ] [] ]
             , text " "
             , div [ class "info" ]
                 [ a
-                    [ -- Routes.href (Routes.Profile article.author.username) 
+                    [ -- Routes.href (Routes.Profile article.author.username)
                       href ""
-                    ,  onClick (FetchProfileIndex article.author.username)
+                    , onClick (FetchProfileIndex article.author.username)
                     , class "author"
                     ]
                     [ text article.author.username ]
@@ -343,7 +344,7 @@ viewarticlePreview article =
             ]
         , a
             [ -- Routes.href (Routes.Article article.slug)
-              href ""              
+              href ""
             , onClick (FetchArticleIndex article.slug)
             , class "preview-link"
             ]
