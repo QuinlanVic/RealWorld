@@ -191,10 +191,10 @@ update message user =
             let
                 --trimString the input fields and then ensure that these fields are valid
                 trimmedUser =
-                    { user | username = trimString user.username, email = trimString user.email, password = trimString user.password }
+                    { user | email = trimString user.email, password = trimString user.password }
 
                 validatedUser =
-                    { trimmedUser | usernameError = validateUsername trimmedUser.username, emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password }
+                    { trimmedUser | usernameError = validateUsername (trimString user.username), emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password }
             in
             if isFormValid validatedUser then
                 ( validatedUser, saveUser validatedUser )

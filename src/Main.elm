@@ -75,7 +75,7 @@ init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init () url navigationKey =
     -- browser supplies initial Url when the app boots
     -- Convert url into a route and construct initialmodel -> pass to setNewPage to set initial page
-    setNewPage (Routes.match url) (initialModel navigationKey url)
+    setNewPage (Routes.match url) (initialModel navigationKey url) 
 
 
 baseUrl : String

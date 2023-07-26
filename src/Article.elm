@@ -584,17 +584,17 @@ viewComment comment =
             ]
         , div [ class "card-footer" ]
             [ a
-                [ onClick (FetchProfileArticle comment.author.username)
+                [ Routes.href (Routes.Profile comment.author.username)
 
-                {- Routes.href Routes.Profile -}
+                -- onClick (FetchProfileArticle comment.author.username)
                 , class "comment-author"
                 ]
                 [ img [ src (maybeImageBio comment.author.image), class "comment-author-img" ] [] ]
             , text " \u{00A0} "
             , a
-                [ onClick (FetchProfileArticle comment.author.username)
+                [ Routes.href (Routes.Profile comment.author.username)
 
-                {- Routes.href Routes.Profile -}
+                -- onClick (FetchProfileArticle comment.author.username)
                 , class "comment-author"
                 ]
                 [ text comment.author.username ]
@@ -739,14 +739,20 @@ viewArticle model =
         , div [ class "post-actions" ]
             [ div [ class "post-meta" ]
                 [ a
-                    [ onClick (FetchProfileArticle model.author.username)
+                    [ Routes.href (Routes.Profile model.author.username)
 
-                    -- Routes.href Routes.Profile
+                    -- onClick (FetchProfileArticle model.author.username)
                     ]
                     [ img [ src (maybeImageBio model.author.image) ] [] ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , div [ class "info" ]
-                    [ a [ onClick (FetchProfileArticle model.author.username){-Routes.href Routes.Profile-}, class "author" ] [ text model.author.username ]
+                    [ a
+                        [ Routes.href (Routes.Profile model.author.username)
+
+                        -- onClick (FetchProfileArticle model.author.username)
+                        , class "author"
+                        ]
+                        [ text model.author.username ]
                     , span [ class "date" ] [ text model.article.createdAt ]
                     ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
@@ -809,18 +815,22 @@ view model =
         [ div [ class "post-page" ]
             [ div [ class "banner" ]
                 [ div [ class "container" ]
-                    [ h1 [] [ text "How to build webapps that scale" ] 
-                    , div [ class "post-meta" ] 
-                        [ a [ href "", onClick (FetchProfileArticle model.author.username)
-                            -- Routes.href (Routes.Profile model.author.username)
+                    [ h1 [] [ text "How to build webapps that scale" ]
+                    , div [ class "post-meta" ]
+                        [ a
+                            [ Routes.href (Routes.Profile model.author.username)
+
+                            -- onClick (FetchProfileArticle model.author.username)
                             ]
                             [ img [ src (maybeImageBio model.author.image) ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
-                            [ a [ href "", onClick (FetchProfileArticle model.author.username)
-                                -- Routes.href (Routes.Profile model.author.username)
-                                , class "author" 
-                                ] 
+                            [ a
+                                [ Routes.href (Routes.Profile model.author.username)
+
+                                -- onClick (FetchProfileArticle model.author.username)
+                                , class "author"
+                                ]
                                 [ text model.author.username ]
                             , span [ class "date" ] [ text model.article.createdAt ]
                             ]

@@ -325,16 +325,18 @@ viewarticlePreview article =
         [ div [ class "post-meta" ]
             [ a
                 [ Routes.href (Routes.Profile article.author.username)
+
                 --   href ""
-                , onClick (FetchProfileIndex article.author.username)
+                -- , onClick (FetchProfileIndex article.author.username)
                 ]
                 [ img [ src article.author.image ] [] ]
             , text " "
             , div [ class "info" ]
                 [ a
-                    [ -- Routes.href (Routes.Profile article.author.username)
-                      href ""
-                    , onClick (FetchProfileIndex article.author.username)
+                    [ Routes.href (Routes.Profile article.author.username)
+
+                    --   href ""
+                    -- , onClick (FetchProfileIndex article.author.username)
                     , class "author"
                     ]
                     [ text article.author.username ]
@@ -343,9 +345,9 @@ viewarticlePreview article =
             , viewLoveButton article
             ]
         , a
-            [ -- Routes.href (Routes.Article article.slug)
-              href ""
-            , onClick (FetchArticleIndex article.slug)
+            [ Routes.href (Routes.Article article.slug)
+            --   href ""
+            -- , onClick (FetchArticleIndex article.slug)
             , class "preview-link"
             ]
             [ h1 [] [ text article.title ]

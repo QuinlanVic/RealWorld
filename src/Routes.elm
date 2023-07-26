@@ -28,7 +28,7 @@ routes =
         , Parser.map Auth (Parser.s "register")
         , Parser.map Editor (Parser.s "createpost")
         , Parser.map Login (Parser.s "login")
-        , Parser.map Article (Parser.s "article" </> Parser.string) --article name
+        , Parser.map Article (Parser.s "article" </> Parser.string) --article slug
         , Parser.map Profile (Parser.s "profile" </> Parser.string) --profile username
         , Parser.map Settings (Parser.s "settings")
         ]
@@ -54,8 +54,6 @@ routeToUrl route =
             "/article/" ++ slug
 
         Profile username ->
-            -- Profile username ->
-            -- "/profiles" ++ username
             "/profile/" ++ username
 
         Settings ->
