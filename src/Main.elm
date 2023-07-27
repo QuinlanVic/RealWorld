@@ -521,7 +521,7 @@ view model =
     in
     -- loggedin vs loggedout headers (WHAT I NEED!)
     -- Also, do not show "Your Feed" if the user is logged out :)
-    if False then
+    if model.isLoggedIn then
         -- model.isLoggedIn
         { title = title
         , body = [ viewHeader model, content ]
