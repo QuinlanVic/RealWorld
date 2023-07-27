@@ -5,7 +5,7 @@ module Settings exposing (Model, Msg, init, update, view)
 
 import Auth exposing (initialModel, trimString, validateEmail, validatePassword, validateUsername)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, placeholder, rows, type_)
+import Html.Attributes exposing (class, href, placeholder, rows, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, nullable, string, succeed)
@@ -65,16 +65,19 @@ baseUrl =
     "http://localhost:8000/"
 
 
-saveUser : Model -> Cmd Msg
-saveUser model =
+updateUser : Model -> Cmd Msg
+updateUser model =
     --PUT/user
     let
         body =
             Http.jsonBody <| Encode.object [ ( "user", encodeUser <| model ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "PUT"
-        , headers = []
+        , headers = headers
         , body = body
         , expect = Http.expectJson GotUser (field "user" userDecoder) -- wrap JSON received in GotUser Msg
         , url = baseUrl ++ "api/user"
@@ -180,14 +183,14 @@ updateEmail user newEmail =
     { user | email = newEmail }
 
 
-trimUsernameAndEmail : User -> String -> String -> User
-trimUsernameAndEmail user trimmedUsername trimmedEmail =
-    { user | username = trimmedUsername, email = trimmedEmail }
+trimEmail : User -> String -> User
+trimEmail user trimmedEmail =
+    { user | email = trimmedEmail }
 
 
 isFormValid : Model -> Bool
 isFormValid model =
-    Maybe.withDefault "" model.usernameError == "" && Maybe.withDefault "" model.emailError == "" && Maybe.withDefault "" model.passwordError == ""
+    Maybe.withDefault "" model.usernameError == "" && Maybe.withDefault "" model.emailError == ""
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -212,13 +215,13 @@ update message model =
             let
                 --trimString the input fields and then ensure that these fields are valid
                 trimmedModel =
-                    { model | user = trimUsernameAndEmail model.user (trimString model.user.username) (trimString model.user.email), password = trimString model.password }
+                    { model | user = trimEmail model.user (trimString model.user.email), password = trimString model.password }
 
                 validatedModel =
                     { trimmedModel | usernameError = validateUsername trimmedModel.user.username, emailError = validateEmail trimmedModel.user.email, passwordError = validatePassword trimmedModel.password }
             in
             if isFormValid validatedModel then
-                ( validatedModel, saveUser validatedModel )
+                ( validatedModel, updateUser validatedModel )
 
             else
                 ( validatedModel, Cmd.none )
@@ -274,23 +277,19 @@ view model =
                         , form []
                             [ fieldset []
                                 [ fieldset [ class "form-group" ]
-                                    [ input [ class "form-control", type_ "text", placeholder "URL of profile picture", onInput SavePic ] [ text (maybeImageBio model.user.image) ]
+                                    [ input [ class "form-control", type_ "text", placeholder "URL of profile picture", onInput SavePic, value (maybeImageBio model.user.image) ] []
                                     ]
-
-                                -- , viewForm "text" "Your Name"
+                                , div [ style "color" "red" ] [ text (Maybe.withDefault "" model.usernameError) ]
                                 , fieldset [ class "form-group" ]
-                                    [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName ] [ text model.user.username ]
+                                    [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName, value model.user.username ] []
                                     ]
                                 , fieldset [ class "form-group" ]
-                                    [ textarea [ class "form-control form-control-lg", rows 8, placeholder "Short bio about you", onInput SaveBio ] [ text (maybeImageBio model.user.bio) ]
+                                    [ textarea [ class "form-control form-control-lg", rows 8, placeholder "Short bio about you", onInput SaveBio, value (maybeImageBio model.user.bio) ] []
                                     ]
-
-                                -- , viewForm "text" "Email"
+                                , div [ style "color" "red" ] [ text (Maybe.withDefault "" model.emailError) ]
                                 , fieldset [ class "form-group" ]
-                                    [ input [ class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail ] [ text model.user.email ]
+                                    [ input [ class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail, value model.user.email ] []
                                     ]
-
-                                -- , viewForm "password" "Password"
                                 , fieldset [ class "form-group" ]
                                     [ input [ class "form-control form-control-lg", type_ "password", placeholder "New Password", onInput SavePassword ] []
                                     ]

@@ -102,6 +102,11 @@ type Msg
     | SignedUpGoHome (Result Http.Error User)
 
 
+isLoginValid : User -> Bool
+isLoginValid user =
+    Maybe.withDefault "" user.emailError == "" && Maybe.withDefault "" user.passwordError == ""
+
+
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
     --what to do (update) with each message type
@@ -137,11 +142,6 @@ update message user =
 
         SignedUpGoHome (Err _) ->
             ( user, Cmd.none )
-
-
-isLoginValid : User -> Bool
-isLoginValid user =
-    Maybe.withDefault "" user.emailError == "" && Maybe.withDefault "" user.passwordError == ""
 
 
 

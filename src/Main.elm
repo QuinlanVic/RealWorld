@@ -4,6 +4,7 @@ import Article
 import Auth
 import Browser exposing (Document, UrlRequest(..))
 import Browser.Navigation as Navigation
+import Debug exposing (log)
 import Editor
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
@@ -287,16 +288,14 @@ update msg model =
 
         -- get the profile you are going to visit
         ( GotProfile (Ok profile), _ ) ->
-            -- get the articles that they have made in the Profile.elm file
             ( { model | page = Profile { articlesMade = Nothing, favoritedArticles = Nothing, profile = profile } }, Cmd.none )
 
         -- error, just display the same page as before (Probably could do more)
         ( GotProfile (Err _), _ ) ->
             ( model, Cmd.none )
 
-        -- get the profile you are going to visit
+        -- get the user to go to their settings
         ( GotUser (Ok user), _ ) ->
-            -- get the articles that they have made in the Profile.elm file
             ( { model
                 | page =
                     Settings
@@ -312,9 +311,9 @@ update msg model =
             , Cmd.none
             )
 
-        -- error, just display the same page as before (Probably could do more)
-        ( GotUser (Err _), _ ) ->
-            ( model, Cmd.none )
+        -- error, just display the same page as before (Probably could do more) 
+        ( GotUser (Err error), _ ) ->
+            ( { model | currentPage = "Home" }, Cmd.none )
 
         -- Index
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
@@ -362,7 +361,7 @@ update msg model =
             ( { model | page = Editor updatedEditorArticle }, Cmd.map EditorMessage editorCmd )
 
         -- Login
-        ( LoginMessage (Login.SignedUpGoHome (Ok gotUser)), _ ) -> 
+        ( LoginMessage (Login.SignedUpGoHome (Ok gotUser)), _ ) ->
             let
                 ( publicFeedModel, publicFeedCmd ) =
                     PublicFeed.init
@@ -376,6 +375,7 @@ update msg model =
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
             )
+
         ( LoginMessage loginMsg, Login loginUser ) ->
             let
                 ( updatedLoginUser, loginCmd ) =

@@ -55,11 +55,18 @@ saveArticle article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        -- headers =
+        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
-    Http.post
-        { body = body
+    Http.request
+        { method = "POST"
+        , headers = []
+        , body = body
         , expect = Http.expectJson LoadArticle (field "article" articleDecoder) -- wrap JSON received in LoadArtifcle Msg
         , url = baseUrl ++ "api/articles"
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
@@ -141,6 +148,15 @@ init =
 -- Update --
 
 
+type Msg
+    = SaveTitle String --maybe string
+    | SaveDescription String
+    | SaveBody String
+    | SaveTags (List String)
+    | CreateArticle
+    | LoadArticle (Result Http.Error Article)
+
+
 validateTitle : String -> Maybe String
 validateTitle input =
     if String.isEmpty input then
@@ -192,10 +208,9 @@ update message article =
         LoadArticle (Ok gotArticle) ->
             -- get the article and then change page to new article :)
             ( gotArticle, Cmd.none )
-        
+
         LoadArticle (Err _) ->
             ( article, Cmd.none )
-        
 
 
 isFormValid : Article -> Bool
@@ -203,12 +218,10 @@ isFormValid article =
     Maybe.withDefault "" article.titleError == "" && Maybe.withDefault "" article.bodyError == "" && Maybe.withDefault "" article.descError == ""
 
 
+
 -- subscriptions : Article -> Sub Msg
 -- subscriptions article =
 --     Sub.none
-
-
-
 -- View --
 
 
@@ -258,15 +271,6 @@ view article =
                 ]
             ]
         ]
-
-
-type Msg
-    = SaveTitle String --maybe string
-    | SaveDescription String
-    | SaveBody String
-    | SaveTags (List String)
-    | CreateArticle
-    | LoadArticle (Result Http.Error Article)
 
 
 

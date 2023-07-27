@@ -187,11 +187,18 @@ favouriteArticle article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        -- headers =
+        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
-    Http.post
-        { body = body
+    Http.request
+        { method = "POST"
+        , headers = []
+        , body = body
         , expect = Http.expectJson GotProfileArticles (list (field "article" articleDecoder))
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
@@ -200,6 +207,9 @@ unfavouriteArticle article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        -- headers =
+        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "DELETE"
@@ -217,11 +227,18 @@ followUser profile =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "profile", encodeProfile <| profile ) ]
+
+        -- headers =
+        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
-    Http.post
-        { body = body
+    Http.request
+        { method = "POST"
+        , headers = []
+        , body = body
         , expect = Http.expectJson GotProfile (field "profile" profileDecoder)
         , url = baseUrl ++ "api/profiles/" ++ profile.username ++ "/follow"
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
@@ -230,6 +247,9 @@ unfollowUser profile =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "profile", encodeProfile <| profile ) ]
+
+        -- headers =
+        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "DELETE"

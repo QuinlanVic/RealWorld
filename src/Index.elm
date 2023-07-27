@@ -97,9 +97,21 @@ fetchGlobalArticles =
 fetchYourArticles : Cmd Msg
 fetchYourArticles =
     -- need some kind of authentication to know which articles to fetch depended on the user
-    Http.get
-        { url = baseUrl ++ "api/articles/feed"
+    let
+        body =
+            Http.emptyBody
+
+        -- headers =
+        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.request
+        { method = "GET"
+        , headers = []
+        , body = body
         , expect = Http.expectJson GotYourFeed (field "articles" (list articleDecoder))
+        , url = baseUrl ++ "api/articles/feed"
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
@@ -116,11 +128,18 @@ favoriteArticle article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        -- headers =
+        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
-    Http.post
-        { body = body
+    Http.request
+        { method = "POST"
+        , headers = []
+        , body = body
         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
@@ -129,6 +148,9 @@ unfavoriteArticle article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        -- headers =
+        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "DELETE"
@@ -346,6 +368,7 @@ viewarticlePreview article =
             ]
         , a
             [ Routes.href (Routes.Article article.slug)
+
             --   href ""
             -- , onClick (FetchArticleIndex article.slug)
             , class "preview-link"
