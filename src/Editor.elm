@@ -38,10 +38,6 @@ type alias Article =
     , favorited : Bool
     , favoritesCount : Int
     , author : Author
-    , created : Bool
-    , titleError : Maybe String
-    , bodyError : Maybe String
-    , descError : Maybe String
     }
 
 
@@ -57,6 +53,10 @@ type alias User =
 type alias Model =
     { user : User
     , article : Article
+    , created : Bool
+    , titleError : Maybe String
+    , bodyError : Maybe String
+    , descError : Maybe String
     }
 
 
@@ -65,20 +65,20 @@ baseUrl =
     "http://localhost:8000/"
 
 
-saveArticle : Article -> Cmd Msg
-saveArticle article =
+saveArticle : Model -> Cmd Msg
+saveArticle model =
     let
         body =
-            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| model.article ) ]
 
-        -- headers =
-        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "POST"
-        , headers = []
+        , headers = headers
         , body = body
-        , expect = Http.expectJson LoadArticle (field "article" articleDecoder) -- wrap JSON received in LoadArtifcle Msg
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in LoadArtifcle Msg
         , url = baseUrl ++ "api/articles"
         , timeout = Nothing
         , tracker = Nothing
@@ -119,10 +119,6 @@ articleDecoder =
         |> required "favoritesCount" int
         -- "author": {
         |> required "author" authorDecoder
-        |> hardcoded False
-        |> hardcoded (Just "")
-        |> hardcoded (Just "")
-        |> hardcoded (Just "")
 
 
 defaultAuthor : Author
@@ -134,8 +130,18 @@ defaultAuthor =
     }
 
 
-initialModel : Article
-initialModel =
+defaultUser : User
+defaultUser =
+    { email = ""
+    , token = ""
+    , username = ""
+    , bio = Just ""
+    , image = Just ""
+    }
+
+
+defaultArticle : Article
+defaultArticle =
     { slug = ""
     , title = ""
     , description = ""
@@ -146,6 +152,13 @@ initialModel =
     , favorited = False
     , favoritesCount = 0
     , author = defaultAuthor
+    }
+
+
+initialModel : Model
+initialModel =
+    { user = defaultUser
+    , article = defaultArticle
     , created = False
     , titleError = Just ""
     , bodyError = Just ""
@@ -153,7 +166,7 @@ initialModel =
     }
 
 
-init : ( Article, Cmd Msg )
+init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
     ( initialModel, Cmd.none )
@@ -169,7 +182,7 @@ type Msg
     | SaveBody String
     | SaveTags (List String)
     | CreateArticle
-    | LoadArticle (Result Http.Error Article)
+    | GotArticle (Result Http.Error Article)
 
 
 validateTitle : String -> Maybe String
@@ -193,44 +206,64 @@ validateBody input =
         Nothing
 
 
-update : Msg -> Article -> ( Article, Cmd Msg )
-update message article =
+updateTitle : Article -> String -> Article
+updateTitle article newTitle =
+    { article | title = newTitle }
+
+
+updateDescription : Article -> String -> Article
+updateDescription article newDescription =
+    { article | description = newDescription }
+
+
+updateBody : Article -> String -> Article
+updateBody article newBody =
+    { article | body = newBody }
+
+
+updateTags : Article -> List String -> Article
+updateTags article newTags =
+    { article | tagList = newTags }
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update message model =
     case message of
         SaveTitle title ->
-            ( { article | title = title, titleError = validateTitle title }, Cmd.none )
+            ( { model | article = updateTitle model.article title, titleError = validateTitle title }, Cmd.none )
 
         --update record syntax
         SaveDescription description ->
-            ( { article | description = description, descError = validateTitle description }, Cmd.none )
+            ( { model | article = updateDescription model.article description, descError = validateTitle description }, Cmd.none )
 
         SaveBody body ->
-            ( { article | body = body, bodyError = validateBody body }, Cmd.none )
+            ( { model | article = updateBody model.article body, bodyError = validateBody body }, Cmd.none )
 
         SaveTags tagList ->
-            ( { article | tagList = tagList }, Cmd.none )
+            ( { model | article = updateTags model.article tagList }, Cmd.none )
 
         CreateArticle ->
             let
-                validatedArticle =
-                    { article | titleError = validateTitle article.title, bodyError = validateBody article.body, descError = validateTitle article.description }
+                validatedModel =
+                    { model | titleError = validateTitle model.article.title, bodyError = validateBody model.article.body, descError = validateTitle model.article.description }
             in
-            if isFormValid validatedArticle then
-                ( validatedArticle, saveArticle validatedArticle )
+            if isFormValid validatedModel then
+                ( validatedModel, saveArticle validatedModel )
 
             else
-                ( validatedArticle, Cmd.none )
+                ( validatedModel, Cmd.none )
 
-        LoadArticle (Ok gotArticle) ->
+        GotArticle (Ok gotArticle) ->
             -- get the article and then change page to new article :)
-            ( gotArticle, Cmd.none )
+            ( { model | article = gotArticle }, Cmd.none )
 
-        LoadArticle (Err _) ->
-            ( article, Cmd.none )
+        GotArticle (Err _) ->
+            ( model, Cmd.none )
 
 
-isFormValid : Article -> Bool
-isFormValid article =
-    Maybe.withDefault "" article.titleError == "" && Maybe.withDefault "" article.bodyError == "" && Maybe.withDefault "" article.descError == ""
+isFormValid : Model -> Bool
+isFormValid model =
+    Maybe.withDefault "" model.titleError == "" && Maybe.withDefault "" model.bodyError == "" && Maybe.withDefault "" model.descError == ""
 
 
 
@@ -240,25 +273,25 @@ isFormValid article =
 -- View --
 
 
-view : Article -> Html Msg
-view article =
+view : Model -> Html Msg
+view model =
     div []
         [ div [ class "editor-page" ]
             [ div [ class "container page" ]
                 [ div [ class "row" ]
                     [ div [ class "col-md-10 col-md-offset-1 col-xs-12" ]
                         [ form []
-                            [ div [ style "color" "red" ] [ text (Maybe.withDefault "" article.titleError) ]
+                            [ div [ style "color" "red" ] [ text (Maybe.withDefault "" model.titleError) ]
                             , fieldset [ class "form-group" ]
                                 [ input [ class "form-control form-control-lg", type_ "text", placeholder "Article Title", onInput SaveTitle ] [] ]
-                            , div [ style "color" "red" ] [ text (Maybe.withDefault "" article.descError) ]
+                            , div [ style "color" "red" ] [ text (Maybe.withDefault "" model.descError) ]
                             , fieldset [ class "form-group" ]
                                 [ input [ class "form-control", type_ "text", placeholder "What's this article about?", onInput SaveDescription ] [] ]
-                            , div [ style "color" "red" ] [ text (Maybe.withDefault "" article.bodyError) ]
+                            , div [ style "color" "red" ] [ text (Maybe.withDefault "" model.bodyError) ]
                             , fieldset [ class "form-group" ]
                                 [ textarea [ class "form-control", rows 8, placeholder "Write your article (in markdown)", onInput SaveBody ] [] ]
                             , fieldset [ class "form-group" ]
-                                [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] [] --, onInput SaveTags (have to do it for a list of strings (split into strings to be passed into list))
+                                [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] [] --, onInput SaveTags (tags are seperated by spaces)
 
                                 -- , div [ class "tag-list" ]
                                 --     [ span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " programming" ] --function
@@ -297,4 +330,4 @@ view article =
 --         , update = update
 --         , subscriptions = subscriptions
 --         }
---Now editor is a component and no longer an application
+-- Now editor is a component and no longer an application
