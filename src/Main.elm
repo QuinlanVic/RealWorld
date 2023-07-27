@@ -27,7 +27,7 @@ type CurrentPage
     | Login Auth.User
     | Article Article.Model
     | Profile Profile.Model
-    | Settings Auth.User
+    | Settings Settings.Model
     | NotFound
 
 
@@ -297,16 +297,20 @@ update msg model =
         -- get the profile you are going to visit
         ( GotUser (Ok user), _ ) ->
             -- get the articles that they have made in the Profile.elm file
-            ( { model | page = Settings { user = user
-                                        , password = ""
-                                        , signedUpOrloggedIn = False
-                                        , errmsg = ""
-                                        , usernameError = Just ""
-                                        , emailError = Just ""
-                                        , passwordError = Just "" 
-                                        } 
+            ( { model
+                | page =
+                    Settings
+                        { user = user
+                        , password = ""
+                        , signedUpOrloggedIn = False
+                        , errmsg = ""
+                        , usernameError = Just ""
+                        , emailError = Just ""
+                        , passwordError = Just ""
+                        }
               }
-            , Cmd.none )
+            , Cmd.none
+            )
 
         -- error, just display the same page as before (Probably could do more)
         ( GotUser (Err _), _ ) ->

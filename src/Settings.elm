@@ -1,9 +1,9 @@
-module Settings exposing (Msg, init, update, view)
+module Settings exposing (Model, Msg, init, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
 
-import Auth exposing (initialModel, isFormValid, trimString, validateEmail, validatePassword, validateUsername)
+import Auth exposing (initialModel, trimString, validateEmail, validatePassword, validateUsername)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, type_)
 import Html.Events exposing (onClick, onInput)
@@ -65,12 +65,12 @@ baseUrl =
     "http://localhost:8000/"
 
 
-saveUser : User -> Cmd Msg
-saveUser user =
+saveUser : Model -> Cmd Msg
+saveUser model =
     --PUT/user
     let
         body =
-            Http.jsonBody <| Encode.object [ ( "user", encodeUser <| user ) ]
+            Http.jsonBody <| Encode.object [ ( "user", encodeUser <| model ) ]
     in
     Http.request
         { method = "PUT"
@@ -160,47 +160,77 @@ type Msg
     | LogOut
 
 
-update : Msg -> User -> ( User, Cmd Msg )
-update message user =
+updateImage : User -> String -> User
+updateImage user newImage =
+    { user | image = Just newImage }
+
+
+updateUsername : User -> String -> User
+updateUsername user newUsername =
+    { user | username = newUsername }
+
+
+updateBio : User -> String -> User
+updateBio user newBio =
+    { user | bio = Just newBio }
+
+
+updateEmail : User -> String -> User
+updateEmail user newEmail =
+    { user | email = newEmail }
+
+
+trimUsernameAndEmail : User -> String -> String -> User
+trimUsernameAndEmail user trimmedUsername trimmedEmail =
+    { user | username = trimmedUsername, email = trimmedEmail }
+
+
+isFormValid : Model -> Bool
+isFormValid model =
+    Maybe.withDefault "" model.usernameError == "" && Maybe.withDefault "" model.emailError == "" && Maybe.withDefault "" model.passwordError == ""
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update message model =
     case message of
         SavePic image ->
-            ( { user | image = Just image }, Cmd.none )
+            ( { model | user = updateImage model.user image }, Cmd.none )
 
         SaveName username ->
-            ( { user | username = username }, Cmd.none )
+            ( { model | user = updateUsername model.user username }, Cmd.none )
 
         SaveBio bio ->
-            ( { user | bio = Just bio }, Cmd.none )
+            ( { model | user = updateBio model.user bio }, Cmd.none )
 
         SaveEmail email ->
-            ( { user | email = email }, Cmd.none )
+            ( { model | user = updateEmail model.user email }, Cmd.none )
 
         SavePassword password ->
-            ( { user | password = password }, Cmd.none )
+            ( { model | password = password }, Cmd.none )
 
         UpdateSettings ->
             let
                 --trimString the input fields and then ensure that these fields are valid
-                trimmedUser =
-                    { user | username = trimString user.username, email = trimString user.email, password = trimString user.password }
+                trimmedModel =
+                    { model | user = trimUsernameAndEmail model.user (trimString model.user.username) (trimString model.user.email), password = trimString model.password }
 
-                validatedUser =
-                    { trimmedUser | usernameError = validateUsername trimmedUser.username, emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password }
+                validatedModel =
+                    { trimmedModel | usernameError = validateUsername trimmedModel.user.username, emailError = validateEmail trimmedModel.user.email, passwordError = validatePassword trimmedModel.password }
             in
-            if isFormValid validatedUser then
-                ( validatedUser, saveUser validatedUser )
+            if isFormValid validatedModel then
+                ( validatedModel, saveUser validatedModel )
 
             else
-                ( validatedUser, Cmd.none )
+                ( validatedModel, Cmd.none )
 
         LogOut ->
-            ( user, Cmd.none )
+            ( model, Cmd.none )
 
         GotUser (Ok gotUser) ->
-            ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
+            ( { model | user = gotUser, signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
 
         GotUser (Err _) ->
-            ( user, Cmd.none )
+            ( model, Cmd.none )
 
 
 
@@ -223,8 +253,18 @@ update message user =
 -- #373a3c
 
 
-view : User -> Html Msg
-view user =
+maybeImageBio : Maybe String -> String
+maybeImageBio maybeIB =
+    case maybeIB of
+        Just imagebio ->
+            imagebio
+
+        Nothing ->
+            ""
+
+
+view : Model -> Html Msg
+view model =
     div []
         [ div [ class "settings-page" ]
             [ div [ class "container page" ]
@@ -234,20 +274,20 @@ view user =
                         , form []
                             [ fieldset []
                                 [ fieldset [ class "form-group" ]
-                                    [ input [ class "form-control", type_ "text", placeholder "URL of profile picture", onInput SavePic ] [] --<!--<input type="file" id="file"> -->
+                                    [ input [ class "form-control", type_ "text", placeholder "URL of profile picture", onInput SavePic ] [ text (maybeImageBio model.user.image) ]
                                     ]
 
                                 -- , viewForm "text" "Your Name"
                                 , fieldset [ class "form-group" ]
-                                    [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName ] []
+                                    [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName ] [ text model.user.username ]
                                     ]
                                 , fieldset [ class "form-group" ]
-                                    [ textarea [ class "form-control form-control-lg", rows 8, placeholder "Short bio about you", onInput SaveBio ] []
+                                    [ textarea [ class "form-control form-control-lg", rows 8, placeholder "Short bio about you", onInput SaveBio ] [ text (maybeImageBio model.user.bio) ]
                                     ]
 
                                 -- , viewForm "text" "Email"
                                 , fieldset [ class "form-group" ]
-                                    [ input [ class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail ] []
+                                    [ input [ class "form-control form-control-lg", type_ "text", placeholder "Email", onInput SaveEmail ] [ text model.user.email ]
                                     ]
 
                                 -- , viewForm "password" "Password"
