@@ -134,16 +134,35 @@ userDecoder =
         |> required "image" (nullable string)
 
 
-saveUser : RegUser -> Cmd Msg
-saveUser user =
+
+-- saveUser : RegUser -> Cmd Msg
+-- saveUser user =
+--     let
+--         body =
+--             Http.jsonBody <| Encode.object [ ( "user", encodeUser <| user ) ]
+--     in
+--     Http.post
+--         { body = body
+--         , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
+--         , url = baseUrl ++ "api/users"
+--         }
+
+
+getUser : User -> Cmd Msg
+getUser user =
+    --GET logged in user upon loadin
     let
-        body =
-            Http.jsonBody <| Encode.object [ ( "user", encodeUser <| user ) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ user.token) ]
     in
-    Http.post
-        { body = body
-        , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
-        , url = baseUrl ++ "api/users"
+    Http.request
+        { method = "GET"
+        , headers = headers
+        , url = baseUrl ++ "api/user"
+        , expect = Http.expectJson GotUser (field "user" userDecoder)
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
@@ -170,7 +189,7 @@ type Msg
     | SettingsMessage Settings.Msg
     | GotArticle (Result Http.Error Article.Article)
     | GotProfile (Result Http.Error Profile.ProfileType)
-    | LoadUser (Result Http.Error User)
+    | GotUser (Result Http.Error User)
 
 
 convertUser : RegUser -> User
@@ -275,6 +294,24 @@ update msg model =
         ( GotProfile (Err _), _ ) ->
             ( model, Cmd.none )
 
+        -- get the profile you are going to visit
+        ( GotUser (Ok user), _ ) ->
+            -- get the articles that they have made in the Profile.elm file
+            ( { model | page = Settings { user = user
+                                        , password = ""
+                                        , signedUpOrloggedIn = False
+                                        , errmsg = ""
+                                        , usernameError = Just ""
+                                        , emailError = Just ""
+                                        , passwordError = Just "" 
+                                        } 
+              }
+            , Cmd.none )
+
+        -- error, just display the same page as before (Probably could do more)
+        ( GotUser (Err _), _ ) ->
+            ( model, Cmd.none )
+
         -- Index
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
             let
@@ -304,9 +341,6 @@ update msg model =
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
             )
-
-        ( LoadUser (Err _), _ ) ->
-            ( model, Cmd.none )
 
         ( AuthMessage authMsg, Auth authUser ) ->
             let

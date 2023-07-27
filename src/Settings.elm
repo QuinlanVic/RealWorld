@@ -3,7 +3,7 @@ module Settings exposing (Msg, init, update, view)
 -- import Exts.Html exposing (nbsp)
 -- import Browser
 
-import Auth exposing (User, initialModel, isFormValid, trimString, validateEmail, validatePassword, validateUsername)
+import Auth exposing (initialModel, isFormValid, trimString, validateEmail, validatePassword, validateUsername)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, type_)
 import Html.Events exposing (onClick, onInput)
@@ -14,7 +14,50 @@ import Json.Encode as Encode
 import Routes
 
 
+
 --Model--
+
+
+type alias User =
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    , token : String
+    , username : String
+    , bio : Maybe String
+    , image : Maybe String
+    }
+
+
+type alias Model =
+    { user : User
+    , password : String
+    , signedUpOrloggedIn : Bool
+    , errmsg : String
+    , usernameError : Maybe String
+    , emailError : Maybe String
+    , passwordError : Maybe String
+    }
+
+
+defaultUser : User
+defaultUser =
+    { email = ""
+    , token = ""
+    , username = ""
+    , bio = Just ""
+    , image = Just ""
+    }
+
+
+initialModel : Model
+initialModel =
+    { user = defaultUser
+    , password = ""
+    , signedUpOrloggedIn = False
+    , errmsg = ""
+    , usernameError = Just ""
+    , emailError = Just ""
+    , passwordError = Just ""
+    }
 
 
 baseUrl : String
@@ -40,12 +83,21 @@ saveUser user =
         }
 
 
-getUser : Cmd Msg
-getUser =
+getUser : User -> Cmd Msg
+getUser user =
     --GET logged in user upon loadin
-    Http.get
-        { url = baseUrl ++ "api/user"
+    let
+        headers =
+            [ Http.header "Authorization" ("Token " ++ user.token) ]
+    in
+    Http.request
+        { method = "GET"
+        , headers = headers
+        , url = baseUrl ++ "api/user"
         , expect = Http.expectJson GotUser (field "user" userDecoder)
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
@@ -59,15 +111,15 @@ encodeMaybeString maybeString =
             Encode.null
 
 
-encodeUser : User -> Encode.Value
-encodeUser user =
+encodeUser : Model -> Encode.Value
+encodeUser model =
     --used to encode user sent to the server via PUT request body (for registering)
     Encode.object
-        [ ( "email", Encode.string user.email )
-        , ( "password", Encode.string user.password )
-        , ( "username", Encode.string user.username )
-        , ( "bio", encodeMaybeString user.bio )
-        , ( "image", encodeMaybeString user.image )
+        [ ( "email", Encode.string model.user.email )
+        , ( "password", Encode.string model.password )
+        , ( "username", Encode.string model.user.username )
+        , ( "bio", encodeMaybeString model.user.bio )
+        , ( "image", encodeMaybeString model.user.image )
         ]
 
 
@@ -79,18 +131,12 @@ userDecoder =
         |> required "username" string
         |> required "bio" (nullable string)
         |> required "image" (nullable string)
-        |> hardcoded ""
-        |> hardcoded True
-        |> hardcoded ""
-        |> hardcoded (Just "")
-        |> hardcoded (Just "")
-        |> hardcoded (Just "")
 
 
-init : ( User, Cmd Msg )
+init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
-    ( initialModel, getUser )
+    ( initialModel, Cmd.none )
 
 
 
@@ -113,12 +159,13 @@ type Msg
     | GotUser (Result Http.Error User)
     | LogOut
 
+
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
     case message of
         SavePic image ->
             ( { user | image = Just image }, Cmd.none )
- 
+
         SaveName username ->
             ( { user | username = username }, Cmd.none )
 
@@ -148,20 +195,18 @@ update message user =
 
         LogOut ->
             ( user, Cmd.none )
-            
+
         GotUser (Ok gotUser) ->
             ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
-        
-        GotUser (Err _) -> 
+
+        GotUser (Err _) ->
             ( user, Cmd.none )
+
 
 
 -- subscriptions : User -> Sub Msg
 -- subscriptions user =
 --     Sub.none
-
-
-
 --View--
 -- getType : String -> String -> Msg
 -- getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)
