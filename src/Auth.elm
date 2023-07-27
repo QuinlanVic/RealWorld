@@ -1,8 +1,8 @@
-module Auth exposing (Msg, User, baseUrl, init, initialModel, isFormValid, trimString, update, userDecoder, validateEmail, validatePassword, validateUsername, view)
+module Auth exposing (Msg(..), User, baseUrl, init, initialModel, isFormValid, trimString, update, userDecoder, validateEmail, validatePassword, validateUsername, view)
 
 -- import Exts.Html exposing (nbsp)
-
 -- import Browser
+
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -53,9 +53,10 @@ saveUser user =
     in
     Http.post
         { body = body
-        , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
+        , expect = Http.expectJson SignedUpGoHome (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
         , url = baseUrl ++ "api/users"
         }
+
 
 
 encodeUser : User -> Encode.Value
@@ -173,6 +174,15 @@ validatePassword pswd =
 --Update--
 
 
+type Msg
+    = SaveName String
+    | SaveEmail String
+    | SavePassword String
+    | Signup
+    -- | LoadUser (Result Http.Error User)
+    | SignedUpGoHome (Result Http.Error User)
+
+
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
     --what to do (update) with each message type
@@ -202,11 +212,12 @@ update message user =
             else
                 ( validatedUser, Cmd.none )
 
-        LoadUser (Ok gotUser) ->
-            ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none)
-        
-        LoadUser (Err _) ->
-            ( user, Cmd.none)
+        SignedUpGoHome (Ok gotUser) ->
+            -- intercepted in Main.elm now
+            ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
+
+        SignedUpGoHome (Err _) ->
+            ( user, Cmd.none )
 
 
 isFormValid : User -> Bool
@@ -218,9 +229,6 @@ isFormValid user =
 -- subscriptions : User -> Sub Msg
 -- subscriptions user =
 --     Sub.none
-
-
-
 --View--
 -- getType : String -> String -> Msg
 -- getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)
@@ -323,19 +331,6 @@ view user =
             ]
         ]
 
-
-
---div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
---messages for defining what the update is to do upon interactivity
-
-
-type Msg
-    = SaveName String
-    | SaveEmail String
-    | SavePassword String
-    | Signup
-    | LoadUser (Result Http.Error User)
-    
 
 
 -- main : Program () User Msg

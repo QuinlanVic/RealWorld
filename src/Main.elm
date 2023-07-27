@@ -40,6 +40,21 @@ type alias User =
     }
 
 
+type alias RegUser =
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    , token : String
+    , username : String
+    , bio : Maybe String
+    , image : Maybe String
+    , password : String --user's password
+    , signedUpOrloggedIn : Bool --bool saying if they've signed up or not (maybe used later)
+    , errmsg : String --display any API errors from authentication
+    , usernameError : Maybe String
+    , emailError : Maybe String
+    , passwordError : Maybe String
+    }
+
+
 type alias Model =
     { page : CurrentPage
     , navigationKey : Navigation.Key -- program will supply navigationKey at runtime
@@ -99,6 +114,39 @@ fetchProfile username =
         }
 
 
+encodeUser : RegUser -> Encode.Value
+encodeUser user =
+    --used to encode user sent to the server via POST request body (for registering)
+    Encode.object
+        [ ( "username", Encode.string user.username )
+        , ( "email", Encode.string user.email )
+        , ( "password", Encode.string user.password )
+        ]
+
+
+userDecoder : Decoder User
+userDecoder =
+    succeed User
+        |> required "email" string
+        |> required "token" string
+        |> required "username" string
+        |> required "bio" (nullable string)
+        |> required "image" (nullable string)
+
+
+saveUser : RegUser -> Cmd Msg
+saveUser user =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "user", encodeUser <| user ) ]
+    in
+    Http.post
+        { body = body
+        , expect = Http.expectJson LoadUser (field "user" userDecoder) -- wrap JSON received in LoadUser Msg
+        , url = baseUrl ++ "api/users"
+        }
+
+
 
 ---- UPDATE ----
 -- | AccountMsg Account.Msg --add new message that wraps a message in an AccountMsg wrapper to create a modular update function
@@ -122,6 +170,17 @@ type Msg
     | SettingsMessage Settings.Msg
     | GotArticle (Result Http.Error Article.Article)
     | GotProfile (Result Http.Error Profile.ProfileType)
+    | LoadUser (Result Http.Error User)
+
+
+convertUser : RegUser -> User
+convertUser regUser =
+    { email = regUser.email
+    , token = regUser.token
+    , username = regUser.username
+    , bio = regUser.bio
+    , image = regUser.image
+    }
 
 
 setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
@@ -230,6 +289,25 @@ update msg model =
             )
 
         -- Auth
+        -- intercept this message :)
+        ( AuthMessage (Auth.SignedUpGoHome (Ok gotUser)), _ ) ->
+            let
+                ( publicFeedModel, publicFeedCmd ) =
+                    PublicFeed.init
+            in
+            -- change the page to the home page and also update the Main model's user field
+            ( { model
+                | user = convertUser gotUser --convert to normal user type
+                , isLoggedIn = True
+                , page = PublicFeed publicFeedModel
+                , currentPage = "Home"
+              }
+            , Cmd.map PublicFeedMessage publicFeedCmd
+            )
+
+        ( LoadUser (Err _), _ ) ->
+            ( model, Cmd.none )
+
         ( AuthMessage authMsg, Auth authUser ) ->
             let
                 ( updatedAuthUser, authCmd ) =
