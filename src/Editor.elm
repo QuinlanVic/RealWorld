@@ -45,6 +45,21 @@ type alias Article =
     }
 
 
+type alias User =
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    , token : String
+    , username : String
+    , bio : Maybe String
+    , image : Maybe String
+    }
+
+
+type alias Model =
+    { user : User
+    , article : Article
+    }
+
+
 baseUrl : String
 baseUrl =
     "http://localhost:8000/"
