@@ -260,7 +260,7 @@ setNewPage maybeRoute model =
                 ( settingsUserSettings, settingsCmd ) =
                     Settings.init
             in
-            ( { model | page = Settings settingsUserSettings, currentPage = "Settings" }, Cmd.map SettingsMessage settingsCmd )
+            ( { model | page = Settings settingsUserSettings, currentPage = "Settings" }, getUser model.user )
 
         Nothing ->
             ( { model | page = NotFound, currentPage = "NotFound" }, Cmd.none )
@@ -362,6 +362,20 @@ update msg model =
             ( { model | page = Editor updatedEditorArticle }, Cmd.map EditorMessage editorCmd )
 
         -- Login
+        ( LoginMessage (Login.SignedUpGoHome (Ok gotUser)), _ ) -> 
+            let
+                ( publicFeedModel, publicFeedCmd ) =
+                    PublicFeed.init
+            in
+            -- change the page to the home page and also update the Main model's user field
+            ( { model
+                | user = convertUser gotUser --convert to normal user type
+                , isLoggedIn = True
+                , page = PublicFeed publicFeedModel
+                , currentPage = "Home"
+              }
+            , Cmd.map PublicFeedMessage publicFeedCmd
+            )
         ( LoginMessage loginMsg, Login loginUser ) ->
             let
                 ( updatedLoginUser, loginCmd ) =

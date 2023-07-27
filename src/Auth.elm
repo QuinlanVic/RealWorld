@@ -179,7 +179,7 @@ type Msg
     | SaveEmail String
     | SavePassword String
     | Signup
-    -- | LoadUser (Result Http.Error User)
+    -- | GotUser (Result Http.Error User)
     | SignedUpGoHome (Result Http.Error User)
 
 

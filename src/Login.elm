@@ -1,8 +1,8 @@
-module Login exposing (Msg, init, update, view)
+module Login exposing (Msg(..), init, update, view)
 
 -- import Browser
 
-import Auth exposing (User, baseUrl, initialModel, trimString, userDecoder, validateEmail, validatePassword)
+import Auth exposing (Msg(..), User, baseUrl, initialModel, trimString, userDecoder, validateEmail, validatePassword)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
@@ -38,26 +38,25 @@ import Routes exposing (Route(..))
 --     port storeToken (Encode.string as token)
 
 
-saveUser : User -> Cmd Msg
-saveUser user =
+saveUserLogin : User -> Cmd Msg
+saveUserLogin user =
     let
         body =
-            Http.jsonBody <| Encode.object [ ( "user", encodeUser <| user ) ]
+            Http.jsonBody <| Encode.object [ ( "user", encodeUserLogin <| user ) ]
     in
     Http.post
         { body = body
-        , expect = Http.expectJson GotUser (field "user" userDecoder) -- wrap JSON received in GotUser Msg
+        , expect = Http.expectJson SignedUpGoHome (field "user" userDecoder) -- wrap JSON received in GotUser Msg
         , url = baseUrl ++ "api/users/login"
         }
-        |> Cmd.map (Debug.log "LoginSuccess" >> always Login)
 
 
 
 -- Send Login message
 
 
-encodeUser : User -> Encode.Value
-encodeUser user =
+encodeUserLogin : User -> Encode.Value
+encodeUserLogin user =
     --used to encode user sent to the server via POST request body (for registering)
     Encode.object
         [ ( "email", Encode.string user.email )
@@ -95,6 +94,14 @@ init =
 --Update--
 
 
+type Msg
+    = SaveEmail String
+    | SavePassword String
+    | Login
+      -- | GotUser (Result Http.Error User)
+    | SignedUpGoHome (Result Http.Error User)
+
+
 update : Msg -> User -> ( User, Cmd Msg )
 update message user =
     --what to do (update) with each message type
@@ -115,19 +122,21 @@ update message user =
                     { trimmedUser | emailError = validateEmail trimmedUser.email, passwordError = validatePassword trimmedUser.password }
             in
             if isLoginValid validatedUser then
-                ( validatedUser, saveUser validatedUser )
-                --Cmd.batch , Navigation.pushUrl (Url.toString Routes.Index) ] )
-                --redirect to index page :)
+                ( validatedUser, saveUserLogin validatedUser )
 
             else
                 ( validatedUser, Cmd.none )
 
-        GotUser (Ok gotUser) ->
+        -- GotUser (Ok gotUser) ->
+        --     ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
+        -- GotUser (Err _) ->
+        --     ( user, Cmd.none )
+        SignedUpGoHome (Ok gotUser) ->
+            -- intercepted in Main.elm now
             ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
-        
-        GotUser (Err _) ->
+
+        SignedUpGoHome (Err _) ->
             ( user, Cmd.none )
-            
 
 
 isLoginValid : User -> Bool
@@ -135,12 +144,10 @@ isLoginValid user =
     Maybe.withDefault "" user.emailError == "" && Maybe.withDefault "" user.passwordError == ""
 
 
+
 -- subscriptions : User -> Sub Msg
 -- subscriptions user =
 --     Sub.none
-
-
-
 --View--
 -- getType : String -> String -> Msg
 -- getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)
@@ -240,18 +247,6 @@ view user =
                 ]
             ]
         ]
-
-
-
---div is a function that takes in two arguments, a list of HTML attributes and a list of HTML children
---messages for defining what the update is to do upon interactivity
-
-
-type Msg
-    = SaveEmail String
-    | SavePassword String
-    | Login
-    | GotUser (Result Http.Error User)
 
 
 
