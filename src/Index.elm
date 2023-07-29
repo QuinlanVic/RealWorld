@@ -76,7 +76,7 @@ encodeArticle article =
     --used to encode Article slug sent to the server via Article request body
     Encode.object
         [ ( "slug", Encode.string article.slug ) ]
-
+        
 
 initialModel : Model
 initialModel =
@@ -90,7 +90,7 @@ fetchGlobalArticles : Cmd Msg
 fetchGlobalArticles =
     Http.get
         { url = baseUrl ++ "api/articles"
-        , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotGlobalFeed (field "articles" (list articleDecoder))
         }
 
 

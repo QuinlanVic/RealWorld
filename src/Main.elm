@@ -309,7 +309,7 @@ update msg model =
         -- got the article, now pass it to Article's model
         ( GotArticle (Ok article), _ ) ->
             ( { model
-                | page = Article { article = article, author = article.author, comments = Nothing, newComment = "" }
+                | page = Article { article = article, author = article.author, comments = Nothing, newComment = "", user = model.user }
               }
             , Cmd.none
             )

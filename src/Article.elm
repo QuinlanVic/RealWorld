@@ -25,6 +25,15 @@ type alias Author =
     }
 
 
+type alias User =
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    , token : String
+    , username : String
+    , bio : Maybe String
+    , image : Maybe String
+    }
+
+
 type alias Article =
     --whole article
     { slug : String
@@ -61,6 +70,7 @@ type alias Model =
     , author : Author
     , comments : Maybe Comments
     , newComment : String
+    , user : User 
     }
 
 
@@ -91,6 +101,16 @@ defaultAuthor =
     }
 
 
+defaultUser : User
+defaultUser =
+    { email = ""
+    , token = ""
+    , username = ""
+    , bio = Just ""
+    , image = Just ""
+    }
+
+
 defaultComment : Comment
 defaultComment =
     { id = 0
@@ -107,6 +127,7 @@ initialModel =
     , author = defaultAuthor
     , comments = Just [ defaultComment ]
     , newComment = ""
+    , user = defaultUser 
     }
 
 
@@ -564,6 +585,16 @@ viewLoveButton model =
         ]
 
 
+viewEditArticleButtons : Model -> Html Msg
+viewEditArticleButtons model =
+    -- show the buttons to edit/delete an article 
+    span [class "ng-scope"] 
+         [ a [class "btn btn-outline-secondary btn-sm", Routes.href Routes.Editor ] --need to give user? Or is done in main nice :)
+            [i [class "ion-edit"] [], text " Edit Article "] 
+         , button [class "btn btn-outline-danger btn-sm"] 
+                 [i [class "ion-trash-a"] [], text " Delete Article "] 
+         ] 
+
 maybeImageBio : Maybe String -> String
 maybeImageBio maybeIB =
     case maybeIB of
@@ -835,6 +866,9 @@ view model =
                             , span [ class "date" ] [ text model.article.createdAt ]
                             ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
+                        , if (model.user.username == model.article.author.username) then 
+                            viewEditArticleButtons model 
+                        else 
                         , viewFollowButton model
                         , text " \u{00A0}\u{00A0} "
                         , viewLoveButton model
