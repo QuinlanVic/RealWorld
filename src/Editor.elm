@@ -1,13 +1,10 @@
-module Editor exposing (Article, Author, Msg, articleDecoder, authorDecoder, init, initialModel, update, view)
-
--- import Exts.Html exposing (nbsp)
--- import Browser
+module Editor exposing (Article, Author, Model, Msg, articleDecoder, authorDecoder, init, initialModel, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
+import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes
@@ -20,8 +17,8 @@ import Routes
 type alias Author =
     --inside article what we need to fetch
     { username : String
-    , bio : String
-    , image : String
+    , bio : Maybe String
+    , image : Maybe String
     , following : Bool
     }
 
@@ -100,8 +97,8 @@ authorDecoder : Decoder Author
 authorDecoder =
     succeed Author
         |> required "username" string
-        |> required "bio" string
-        |> required "image" string
+        |> required "bio" (nullable string)
+        |> required "image" (nullable string)
         |> required "following" bool
 
 
@@ -124,8 +121,8 @@ articleDecoder =
 defaultAuthor : Author
 defaultAuthor =
     { username = ""
-    , bio = ""
-    , image = ""
+    , bio = Just ""
+    , image = Just ""
     , following = False
     }
 

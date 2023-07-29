@@ -23,8 +23,8 @@ import Url exposing (Url)
 
 type CurrentPage
     = PublicFeed PublicFeed.Model
-    | Auth Auth.User
-    | Editor Editor.Article
+    | Auth Auth.User 
+    | Editor Editor.Model
     | Login Auth.User
     | Article Article.Model
     | Profile Profile.Model
@@ -75,6 +75,27 @@ defaultUser =
     , image = Just ""
     }
 
+defaultAuthor : Editor.Author 
+defaultAuthor =
+    { username = ""
+    , bio = Just ""
+    , image = Just ""
+    , following = False
+    }
+
+defaultArticle : Editor.Article
+defaultArticle =
+    { slug = ""
+    , title = ""
+    , description = ""
+    , body = ""
+    , tagList = [ "" ]
+    , createdAt = ""
+    , updatedAt = ""
+    , favorited = False
+    , favoritesCount = 0
+    , author = defaultAuthor
+    }
 
 initialModel : Navigation.Key -> Url -> Model
 initialModel navigationKey url =
@@ -224,9 +245,20 @@ setNewPage maybeRoute model =
         Just Routes.Editor ->
             let
                 ( editorArticle, editorCmd ) =
-                    Editor.init
+                    Editor.init 
             in
-            ( { model | page = Editor editorArticle, currentPage = "Editor" }, Cmd.map EditorMessage editorCmd )
+            ( { model 
+                | page = Editor 
+                    { user = model.user
+                    , article = defaultArticle
+                    , created = False
+                    , titleError = Just ""
+                    , bodyError = Just ""
+                    , descError = Just ""
+                    }
+                , currentPage = "Editor" 
+              }
+            , Cmd.map EditorMessage editorCmd )
 
         Just Routes.Login ->
             let

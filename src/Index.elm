@@ -171,8 +171,8 @@ init =
 author1 : Editor.Author
 author1 =
     { username = "Eric Simons"
-    , bio = ""
-    , image = "http://i.imgur.com/Qr71crq.jpg"
+    , bio = Just ""
+    , image = Just "http://i.imgur.com/Qr71crq.jpg"
     , following = False
 
     -- , authorpage = "profileelm.html"
@@ -199,8 +199,8 @@ articlePreview1 =
 author2 : Editor.Author
 author2 =
     { username = "Albert Pai"
-    , bio = ""
-    , image = "http://i.imgur.com/N4VcUeJ.jpg"
+    , bio = Just ""
+    , image = Just "http://i.imgur.com/N4VcUeJ.jpg"
     , following = False
 
     -- , authorpage = "profileelm.html"
@@ -341,6 +341,16 @@ viewTag tag =
     a [ href "#", class "label label-pill label-default" ] [ text tag ]
 
 
+maybeImageBio : Maybe String -> String
+maybeImageBio maybeIB =
+    case maybeIB of
+        Just imagebio ->
+            imagebio
+
+        Nothing ->
+            ""
+
+
 viewarticlePreview : Article -> Html Msg
 viewarticlePreview article =
     div [ class "post-preview" ]
@@ -351,7 +361,7 @@ viewarticlePreview article =
                 --   href ""
                 -- , onClick (FetchProfileIndex article.author.username)
                 ]
-                [ img [ src article.author.image ] [] ]
+                [ img [ src (maybeImageBio article.author.image) ] [] ] 
             , text " "
             , div [ class "info" ]
                 [ a
