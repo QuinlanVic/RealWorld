@@ -95,7 +95,7 @@ updateArticle model =
         , headers = headers
         , body = body
         , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in GotArticle Msg
-        , url = baseUrl ++ "api/articles" ++ model.article.slug 
+        , url = baseUrl ++ "api/articles/" ++ model.article.slug 
         , timeout = Nothing
         , tracker = Nothing
         }

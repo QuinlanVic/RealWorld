@@ -270,22 +270,22 @@ unfollowUser author =
         }
 
 
-editArticle : Article -> Cmd Msg
-editArticle article =
-    --PUT/articles/slug
-    let
-        body =
-            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
-    in
-    Http.request
-        { method = "PUT"
-        , headers = []
-        , body = body
-        , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in GotArticle Msg
-        , url = baseUrl ++ "api/articles" ++ article.slug
-        , timeout = Nothing
-        , tracker = Nothing
-        }
+-- editArticle : Article -> Cmd Msg
+-- editArticle article =
+--     --PUT/articles/slug
+--     let
+--         body =
+--             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+--     in
+--     Http.request
+--         { method = "PUT"
+--         , headers = []
+--         , body = body
+--         , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in GotArticle Msg
+--         , url = baseUrl ++ "api/articles" ++ article.slug
+--         , timeout = Nothing
+--         , tracker = Nothing
+--         }
 
 
 deleteArticle : Article -> Cmd Msg
@@ -373,7 +373,7 @@ type Msg
     | DeleteComment Int
     | GotArticle (Result Http.Error Article)
     | GotAuthor (Result Http.Error Author)
-    | EditArticle
+    -- | EditArticle
     | DeleteArticle
     | GotComments (Result Http.Error Comments)
     | GotComment (Result Http.Error Comment)
@@ -486,9 +486,9 @@ update message model =
         GotAuthor (Err _) ->
             ( model, Cmd.none )
 
-        EditArticle ->
-            --send to Editor page with appropriate article information
-            ( model, editArticle model.article )
+        -- EditArticle ->
+        --     --send to Editor page with appropriate article information
+        --     ( model, editArticle model.article )
 
         DeleteArticle ->
             --delete the article using API call AND THEN SEND BACK TO MAIN PAGE
