@@ -869,9 +869,9 @@ view model =
                         , if (model.user.username == model.article.author.username) then 
                             viewEditArticleButtons model 
                         else 
-                        , viewFollowButton model
-                        , text " \u{00A0}\u{00A0} "
-                        , viewLoveButton model
+                            viewFollowButton model  
+                            , text " \u{00A0}\u{00A0} "
+                            , viewLoveButton model
                         ]
                     ]
                 ]

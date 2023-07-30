@@ -363,8 +363,8 @@ update msg model =
         -- Auth
         -- intercept this message :)
         ( AuthMessage (Auth.SignedUpGoHome (Ok gotUser)), _ ) ->
-            let
-                ( publicFeedModel, publicFeedCmd ) =
+            let 
+                ( publicFeedModel, publicFeedCmd ) = 
                     PublicFeed.init
             in
             -- change the page to the home page and also update the Main model's user field
