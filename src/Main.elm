@@ -275,7 +275,7 @@ setNewPage maybeRoute model =
                 ( articleModel, articleCmd ) =
                     Article.init
             in
-            ( { model | page = Article articleModel }, Cmd.map ArticleMessage articleCmd )
+            ( { model | page = Article articleModel }, fetchArticle slug )
 
         -- tricky
         Just (Routes.Profile username) ->
