@@ -586,11 +586,11 @@ viewLoveButton model =
         ]
 
 
-viewEditArticleButtons : Html Msg
-viewEditArticleButtons =
+viewEditArticleButtons : String -> Html Msg
+viewEditArticleButtons slug =
     -- show the buttons to edit/delete an article 
     span [class "ng-scope"] 
-         [ a [class "btn btn-outline-secondary btn-sm", Routes.href Routes.Editor ] --need to give user? Or is done in main nice :)
+         [ a [class "btn btn-outline-secondary btn-sm", Routes.href (Routes.Editor slug) ] --need to give user? Or is done in main nice :)
              [i [class "ion-edit"] [], text " Edit Article "] 
          , text " "
          , button [class "btn btn-outline-danger btn-sm"] 
@@ -835,7 +835,7 @@ viewArticle model =
                     ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , if (model.user.username == model.article.author.username) then 
-                        viewEditArticleButtons 
+                        viewEditArticleButtons model.article.slug 
                   else 
                         span []
                              [ viewFollowButton model
@@ -919,7 +919,7 @@ view model =
                             ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , if (model.user.username == model.article.author.username) then 
-                            viewEditArticleButtons 
+                            viewEditArticleButtons model.article.slug
                         else 
                             span [] 
                                  [ viewFollowButton model

@@ -124,7 +124,15 @@ fetchArticle : String -> Cmd Msg
 fetchArticle slug =
     Http.get
         { url = baseUrl ++ "api/articles/" ++ slug
-        , expect = Http.expectJson GotArticle (field "article" Article.articleDecoder)
+        , expect = Http.expectJson GotArticleArticle (field "article" Article.articleDecoder)
+        }
+
+
+fetchArticleEditor : String -> Cmd Msg
+fetchArticleEditor slug =
+    Http.get
+        { url = baseUrl ++ "api/articles/" ++ slug
+        , expect = Http.expectJson GotArticleEditor (field "article" Article.articleDecoder)
         }
 
 
@@ -209,9 +217,10 @@ type Msg
     | ArticleMessage Article.Msg
     | ProfileMessage Profile.Msg
     | SettingsMessage Settings.Msg
-    | GotArticle (Result Http.Error Article.Article)
+    | GotArticleArticle (Result Http.Error Article.Article)
     | GotProfile (Result Http.Error Profile.ProfileType)
     | GotUser (Result Http.Error User)
+    | GotArticleEditor (Result Http.Error Article.Article) 
 
 
 convertUser : RegUser -> User
@@ -242,23 +251,37 @@ setNewPage maybeRoute model =
             in
             ( { model | page = Auth authUser, currentPage = "Auth" }, Cmd.map AuthMessage authCmd )
 
-        Just Routes.Editor ->
+        Just (Routes.Editor slug) ->
             let
-                ( editorArticle, editorCmd ) =
-                    Editor.init 
+                ( editorModel, editorCmd ) =
+                    Editor.init
             in
-            ( { model 
-                | page = Editor 
-                    { user = model.user
-                    , article = defaultArticle
-                    , created = False
-                    , titleError = Just ""
-                    , bodyError = Just ""
-                    , descError = Just ""
-                    }
-                , currentPage = "Editor" 
-              }
-            , Cmd.map EditorMessage editorCmd )
+            if (slug == "default") then 
+                ( { model 
+                    | page = Editor 
+                        { user = model.user
+                        , article = defaultArticle 
+                        , created = False
+                        , titleError = Just ""
+                        , bodyError = Just ""
+                        , descError = Just ""
+                        }
+                    , currentPage = "Editor" 
+                }
+                , Cmd.map EditorMessage editorCmd  ) 
+            else 
+                ( { model 
+                    | page = Editor 
+                        { user = model.user
+                        , article = defaultArticle 
+                        , created = False
+                        , titleError = Just ""
+                        , bodyError = Just ""
+                        , descError = Just ""
+                        }
+                    , currentPage = "Editor" 
+                }
+                , fetchArticleEditor slug )
 
         Just Routes.Login ->
             let
@@ -307,7 +330,7 @@ update msg model =
             setNewPage maybeRoute model
 
         -- got the article, now pass it to Article's model
-        ( GotArticle (Ok article), _ ) ->
+        ( GotArticleArticle (Ok article), _ ) ->
             ( { model
                 | page = Article { article = article, author = article.author, comments = Nothing, newComment = "", user = model.user }
               }
@@ -315,7 +338,17 @@ update msg model =
             )
 
         -- error, just display the same page as before (Probably could do more here)
-        ( GotArticle (Err _), _ ) ->
+        ( GotArticleArticle (Err _), _ ) ->
+            ( model, Cmd.none )
+        
+        ( GotArticleEditor (Ok article), _) ->
+            ( { model
+                | page = Editor { user = model.user, article = article, created = False, titleError = Just "", bodyError = Just "", descError = Just "" }
+              }
+            , Cmd.none
+            )
+            
+        ( GotArticleEditor (Err _), _ ) ->
             ( model, Cmd.none )
 
         -- get the profile you are going to visit
@@ -587,7 +620,7 @@ viewHeader model =
             , ul [ class "nav navbar-nav pull-xs-right" ]
                 -- could make a function for doing all of this
                 [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
-                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
+                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href (Routes.Editor "default") ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
 
                 -- add user's profile information

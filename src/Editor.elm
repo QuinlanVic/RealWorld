@@ -1,7 +1,7 @@
 module Editor exposing (Article, Author, Model, Msg, articleDecoder, authorDecoder, init, initialModel, update, view)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, href, placeholder, rows, style, type_)
+import Html.Attributes exposing (class, href, placeholder, rows, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
@@ -280,15 +280,15 @@ view model =
                         [ form []
                             [ div [ style "color" "red" ] [ text (Maybe.withDefault "" model.titleError) ]
                             , fieldset [ class "form-group" ]
-                                [ input [ class "form-control form-control-lg", type_ "text", placeholder "Article Title", onInput SaveTitle ] [] ]
+                                [ input [ class "form-control form-control-lg", type_ "text", placeholder "Article Title", onInput SaveTitle, value model.article.title ] [] ]
                             , div [ style "color" "red" ] [ text (Maybe.withDefault "" model.descError) ]
                             , fieldset [ class "form-group" ]
-                                [ input [ class "form-control", type_ "text", placeholder "What's this article about?", onInput SaveDescription ] [] ]
+                                [ input [ class "form-control", type_ "text", placeholder "What's this article about?", onInput SaveDescription, value model.article.description ] [] ]
                             , div [ style "color" "red" ] [ text (Maybe.withDefault "" model.bodyError) ]
                             , fieldset [ class "form-group" ]
-                                [ textarea [ class "form-control", rows 8, placeholder "Write your article (in markdown)", onInput SaveBody ] [] ]
+                                [ textarea [ class "form-control", rows 8, placeholder "Write your article (in markdown)", onInput SaveBody, value model.article.body ] [] ]
                             , fieldset [ class "form-group" ]
-                                [ input [ class "form-control", type_ "text", placeholder "Enter tags" ] [] --, onInput SaveTags (tags are seperated by spaces)
+                                [ input [ class "form-control", type_ "text", placeholder "Enter tags", value (String.join ", " model.article.tagList) ] [] --, onInput SaveTags (tags are seperated by spaces)
 
                                 -- , div [ class "tag-list" ]
                                 --     [ span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " programming" ] --function

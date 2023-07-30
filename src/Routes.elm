@@ -14,7 +14,7 @@ type
     -- Going to add strings and stuff that they input to know what specific page to go to :)
     = Index
     | Auth
-    | Editor
+    | Editor String 
     | Login
     | Article String
     | Profile String
@@ -26,7 +26,7 @@ routes =
     Parser.oneOf
         [ Parser.map Index Parser.top --#/ ?
         , Parser.map Auth (Parser.s "register")
-        , Parser.map Editor (Parser.s "createpost")
+        , Parser.map Editor (Parser.s "createpost" </> Parser.string)
         , Parser.map Login (Parser.s "login")
         , Parser.map Article (Parser.s "article" </> Parser.string) --article slug
         , Parser.map Profile (Parser.s "profile" </> Parser.string) --profile username
@@ -44,8 +44,8 @@ routeToUrl route =
         Auth ->
             "/register"
 
-        Editor ->
-            "/createpost"
+        Editor slug ->
+            "/createpost/" ++ slug
 
         Login ->
             "/login"
