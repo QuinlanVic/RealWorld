@@ -75,8 +75,27 @@ saveArticle model =
         { method = "POST"
         , headers = headers
         , body = body
-        , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in LoadArtifcle Msg
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in GotArticle Msg
         , url = baseUrl ++ "api/articles"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+    
+updateArticle : Model -> Cmd Msg
+updateArticle model =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticleUpdate <| model.article ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.request
+        { method = "PUT"
+        , headers = headers
+        , body = body
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in GotArticle Msg
+        , url = baseUrl ++ "api/articles" ++ model.article.slug 
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -84,12 +103,22 @@ saveArticle model =
 
 encodeArticle : Article -> Encode.Value
 encodeArticle article =
-    --used to encode Article sent to the server via Article request body (for registering)
+    --used to encode Article sent to the server via Article request body (for creating)
     Encode.object
         [ ( "title", Encode.string article.title )
         , ( "description", Encode.string article.description )
         , ( "body", Encode.string article.body )
         , ( "tagList", Encode.list Encode.string article.tagList )
+        ]
+    
+
+encodeArticleUpdate : Article -> Encode.Value 
+encodeArticleUpdate article =
+    --used to encode Article sent to the server via Article request body (for updating)
+    Encode.object
+        [ ( "title", Encode.string article.title )
+        , ( "description", Encode.string article.description )
+        , ( "body", Encode.string article.body )
         ]
 
 
@@ -180,6 +209,7 @@ type Msg
     | SaveTags (List String)
     | CreateArticle
     | GotArticle (Result Http.Error Article)
+    | UpdateArticle 
 
 
 validateTitle : String -> Maybe String
@@ -256,6 +286,17 @@ update message model =
 
         GotArticle (Err _) ->
             ( model, Cmd.none )
+        
+        UpdateArticle -> 
+            let 
+                validatedModel =
+                        { model | titleError = validateTitle model.article.title, bodyError = validateBody model.article.body, descError = validateTitle model.article.description }
+            in
+            if isFormValid validatedModel then
+                ( validatedModel, updateArticle validatedModel )
+
+            else
+                ( validatedModel, Cmd.none )
 
 
 isFormValid : Model -> Bool
@@ -298,7 +339,7 @@ view model =
                                 --     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " webdev" ]
                                 --     ]
                                 ]
-                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick CreateArticle ] [ text "Publish Article" ]
+                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick (if (model.article.slug == "default") then CreateArticle else UpdateArticle)] [ text "Publish Article" ]
                             ]
                         ]
                     ]
