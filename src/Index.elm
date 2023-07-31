@@ -298,9 +298,11 @@ update msg model =
             if article.favorited then
                 --  ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle model article )
                 ( model, unfavoriteArticle model article )
+
             else
                 -- ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle model article )
                 ( model, favoriteArticle model article )
+
         -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
             ( { model | globalfeed = Just globalfeed }, Cmd.none )
@@ -393,7 +395,7 @@ viewarticlePreview article =
                     , class "author"
                     ]
                     [ text article.author.username ]
-                , span [ class "date" ] [ text article.createdAt ]
+                , span [ class "date" ] [ text (formatDate article.createdAt) ]
                 ]
             , viewLoveButton article
             ]
@@ -470,6 +472,77 @@ viewTags maybeTags =
 --                 ]
 --         ]
 --
+
+
+formatDate : String -> String
+formatDate dateStr =
+    case splitDate dateStr of
+        Just ( year, month, day ) ->
+            monthName month ++ " " ++ day ++ ", " ++ year
+
+        Nothing ->
+            "Invalid date"
+
+
+splitDate : String -> Maybe ( String, String, String )
+splitDate dateStr =
+    let
+        parts =
+            String.split "-" dateStr
+    in
+    case parts of
+        [ year, month, dayWithTime ] ->
+            let
+                day =
+                    String.left 2 dayWithTime
+            in
+            Just ( year, month, day )
+
+        _ ->
+            Nothing
+
+
+monthName : String -> String
+monthName month =
+    case month of
+        "01" ->
+            "January"
+
+        "02" ->
+            "February"
+
+        "03" ->
+            "March"
+
+        "04" ->
+            "April"
+
+        "05" ->
+            "May"
+
+        "06" ->
+            "June"
+
+        "07" ->
+            "July"
+
+        "08" ->
+            "August"
+
+        "09" ->
+            "September"
+
+        "10" ->
+            "October"
+
+        "11" ->
+            "November"
+
+        "12" ->
+            "December"
+
+        _ ->
+            "Invalid month"
 
 
 view : Model -> Html Msg

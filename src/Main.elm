@@ -89,7 +89,7 @@ defaultAuthor =
 
 defaultArticle : Editor.Article
 defaultArticle =
-    { slug = ""
+    { slug = "default"
     , title = ""
     , description = ""
     , body = ""
