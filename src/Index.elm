@@ -35,6 +35,15 @@ type alias Article =
     }
 
 
+type alias User =
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    , token : String
+    , username : String
+    , bio : Maybe String
+    , image : Maybe String
+    }
+
+
 type alias Feed =
     List Article
 
@@ -47,6 +56,7 @@ type alias Model =
     { globalfeed : Maybe Feed --articlePreview may exist or not lol
     , yourfeed : Maybe Feed
     , tags : Maybe Tags --tag may exist or not hehe
+    , user : User
     }
 
 
@@ -76,13 +86,14 @@ encodeArticle article =
     --used to encode Article slug sent to the server via Article request body
     Encode.object
         [ ( "slug", Encode.string article.slug ) ]
-        
+
 
 initialModel : Model
 initialModel =
     { globalfeed = Just [ articlePreview1, articlePreview2 ]
     , yourfeed = Just []
     , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
+    , user = defaultUser
     }
 
 
@@ -94,19 +105,19 @@ fetchGlobalArticles =
         }
 
 
-fetchYourArticles : Cmd Msg
-fetchYourArticles =
+fetchYourArticles : Model -> Cmd Msg
+fetchYourArticles model =
     -- need some kind of authentication to know which articles to fetch depended on the user
     let
         body =
             Http.emptyBody
 
-        -- headers =
-        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "GET"
-        , headers = []
+        , headers = headers
         , body = body
         , expect = Http.expectJson GotYourFeed (field "articles" (list articleDecoder))
         , url = baseUrl ++ "api/articles/feed"
@@ -123,18 +134,18 @@ fetchTags =
         }
 
 
-favoriteArticle : Article -> Cmd Msg
-favoriteArticle article =
+favoriteArticle : Model -> Article -> Cmd Msg
+favoriteArticle model article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
 
-        -- headers =
-        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "POST"
-        , headers = []
+        , headers = headers
         , body = body
         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
@@ -143,18 +154,18 @@ favoriteArticle article =
         }
 
 
-unfavoriteArticle : Article -> Cmd Msg
-unfavoriteArticle article =
+unfavoriteArticle : Model -> Article -> Cmd Msg
+unfavoriteArticle model article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
 
-        -- headers =
-        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "DELETE"
-        , headers = []
+        , headers = headers
         , body = body
         , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
@@ -224,6 +235,16 @@ articlePreview2 =
     }
 
 
+defaultUser : User
+defaultUser =
+    { email = ""
+    , token = ""
+    , username = ""
+    , bio = Just ""
+    , image = Just ""
+    }
+
+
 
 --Update--
 
@@ -275,10 +296,10 @@ update msg model =
         ToggleLike article ->
             -- how to distinguish between yourfeed and globalfeed articles? (Don't, do both (FOR NOW...))
             if article.favorited then
-                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle article )
+                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle model article )
 
             else
-                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle article )
+                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle model article )
 
         -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
@@ -303,7 +324,7 @@ update msg model =
             ( model, fetchGlobalArticles )
 
         LoadYF ->
-            ( model, fetchYourArticles )
+            ( model, fetchYourArticles model )
 
         FetchArticleIndex slug ->
             -- intercepted in Main.elm now
@@ -361,7 +382,7 @@ viewarticlePreview article =
                 --   href ""
                 -- , onClick (FetchProfileIndex article.author.username)
                 ]
-                [ img [ src (maybeImageBio article.author.image) ] [] ] 
+                [ img [ src (maybeImageBio article.author.image) ] [] ]
             , text " "
             , div [ class "info" ]
                 [ a
