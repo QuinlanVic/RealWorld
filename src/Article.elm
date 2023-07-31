@@ -1,16 +1,16 @@
-module Article exposing (Article, Model, Msg(..), articleDecoder, commentDecoder, init, initialModel, update, view)
+module Article exposing (Article, Comment, Comments, Model, Msg(..), articleDecoder, commentDecoder, init, initialModel, update, view)
 
 -- import Browser
 
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Html.Lazy exposing (lazy)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes
-import Html.Lazy exposing (lazy)
 
 
 
@@ -68,10 +68,11 @@ type alias Comments =
 
 type alias Model =
     { article : Article
-    , author : Author
+
+    -- , author : Author
     , comments : Maybe Comments
     , newComment : String
-    , user : User 
+    , user : User
     }
 
 
@@ -125,10 +126,11 @@ defaultComment =
 initialModel : Model
 initialModel =
     { article = defaultArticle
-    , author = defaultAuthor
+
+    -- , author = defaultAuthor
     , comments = Just [ defaultComment ]
     , newComment = ""
-    , user = defaultUser 
+    , user = defaultUser
     }
 
 
@@ -210,28 +212,18 @@ encodeAuthor author =
 -- SERVER CALLS
 
 
-favoriteArticle : Article -> Cmd Msg
-favoriteArticle article =
+favoriteArticle : Model -> Article -> Cmd Msg
+favoriteArticle model article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
-    in
-    Http.post
-        { body = body -- do not need a body but send it anyway?
-        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
-        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
-        }
 
-
-unfavoriteArticle : Article -> Cmd Msg
-unfavoriteArticle article =
-    let
-        body =
-            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
-        { method = "DELETE"
-        , headers = []
+        { method = "POST"
+        , headers = headers
         , body = body
         , expect = Http.expectJson GotArticle (field "article" articleDecoder)
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
@@ -240,34 +232,65 @@ unfavoriteArticle article =
         }
 
 
-followUser : Author -> Cmd Msg
-followUser author =
+unfavoriteArticle : Model -> Article -> Cmd Msg
+unfavoriteArticle model article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = headers
+        , body = body
+        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+followUser : Model -> Author -> Cmd Msg
+followUser model author =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "profile", encodeAuthor <| author ) ]
-    in
-    Http.post
-        { body = body
-        , expect = Http.expectJson GotAuthor (field "profile" authorDecoder)
-        , url = baseUrl ++ "api/profiles/" ++ author.username ++ "/follow"
-        }
 
-
-unfollowUser : Author -> Cmd Msg
-unfollowUser author =
-    let
-        body =
-            Http.jsonBody <| Encode.object [ ( "article", encodeAuthor <| author ) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
-        { method = "DELETE"
-        , headers = []
+        { method = "POST"
+        , headers = headers
         , body = body
-        , expect = Http.expectJson GotAuthor (field "author" authorDecoder)
+        , expect = Http.expectJson GotAuthor (field "profile" authorDecoder)
         , url = baseUrl ++ "api/profiles/" ++ author.username ++ "/follow"
         , timeout = Nothing
         , tracker = Nothing
         }
+
+
+unfollowUser : Model -> Author -> Cmd Msg
+unfollowUser model author =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "profile", encodeAuthor <| author ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = headers
+        , body = body
+        , expect = Http.expectJson GotAuthor (field "profile" authorDecoder)
+        , url = baseUrl ++ "api/profiles/" ++ author.username ++ "/follow"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
 
 
 -- editArticle : Article -> Cmd Msg
@@ -323,27 +346,38 @@ fetchComments slug =
         }
 
 
-createComment : String -> String -> Cmd Msg
-createComment slug comment =
+createComment : Model -> String -> Cmd Msg
+createComment model comment =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "comment", encodeComment <| comment ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
-    Http.post
-        { body = body
+    Http.request
+        { method = "POST"
+        , headers = headers
+        , body = body
         , expect = Http.expectJson GotComment (field "comment" commentDecoder)
-        , url = baseUrl ++ "api/articles/" ++ slug ++ "/comments"
+        , url = baseUrl ++ "api/articles/" ++ model.article.slug ++ "/comments"
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
-deleteComment : String -> Int -> Cmd Msg
-deleteComment slug id =
+deleteComment : Model -> Int -> Cmd Msg
+deleteComment model id =
+    let
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
     Http.request
         { method = "DELETE"
-        , headers = []
+        , headers = headers
         , body = Http.emptyBody
         , expect = Http.expectWhatever DeleteResponse
-        , url = baseUrl ++ "api/articles/" ++ slug ++ "/comments" ++ String.fromInt id
+        , url = baseUrl ++ "api/articles/" ++ model.article.slug ++ "/comments" ++ String.fromInt id
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -357,7 +391,7 @@ init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
     -- get a specific article ( fetchArticle slug ) in Main and then
-    -- fetch the comments for that article here
+    -- fetch the comments for that article in main too
     ( initialModel, fetchComments initialModel.article.slug )
 
 
@@ -373,7 +407,7 @@ type Msg
     | DeleteComment Int
     | GotArticle (Result Http.Error Article)
     | GotAuthor (Result Http.Error Author)
-    -- | EditArticle
+      -- | EditArticle
     | DeleteArticle
     | GotComments (Result Http.Error Comments)
     | GotComment (Result Http.Error Comment)
@@ -409,36 +443,34 @@ checkNewComment newComment =
             True
 
 
-toggleLike : Article -> Article
-toggleLike article =
-    -- favoritesCount should update automatically when the server returns the new Article!!!!
-    if article.favorited then
-        -- favoritesCount = article.favoritesCount - 1
-        { article | favorited = not article.favorited }
 
-    else
-        -- , favoritesCount = article.favoritesCount + 1
-        { article | favorited = not article.favorited }
-
-
-toggleFollow : Author -> Author
-toggleFollow author =
-    if author.following then
-        { author | following = not author.following }
-
-    else
-        { author | following = not author.following }
-
-
-updateArticle : (Article -> Article) -> Article -> Article
-updateArticle makeChanges article =
-    --only one article so we do not have to worry about getting a specific one :)
-    makeChanges article
+-- toggleLike : Article -> Article
+-- toggleLike article =
+--     -- favoritesCount should update automatically when the server returns the new Article!!!!
+--     if article.favorited then
+--         -- favoritesCount = article.favoritesCount - 1
+--         { article | favorited = not article.favorited }
+--     else
+--         -- , favoritesCount = article.favoritesCount + 1
+--         { article | favorited = not article.favorited }
+-- toggleFollow : Author -> Author
+-- toggleFollow author =
+--     if author.following then
+--         { author | following = not author.following }
+--     else
+--         { author | following = not author.following }
+-- updateArticle : (Article -> Article) -> Article -> Article
+-- updateArticle makeChanges article =
+--     --only one article so we do not have to worry about getting a specific one :)
+--     makeChanges article
+-- updateAuthor : (Author -> Author) -> Author -> Author
+-- updateAuthor makeChanges author =
+--     makeChanges author
 
 
-updateAuthor : (Author -> Author) -> Author -> Author
-updateAuthor makeChanges author =
-    makeChanges author
+updateAuthor : Article -> Author -> Article
+updateAuthor article author =
+    { article | author = author }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -446,17 +478,21 @@ update message model =
     case message of
         ToggleLike ->
             if model.article.favorited then
-                ( { model | article = updateArticle toggleLike model.article }, favoriteArticle model.article )
+                -- ( { model | article = updateArticle toggleLike model.article }, favoriteArticle model.article )
+                ( model, unfavoriteArticle model model.article )
 
             else
-                ( { model | article = updateArticle toggleLike model.article }, unfavoriteArticle model.article )
+                -- ( { model | article = updateArticle toggleLike model.article }, unfavoriteArticle model.article )
+                ( model, favoriteArticle model model.article )
 
         ToggleFollow ->
-            if model.author.following then
-                ( { model | author = updateAuthor toggleFollow model.author }, followUser model.author )
+            if model.article.author.following then
+                -- ( { model | author = updateAuthor toggleFollow model.author }, followUser model.author )
+                ( model, unfollowUser model model.article.author )
 
             else
-                ( { model | author = updateAuthor toggleFollow model.author }, unfollowUser model.author )
+                -- ( { model | author = updateAuthor toggleFollow model.author }, unfollowUser model.author )
+                ( model, followUser model model.article.author )
 
         UpdateComment comment ->
             -- update the comment as the user types it :)
@@ -464,7 +500,7 @@ update message model =
 
         SaveComment comment ->
             if checkNewComment comment then
-                ( model, createComment model.article.slug comment )
+                ( model, createComment model comment )
 
             else
                 -- if the new comment is empty then return the old model but reset the newComment field
@@ -472,7 +508,7 @@ update message model =
 
         DeleteComment id ->
             -- pass the slug of the article and id of the comment to delete
-            ( model, deleteComment model.article.slug id )
+            ( model, deleteComment model id )
 
         GotArticle (Ok article) ->
             ( { model | article = article }, Cmd.none )
@@ -481,7 +517,7 @@ update message model =
             ( model, Cmd.none )
 
         GotAuthor (Ok author) ->
-            ( { model | author = author }, Cmd.none )
+            ( { model | article = updateAuthor model.article author }, Cmd.none )
 
         GotAuthor (Err _) ->
             ( model, Cmd.none )
@@ -489,7 +525,6 @@ update message model =
         -- EditArticle ->
         --     --send to Editor page with appropriate article information
         --     ( model, editArticle model.article )
-
         DeleteArticle ->
             --delete the article using API call AND THEN SEND BACK TO MAIN PAGE
             ( model, deleteArticle model.article )
@@ -532,7 +567,7 @@ viewFollowButton model =
     -- ]
     let
         buttonClass =
-            if model.author.following then
+            if model.article.author.following then
                 [ class "btn btn-sm btn-outline-secondary", style "background-color" "skyblue", style "color" "#fff", style "border-color" "black", type_ "button", onClick ToggleFollow ]
 
             else
@@ -542,14 +577,14 @@ viewFollowButton model =
         [ i [ class "ion-plus-round" ] []
         , text
             (" \u{00A0} "
-                ++ (if model.author.following then
+                ++ (if model.article.author.following then
                         "Unfollow"
 
                     else
                         "Follow"
                    )
                 ++ " "
-                ++ model.author.username
+                ++ model.article.author.username
                 ++ " "
             )
         ]
@@ -588,56 +623,87 @@ viewLoveButton model =
 
 viewEditArticleButtons : String -> Html Msg
 viewEditArticleButtons slug =
-    -- show the buttons to edit/delete an article 
-    span [class "ng-scope"] 
-         [ a [class "btn btn-outline-secondary btn-sm", Routes.href (Routes.Editor slug) ] --need to give user? Or is done in main nice :)
-             [i [class "ion-edit"] [], text " Edit Article "] 
-         , text " "
-         , button [class "btn btn-outline-danger btn-sm"] 
-                  [i [class "ion-trash-a"] [], text " Delete Article "] 
-         ] 
+    -- show the buttons to edit/delete an article
+    span [ class "ng-scope" ]
+        [ a [ class "btn btn-outline-secondary btn-sm", Routes.href (Routes.Editor slug) ]
+            --need to give user? Or is done in main nice :)
+            [ i [ class "ion-edit" ] [], text " Edit Article " ]
+        , text " "
+        , button [ class "btn btn-outline-danger btn-sm" ]
+            [ i [ class "ion-trash-a" ] [], text " Delete Article " ]
+        ]
 
 
 formatDate : String -> String
 formatDate dateStr =
     case splitDate dateStr of
-        Just (year, month, day) ->
+        Just ( year, month, day ) ->
             monthName month ++ " " ++ day ++ ", " ++ year
 
         Nothing ->
             "Invalid date"
 
-splitDate : String -> Maybe (String, String, String)
+
+splitDate : String -> Maybe ( String, String, String )
 splitDate dateStr =
     let
-        parts = String.split "-" dateStr
+        parts =
+            String.split "-" dateStr
     in
     case parts of
         [ year, month, dayWithTime ] ->
             let
-                day = String.left 2 dayWithTime
+                day =
+                    String.left 2 dayWithTime
             in
-            Just (year, month, day)
+            Just ( year, month, day )
 
         _ ->
             Nothing
 
+
 monthName : String -> String
 monthName month =
     case month of
-        "01" -> "January"
-        "02" -> "February"
-        "03" -> "March"
-        "04" -> "April"
-        "05" -> "May"
-        "06" -> "June"
-        "07" -> "July"
-        "08" -> "August"
-        "09" -> "September"
-        "10" -> "October"
-        "11" -> "November"
-        "12" -> "December"
-        _ -> "Invalid month"
+        "01" ->
+            "January"
+
+        "02" ->
+            "February"
+
+        "03" ->
+            "March"
+
+        "04" ->
+            "April"
+
+        "05" ->
+            "May"
+
+        "06" ->
+            "June"
+
+        "07" ->
+            "July"
+
+        "08" ->
+            "August"
+
+        "09" ->
+            "September"
+
+        "10" ->
+            "October"
+
+        "11" ->
+            "November"
+
+        "12" ->
+            "December"
+
+        _ ->
+            "Invalid month"
+
 
 maybeImageBio : Maybe String -> String
 maybeImageBio maybeIB =
@@ -722,7 +788,7 @@ viewComments model =
                 , div [ class "card-footer" ]
                     -- this has to be the user's image!
                     -- onClick redirect to user's own profile
-                    [ img [ src (maybeImageBio model.author.image), class "comment-author-img" ] []
+                    [ img [ src (maybeImageBio model.article.author.image), class "comment-author-img" ] []
                     , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick (SaveComment model.newComment) ] [ text " Post Comment" ]
                     ]
                 ]
@@ -736,32 +802,33 @@ viewArticle model =
         [ div [ class "row post-content" ]
             [ div [ class "col-md-12" ]
                 [ div []
-                      [ p [] [ text model.article.body ]
-                      ]
+                    [ p [] [ text model.article.body ]
+                    ]
+
                 --   p [] [ text """Web development technologies have evolved at an incredible clip over the past few years.
-                --     We've gone from rudimentary DOM manipulation with libraries like jQuery to supercharged web 
-                --     applications organized & powered by elegant MV* based frameworks like AngularJS. 
-                --     Pair this with significant increases in browser rendering speeds, and it is now easier than ever 
+                --     We've gone from rudimentary DOM manipulation with libraries like jQuery to supercharged web
+                --     applications organized & powered by elegant MV* based frameworks like AngularJS.
+                --     Pair this with significant increases in browser rendering speeds, and it is now easier than ever
                 --     before to build production quality applications on top of Javascript, HTML5, and CSS3.""" ]
-                -- , p [] [ text """While these advances have been incredible, they are only just starting to affect the clear 
-                --     platform of the future: mobile. For years, mobile rendering speeds were atrocious, and the MVC frameworks 
-                --     & UI libraries provided by iOS and Android were far superior to writing mobile apps using web technologies. 
-                --     There were also some very public failures -- Facebook famously wrote their first iOS app in 2011 using HTML5 but 
+                -- , p [] [ text """While these advances have been incredible, they are only just starting to affect the clear
+                --     platform of the future: mobile. For years, mobile rendering speeds were atrocious, and the MVC frameworks
+                --     & UI libraries provided by iOS and Android were far superior to writing mobile apps using web technologies.
+                --     There were also some very public failures -- Facebook famously wrote their first iOS app in 2011 using HTML5 but
                 --     ended up scrapping it due to terrible performance.""" ]
-                -- , p [] [ text """For years now, hybrid apps have been mocked and jeered by 
-                --     native app developers for being clunky and ugly, having subpar performance, and having no advantages over native apps. 
+                -- , p [] [ text """For years now, hybrid apps have been mocked and jeered by
+                --     native app developers for being clunky and ugly, having subpar performance, and having no advantages over native apps.
                 --     While these may have been valid reasons in 2011, they are now virtually baseless, thanks to a collection of new technologies
                 --     that have emerged over the past two years. With these technologies, you can design, build, and deploy robust mobile apps faster
                 --     than you could with native technologies, all while incurring little to no app performance penalties. This is thanks in large part
                 --     to super fast mobile browser rendering speeds and better JavaScript performance. This course is designed to teach you how to effectively
                 --     use these new technologies to build insanely great mobile apps.""" ]
                 -- , p [] [ text """Without further ado, we'd like to welcome you to the future of
-                --     mobile app development, freed from the shackles of native languages & frameworks. 
+                --     mobile app development, freed from the shackles of native languages & frameworks.
                 --     Let's learn what the new mobile stack consists of and how it works.""" ]
                 -- , h2 [ id "introducing-ionic" ] [ text "Introducing Ionic." ]
                 -- , p []
-                --     [ text """Before, building hybrid apps was a chore -- not because it was hard to build web pages, but because it was hard to build full-fledged web applications. 
-                --             With AngularJS, that has changed. As a result, Angular became the core innovation that made hybrid apps possible. The bright folks at Drifty were some of the 
+                --     [ text """Before, building hybrid apps was a chore -- not because it was hard to build web pages, but because it was hard to build full-fledged web applications.
+                --             With AngularJS, that has changed. As a result, Angular became the core innovation that made hybrid apps possible. The bright folks at Drifty were some of the
                 --             first to realize this and subsequently created the """
                 --     , a [ href "http://ionicframework.com/", target "_blank" ] [ text "Ionic Framework " ]
                 --     , text "to bridge the gap between AngularJS web apps and hybrid mobile apps. Since launching a little over a year ago, the Ionic Framework has "
@@ -775,7 +842,7 @@ viewArticle model =
                 --     , a [ href "https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIKit_Framework/", target "_blank" ] [ text "iOS UIKit" ]
                 --     , text " provides for Obj-C/Swift, and that "
                 --     , a [ href "http://developer.android.com/guide/topics/ui/overview.html", target "_blank" ] [ text "Android UI elements" ]
-                --     , text """ provides for Java. Core mobile UI paradigms are available to developers out of the box, which means that developers can focus on building apps, 
+                --     , text """ provides for Java. Core mobile UI paradigms are available to developers out of the box, which means that developers can focus on building apps,
                 --         instead of common user interface elements. Some examples of these include """
                 --     , a [ href "http://ionicframework.com/docs/api/directive/ionList/", target "_blank" ] [ text "list views" ]
                 --     , text ", "
@@ -788,7 +855,7 @@ viewArticle model =
                 --     , a [ href "http://ionicframework.com/docs/nightly/api/", target "_blank" ] [ text "so much more" ]
                 --     , text "."
                 --     ]
-                -- , p [] [ text """Ionic is a great solution for creating both mobile web apps and native apps. The first sections of this course will go over structuring Ionic apps that can run on the web. 
+                -- , p [] [ text """Ionic is a great solution for creating both mobile web apps and native apps. The first sections of this course will go over structuring Ionic apps that can run on the web.
                 --     Then we will cover packaging that same exact code into a native app. We will be using a build tool called Cordova for packaging our app. For those unfamiliar with Cordova, it is
                 --     the open source core of Adobe's proprietary PhoneGap build system. Adobe describes it with this analogy: Cordova is to PhoneGap as Blink is to Chrome. Basically, PhoneGap is
                 --     Cordova plus a whole bunch of other Adobe stuff.""" ]
@@ -796,7 +863,7 @@ viewArticle model =
                 --     Just remember that Cordova is something that is running under the hood of your hybrid app that you will rarely need to worry about, but we will cover some common interactions with it in this course.""" ]
                 -- , h2 [ id "what-we-re-going-to-build" ] [ text "What we're going to build" ] --&#39
                 -- , p []
-                --     [ text """We will be building an app called Songhop, a "Tinder for music" app that allows you to listen to 30-second song samples and favorite the ones you like. This is based on a real 
+                --     [ text """We will be building an app called Songhop, a "Tinder for music" app that allows you to listen to 30-second song samples and favorite the ones you like. This is based on a real
                 --     Ionic/Cordova powered app we built that exists on the """
                 --     , a [ href "https://itunes.apple.com/us/app/songhop/id899245239?mt=8", target "_blank" ] [ text "iOS App Store" ]
                 --     , text """ -- feel free to download it to get a feeling for what Ionic is capable of (and rate it 5 stars :). It's also worth noting that it only took us a month to build the Songhop app that's
@@ -809,7 +876,7 @@ viewArticle model =
                 --         , text " (resize your browser window to the size of a phone for the best experience)."
                 --         ]
                 --     ]
-                -- , p [] [ text """We'll be covering a wide variety of topics in this course: scaffolding a new application, testing it in the emulator, installing native plugins for manipulating audio & 
+                -- , p [] [ text """We'll be covering a wide variety of topics in this course: scaffolding a new application, testing it in the emulator, installing native plugins for manipulating audio &
                 --     files, swipe gestures for our interface, installing the app on your own device, deploying to the iOS & Android app stores, and so much more.""" ]
                 ]
             ]
@@ -817,31 +884,32 @@ viewArticle model =
         , div [ class "post-actions" ]
             [ div [ class "post-meta" ]
                 [ a
-                    [ Routes.href (Routes.Profile model.author.username)
+                    [ Routes.href (Routes.Profile model.article.author.username)
 
                     -- onClick (FetchProfileArticle model.author.username)
                     ]
-                    [ img [ src (maybeImageBio model.author.image) ] [] ]
+                    [ img [ src (maybeImageBio model.article.author.image) ] [] ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , div [ class "info" ]
                     [ a
-                        [ Routes.href (Routes.Profile model.author.username)
+                        [ Routes.href (Routes.Profile model.article.author.username)
 
                         -- onClick (FetchProfileArticle model.author.username)
                         , class "author"
                         ]
-                        [ text model.author.username ]
+                        [ text model.article.author.username ]
                     , span [ class "date" ] [ text (formatDate model.article.createdAt) ]
                     ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
-                , if (model.user.username == model.article.author.username) then 
-                        viewEditArticleButtons model.article.slug 
-                  else 
-                        span []
-                             [ viewFollowButton model
-                             , text "\u{00A0}"
-                             , viewLoveButton model
-                             ]
+                , if model.user.username == model.article.author.username then
+                    viewEditArticleButtons model.article.slug
+
+                  else
+                    span []
+                        [ viewFollowButton model
+                        , text "\u{00A0}"
+                        , viewLoveButton model
+                        ]
                 ]
             ]
         , viewComments model
@@ -898,34 +966,35 @@ view model =
         [ div [ class "post-page" ]
             [ div [ class "banner" ]
                 [ div [ class "container" ]
-                    [ h1 [] [ text model.article.title ] 
+                    [ h1 [] [ text model.article.title ]
                     , div [ class "post-meta" ]
                         [ a
-                            [ Routes.href (Routes.Profile model.author.username)
+                            [ Routes.href (Routes.Profile model.article.author.username)
 
                             -- onClick (FetchProfileArticle model.author.username)
                             ]
-                            [ img [ src (maybeImageBio model.author.image) ] [] ]
+                            [ img [ src (maybeImageBio model.article.author.image) ] [] ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
                             [ a
-                                [ Routes.href (Routes.Profile model.author.username)
+                                [ Routes.href (Routes.Profile model.article.author.username)
 
                                 -- onClick (FetchProfileArticle model.author.username)
                                 , class "author"
                                 ]
-                                [ text model.author.username ]
+                                [ text model.article.author.username ]
                             , span [ class "date" ] [ text (formatDate model.article.createdAt) ]
                             ]
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
-                        , if (model.user.username == model.article.author.username) then 
+                        , if model.user.username == model.article.author.username then
                             viewEditArticleButtons model.article.slug
-                        else 
-                            span [] 
-                                 [ viewFollowButton model
-                                 , text "\u{00A0}"
-                                 , viewLoveButton model
-                                 ] 
+
+                          else
+                            span []
+                                [ viewFollowButton model
+                                , text "\u{00A0}"
+                                , viewLoveButton model
+                                ]
                         ]
                     ]
                 ]

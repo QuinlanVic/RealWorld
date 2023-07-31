@@ -132,16 +132,12 @@ update message user =
             else
                 ( validatedUser, Cmd.none )
 
-        -- GotUser (Ok gotUser) ->
-        --     ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
-        -- GotUser (Err _) ->
-        --     ( user, Cmd.none )
         SignedUpGoHome (Ok gotUser) ->
             -- intercepted in Main.elm now
             ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
 
-        SignedUpGoHome (Err _) ->
-            ( user, Cmd.none )
+        SignedUpGoHome (Err error) ->
+            ( { user | errmsg = Debug.toString error }, Cmd.none )
 
 
 

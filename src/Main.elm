@@ -63,6 +63,8 @@ type alias Model =
     , currentPage : String
     , isLoggedIn : Bool
     , user : User
+    , article : Article.Article
+    , comments : Maybe Article.Comments
     }
 
 
@@ -100,6 +102,16 @@ defaultArticle =
     }
 
 
+defaultComment : Article.Comment 
+defaultComment =
+    { id = 0
+    , createdAt = "Dec 29th"
+    , updatedAt = ""
+    , body = "With supporting text below as a natural lead-in to additional content."
+    , author = defaultAuthor
+    }
+
+
 initialModel : Navigation.Key -> Url -> Model
 initialModel navigationKey url =
     { page = NotFound
@@ -108,6 +120,8 @@ initialModel navigationKey url =
     , currentPage = ""
     , isLoggedIn = False -- this is what I NEED
     , user = defaultUser
+    , article = defaultArticle
+    , comments = Just [ defaultComment ]
     }
 
 
@@ -136,6 +150,14 @@ fetchArticleEditor slug =
     Http.get
         { url = baseUrl ++ "api/articles/" ++ slug
         , expect = Http.expectJson GotArticleEditor (field "article" Article.articleDecoder)
+        }
+
+
+fetchComments : String -> Cmd Msg
+fetchComments slug =
+    Http.get
+        { url = baseUrl ++ "api/articles/" ++ slug ++ "/comments"
+        , expect = Http.expectJson GotComments (field "comments" (list Article.commentDecoder))
         }
 
 
@@ -224,6 +246,7 @@ type Msg
     | GotProfile (Result Http.Error Profile.ProfileType)
     | GotUser (Result Http.Error User)
     | GotArticleEditor (Result Http.Error Article.Article)
+    | GotComments (Result Http.Error Article.Comments)
 
 
 convertUser : RegUser -> User
@@ -306,7 +329,7 @@ setNewPage maybeRoute model =
                 ( articleModel, articleCmd ) =
                     Article.init
             in
-            ( { model | page = Article articleModel }, fetchArticle slug )
+            ( { model | page = Article articleModel }, Cmd.batch [ fetchArticle slug, fetchComments slug ] )
 
         -- tricky
         Just (Routes.Profile username) ->
@@ -340,7 +363,8 @@ update msg model =
         -- got the article, now pass it to Article's model
         ( GotArticleArticle (Ok article), _ ) ->
             ( { model
-                | page = Article { article = article, author = article.author, comments = Nothing, newComment = "", user = model.user }
+                | page = Article { article = article, comments = model.comments, newComment = "", user = model.user }
+                , article = article
               }
             , Cmd.none
             )
@@ -357,6 +381,18 @@ update msg model =
             )
 
         ( GotArticleEditor (Err _), _ ) ->
+            ( model, Cmd.none )
+
+        ( GotComments (Ok comments), _ ) ->
+            -- hack job ree            
+            ( { model
+                | page = Article { article = model.article, comments = Just comments, newComment = "", user = model.user }
+                , comments = Just comments 
+              }
+            , Cmd.none
+            )
+
+        ( GotComments (Err _), _ ) ->
             ( model, Cmd.none )
 
         -- get the profile you are going to visit
