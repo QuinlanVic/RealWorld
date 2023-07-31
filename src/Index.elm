@@ -296,10 +296,10 @@ update msg model =
         ToggleLike article ->
             -- how to distinguish between yourfeed and globalfeed articles? (Don't, do both (FOR NOW...))
             if article.favorited then
-                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle model article )
+                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle model article )
 
             else
-                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle model article )
+                ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle model article )
 
         -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->

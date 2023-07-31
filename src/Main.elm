@@ -23,7 +23,7 @@ import Url exposing (Url)
 
 type CurrentPage
     = PublicFeed PublicFeed.Model
-    | Auth Auth.User 
+    | Auth Auth.User
     | Editor Editor.Model
     | Login Auth.User
     | Article Article.Model
@@ -75,13 +75,15 @@ defaultUser =
     , image = Just ""
     }
 
-defaultAuthor : Editor.Author 
+
+defaultAuthor : Editor.Author
 defaultAuthor =
     { username = ""
     , bio = Just ""
     , image = Just ""
     , following = False
     }
+
 
 defaultArticle : Editor.Article
 defaultArticle =
@@ -96,6 +98,7 @@ defaultArticle =
     , favoritesCount = 0
     , author = defaultAuthor
     }
+
 
 initialModel : Navigation.Key -> Url -> Model
 initialModel navigationKey url =
@@ -220,7 +223,7 @@ type Msg
     | GotArticleArticle (Result Http.Error Article.Article)
     | GotProfile (Result Http.Error Profile.ProfileType)
     | GotUser (Result Http.Error User)
-    | GotArticleEditor (Result Http.Error Article.Article) 
+    | GotArticleEditor (Result Http.Error Article.Article)
 
 
 convertUser : RegUser -> User
@@ -242,7 +245,7 @@ setNewPage maybeRoute model =
                 ( publicFeedModel, publicFeedCmd ) =
                     PublicFeed.init
             in
-            ( { model | page = PublicFeed publicFeedModel, currentPage = "Home" }, Cmd.map PublicFeedMessage publicFeedCmd )
+            ( { model | page = PublicFeed { publicFeedModel | user = model.user }, currentPage = "Home" }, Cmd.map PublicFeedMessage publicFeedCmd )
 
         Just Routes.Auth ->
             let
@@ -256,32 +259,37 @@ setNewPage maybeRoute model =
                 ( editorModel, editorCmd ) =
                     Editor.init
             in
-            if (slug == "default") then 
-                ( { model 
-                    | page = Editor 
-                        { user = model.user
-                        , article = defaultArticle 
-                        , created = False
-                        , titleError = Just ""
-                        , bodyError = Just ""
-                        , descError = Just ""
-                        }
-                    , currentPage = "Editor" 
-                }
-                , Cmd.map EditorMessage editorCmd  ) 
-            else 
-                ( { model 
-                    | page = Editor 
-                        { user = model.user
-                        , article = defaultArticle 
-                        , created = False
-                        , titleError = Just ""
-                        , bodyError = Just ""
-                        , descError = Just ""
-                        }
-                    , currentPage = "Editor" 
-                }
-                , fetchArticleEditor slug )
+            if slug == "default" then
+                ( { model
+                    | page =
+                        Editor
+                            { user = model.user
+                            , article = defaultArticle
+                            , created = False
+                            , titleError = Just ""
+                            , bodyError = Just ""
+                            , descError = Just ""
+                            }
+                    , currentPage = "Editor"
+                  }
+                , Cmd.map EditorMessage editorCmd
+                )
+
+            else
+                ( { model
+                    | page =
+                        Editor
+                            { user = model.user
+                            , article = defaultArticle
+                            , created = False
+                            , titleError = Just ""
+                            , bodyError = Just ""
+                            , descError = Just ""
+                            }
+                    , currentPage = "Editor"
+                  }
+                , fetchArticleEditor slug
+                )
 
         Just Routes.Login ->
             let
@@ -340,14 +348,14 @@ update msg model =
         -- error, just display the same page as before (Probably could do more here)
         ( GotArticleArticle (Err _), _ ) ->
             ( model, Cmd.none )
-        
-        ( GotArticleEditor (Ok article), _) ->
+
+        ( GotArticleEditor (Ok article), _ ) ->
             ( { model
                 | page = Editor { user = model.user, article = article, created = False, titleError = Just "", bodyError = Just "", descError = Just "" }
               }
             , Cmd.none
             )
-            
+
         ( GotArticleEditor (Err _), _ ) ->
             ( model, Cmd.none )
 
@@ -376,7 +384,7 @@ update msg model =
             , Cmd.none
             )
 
-        -- error, just display the same page as before (Probably could do more) 
+        -- error, just display the same page as before (Probably could do more)
         ( GotUser (Err error), _ ) ->
             ( { model | currentPage = "Home" }, Cmd.none )
 
@@ -396,15 +404,15 @@ update msg model =
         -- Auth
         -- intercept this message :)
         ( AuthMessage (Auth.SignedUpGoHome (Ok gotUser)), _ ) ->
-            let 
-                ( publicFeedModel, publicFeedCmd ) = 
+            let
+                ( publicFeedModel, publicFeedCmd ) =
                     PublicFeed.init
             in
             -- change the page to the home page and also update the Main model's user field
             ( { model
                 | user = convertUser gotUser --convert to normal user type
                 , isLoggedIn = True
-                , page = PublicFeed publicFeedModel
+                , page = PublicFeed { publicFeedModel | user = model.user }
                 , currentPage = "Home"
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
@@ -435,7 +443,7 @@ update msg model =
             ( { model
                 | user = convertUser gotUser --convert to normal user type
                 , isLoggedIn = True
-                , page = PublicFeed publicFeedModel
+                , page = PublicFeed { publicFeedModel | user = convertUser gotUser }
                 , currentPage = "Home"
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
