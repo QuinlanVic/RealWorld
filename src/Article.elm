@@ -392,7 +392,7 @@ init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
     -- get a specific article ( fetchArticle slug ) in Main and then
     -- fetch the comments for that article in main too
-    ( initialModel, fetchComments initialModel.article.slug )
+    ( initialModel, Cmd.none )
 
 
 
