@@ -267,7 +267,7 @@ init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
     -- get a specific profile ( fetchProfile username ) in Main and then
     -- fetch the articles that they have made here
-    ( initialModel, fetchProfileArticles initialModel.profile.username )
+    ( initialModel, Cmd.none )
 
 
 baseUrl : String

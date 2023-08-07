@@ -7,7 +7,7 @@ import Browser.Navigation as Navigation
 import Debug exposing (log)
 import Editor
 import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, style, type_)
+import Html.Attributes exposing (class, href, id, placeholder, src, style, type_)
 import Html.Events exposing (onClick)
 import Http
 import Index as PublicFeed
@@ -65,6 +65,8 @@ type alias Model =
     , user : User
     , article : Article.Article
     , comments : Maybe Article.Comments
+    , profile : Profile.ProfileType
+    , articlesMade : Maybe Profile.Feed
     }
 
 
@@ -87,6 +89,15 @@ defaultAuthor =
     }
 
 
+defaultProfile : Profile.ProfileType
+defaultProfile =
+    { username = ""
+    , bio = Just ""
+    , image = Just ""
+    , following = False
+    }
+
+
 defaultArticle : Editor.Article
 defaultArticle =
     { slug = "default"
@@ -102,7 +113,7 @@ defaultArticle =
     }
 
 
-defaultComment : Article.Comment 
+defaultComment : Article.Comment
 defaultComment =
     { id = 0
     , createdAt = "Dec 29th"
@@ -122,6 +133,8 @@ initialModel navigationKey url =
     , user = defaultUser
     , article = defaultArticle
     , comments = Just [ defaultComment ]
+    , profile = defaultProfile
+    , articlesMade = Nothing
     }
 
 
@@ -166,6 +179,15 @@ fetchProfile username =
     Http.get
         { url = baseUrl ++ "api/profiles/" ++ username
         , expect = Http.expectJson GotProfile (field "profile" Profile.profileDecoder)
+        }
+
+
+fetchProfileArticles : String -> Cmd Msg
+fetchProfileArticles username =
+    -- get the articles the author of the profile has created
+    Http.get
+        { url = baseUrl ++ "api/articles?author=" ++ username
+        , expect = Http.expectJson GotProfileArticles (field "articles" (list Article.articleDecoder))
         }
 
 
@@ -247,6 +269,7 @@ type Msg
     | GotUser (Result Http.Error User)
     | GotArticleEditor (Result Http.Error Article.Article)
     | GotComments (Result Http.Error Article.Comments)
+    | GotProfileArticles (Result Http.Error Profile.Feed)
 
 
 convertUser : RegUser -> User
@@ -277,6 +300,7 @@ setNewPage maybeRoute model =
             in
             ( { model | page = Auth authUser, currentPage = "Auth" }, Cmd.map AuthMessage authCmd )
 
+        -- tricky
         Just (Routes.Editor slug) ->
             let
                 ( editorModel, editorCmd ) =
@@ -338,7 +362,7 @@ setNewPage maybeRoute model =
                 ( profileModel, profileCmd ) =
                     Profile.init
             in
-            ( { model | page = Profile profileModel, currentPage = "Profile" }, Cmd.map ProfileMessage profileCmd )
+            ( { model | page = Profile profileModel, currentPage = "Profile" }, Cmd.batch [ fetchProfile username, fetchProfileArticles username ] )
 
         -- tricky
         Just Routes.Settings ->
@@ -376,6 +400,7 @@ update msg model =
         ( GotArticleEditor (Ok article), _ ) ->
             ( { model
                 | page = Editor { user = model.user, article = article, created = False, titleError = Just "", bodyError = Just "", descError = Just "" }
+                , article = article
               }
             , Cmd.none
             )
@@ -384,10 +409,10 @@ update msg model =
             ( model, Cmd.none )
 
         ( GotComments (Ok comments), _ ) ->
-            -- hack job ree            
+            -- hack job ree
             ( { model
                 | page = Article { article = model.article, comments = Just comments, newComment = "", user = model.user }
-                , comments = Just comments 
+                , comments = Just comments
               }
             , Cmd.none
             )
@@ -397,10 +422,26 @@ update msg model =
 
         -- get the profile you are going to visit
         ( GotProfile (Ok profile), _ ) ->
-            ( { model | page = Profile { articlesMade = Nothing, favoritedArticles = Nothing, profile = profile } }, Cmd.none )
+            ( { model
+                | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = profile }
+                , profile = profile
+              }
+            , Cmd.none
+            )
 
         -- error, just display the same page as before (Probably could do more)
         ( GotProfile (Err _), _ ) ->
+            ( model, Cmd.none )
+
+        ( GotProfileArticles (Ok articlesMade), _ ) ->
+            ( { model
+                | page = Profile { profile = model.profile, articlesMade = Just articlesMade, favoritedArticles = Nothing }
+                , articlesMade = Just articlesMade
+              }
+            , Cmd.none
+            )
+
+        ( GotProfileArticles (Err _), _ ) ->
             ( model, Cmd.none )
 
         -- get the user to go to their settings
@@ -668,7 +709,7 @@ viewHeader model =
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
 
                 -- add user's profile information
-                -- , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href Routes.Profile ] [ img [ src (maybeImageBio model.user.image), class "user-img" ] [], text " Settings" ] ]
+                , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username) ] [ img [ class "user-img", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
                 ]
             ]
         ]
