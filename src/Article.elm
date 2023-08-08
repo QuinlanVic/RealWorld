@@ -311,18 +311,21 @@ unfollowUser model author =
 --         }
 
 
-deleteArticle : Article -> Cmd Msg
-deleteArticle article =
+deleteArticle : Model -> Cmd Msg
+deleteArticle model =
     let
         body =
-            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| model.article ) ]
+        
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "DELETE"
-        , headers = []
+        , headers = headers
         , body = body
-        , expect = Http.expectJson GotArticle (field "article" articleDecoder)
-        , url = baseUrl ++ "api/articles/" ++ article.slug
+        , expect = Http.expectWhatever DeleteResponse
+        , url = baseUrl ++ "api/articles/" ++ model.article.slug
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -377,7 +380,7 @@ deleteComment model id =
         , headers = headers
         , body = Http.emptyBody
         , expect = Http.expectWhatever DeleteResponse
-        , url = baseUrl ++ "api/articles/" ++ model.article.slug ++ "/comments" ++ String.fromInt id
+        , url = baseUrl ++ "api/articles/" ++ model.article.slug ++ "/comments/" ++ String.fromInt id
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -527,7 +530,7 @@ update message model =
         --     ( model, editArticle model.article )
         DeleteArticle ->
             --delete the article using API call AND THEN SEND BACK TO MAIN PAGE
-            ( model, deleteArticle model.article )
+            ( model, deleteArticle model )
 
         GotComments (Ok comments) ->
             ( { model | comments = Just comments }, Cmd.none )
@@ -629,7 +632,7 @@ viewEditArticleButtons slug =
             --need to give user? Or is done in main nice :)
             [ i [ class "ion-edit" ] [], text " Edit Article " ]
         , text " "
-        , button [ class "btn btn-outline-danger btn-sm" ]
+        , button [ class "btn btn-outline-danger btn-sm", onClick DeleteArticle ]
             [ i [ class "ion-trash-a" ] [], text " Delete Article " ]
         ]
 
