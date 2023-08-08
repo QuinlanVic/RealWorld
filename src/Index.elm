@@ -147,7 +147,7 @@ favoriteArticle model article =
         { method = "POST"
         , headers = headers
         , body = body
-        , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotArticleLoadGF (field "article" articleDecoder)
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
         , timeout = Nothing
         , tracker = Nothing
@@ -167,7 +167,47 @@ unfavoriteArticle model article =
         { method = "DELETE"
         , headers = headers
         , body = body
-        , expect = Http.expectJson GotGlobalFeed (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotArticleLoadGF (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+favoriteArticleYF : Model -> Article -> Cmd Msg
+favoriteArticleYF model article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.request
+        { method = "POST"
+        , headers = headers
+        , body = body
+        , expect = Http.expectJson GotArticleLoadYF (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+unfavoriteArticleYF : Model -> Article -> Cmd Msg
+unfavoriteArticleYF model article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = headers
+        , body = body
+        , expect = Http.expectJson GotArticleLoadYF (field "article" articleDecoder)
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
         , timeout = Nothing
         , tracker = Nothing
@@ -258,36 +298,33 @@ type Msg
     | LoadYF
     | FetchArticleIndex String
     | FetchProfileIndex String
+    | GotArticleLoadGF (Result Http.Error Article)
+    | GotArticleLoadYF (Result Http.Error Article)
 
 
-toggleLike : Article -> Article
-toggleLike article =
-    -- favoritesCount should update automatically when the server returns the new Article!!!!
-    if article.favorited then
-        -- favoritesCount = article.favoritesCount - 1
-        { article | favorited = not article.favorited }
 
-    else
-        -- , favoritesCount = article.favoritesCount + 1
-        { article | favorited = not article.favorited }
-
-
-updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
-updateArticleBySlug updateArticle article feed =
-    List.map
-        (\currArticle ->
-            if currArticle.slug == article.slug then
-                updateArticle currArticle
-
-            else
-                currArticle
-        )
-        feed
-
-
-updatearticlePreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
-updatearticlePreviewLikes updateArticle article maybeFeed =
-    Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
+-- toggleLike : Article -> Article
+-- toggleLike article =
+--     -- favoritesCount should update automatically when the server returns the new Article!!!!
+--     if article.favorited then
+--         -- favoritesCount = article.favoritesCount - 1
+--         { article | favorited = not article.favorited }
+--     else
+--         -- , favoritesCount = article.favoritesCount + 1
+--         { article | favorited = not article.favorited }
+-- updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
+-- updateArticleBySlug updateArticle article feed =
+--     List.map
+--         (\currArticle ->
+--             if currArticle.slug == article.slug then
+--                 updateArticle currArticle
+--             else
+--                 currArticle
+--         )
+--         feed
+-- updatearticlePreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
+-- updatearticlePreviewLikes updateArticle article maybeFeed =
+--     Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -333,6 +370,18 @@ update msg model =
             ( model, Cmd.none )
 
         FetchProfileIndex username ->
+            ( model, Cmd.none )
+
+        GotArticleLoadGF (Ok article) ->
+            ( model, fetchGlobalArticles )
+
+        GotArticleLoadGF (Err _) ->
+            ( model, Cmd.none )
+
+        GotArticleLoadYF (Ok article) ->
+            ( model, fetchYourArticles model )
+
+        GotArticleLoadYF (Err _) ->
             ( model, Cmd.none )
 
 

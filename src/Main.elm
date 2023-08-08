@@ -19,6 +19,7 @@ import Profile
 import Routes exposing (Route(..))
 import Settings
 import Url exposing (Url)
+import Url.Builder 
 
 
 type CurrentPage
@@ -423,7 +424,7 @@ update msg model =
         -- get the profile you are going to visit
         ( GotProfile (Ok profile), _ ) ->
             ( { model
-                | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = profile }
+                | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = profile, user = model.user }
                 , profile = profile
               }
             , Cmd.none
@@ -435,7 +436,7 @@ update msg model =
 
         ( GotProfileArticles (Ok articlesMade), _ ) ->
             ( { model
-                | page = Profile { profile = model.profile, articlesMade = Just articlesMade, favoritedArticles = Nothing }
+                | page = Profile { profile = model.profile, articlesMade = Just articlesMade, favoritedArticles = Nothing, user = model.user }
                 , articlesMade = Just articlesMade
               }
             , Cmd.none

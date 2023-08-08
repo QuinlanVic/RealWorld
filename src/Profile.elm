@@ -25,6 +25,15 @@ type alias ProfileType =
     }
 
 
+type alias User =
+    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    , token : String
+    , username : String
+    , bio : Maybe String
+    , image : Maybe String
+    }
+
+
 type alias Article =
     --whole article
     { slug : String
@@ -49,6 +58,7 @@ type alias Model =
     { profile : ProfileType
     , articlesMade : Maybe Feed
     , favoritedArticles : Maybe Feed
+    , user : User
     }
 
 
@@ -58,6 +68,16 @@ defaultProfile =
     , bio = Just " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
     , image = Just "http://i.imgur.com/Qr71crq.jpg"
     , following = False
+    }
+
+
+defaultUser : User
+defaultUser =
+    { email = ""
+    , token = ""
+    , username = ""
+    , bio = Just ""
+    , image = Just ""
     }
 
 
@@ -100,6 +120,7 @@ initialModel =
     { profile = defaultProfile
     , articlesMade = Just [ articlePreview1, articlePreview2 ]
     , favoritedArticles = Just []
+    , user = defaultUser
     }
 
 
@@ -157,6 +178,7 @@ encodeArticle article =
 
 fetchProfile : String -> Cmd Msg
 fetchProfile username =
+    -- done in main now
     -- need to fetch the profile
     Http.get
         { url = baseUrl ++ "api/profiles/" ++ username
@@ -169,7 +191,7 @@ fetchProfileArticles username =
     -- get the articles the author of the profile has created
     Http.get
         { url = baseUrl ++ "api/articles?author=" ++ username
-        , expect = Http.expectJson GotProfileArticles (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotProfileArticles (field "articles" (list articleDecoder))
         }
 
 
@@ -182,40 +204,80 @@ fetchFavoritedArticles username =
         }
 
 
-favouriteArticle : Article -> Cmd Msg
-favouriteArticle article =
+favoriteArticle : Model -> Article -> Cmd Msg
+favoriteArticle model article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
 
-        -- headers =
-        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "POST"
-        , headers = []
+        , headers = headers
         , body = body
-        , expect = Http.expectJson GotProfileArticles (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotArticleLoadArticles (field "article" articleDecoder)
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
         , timeout = Nothing
         , tracker = Nothing
         }
 
 
-unfavouriteArticle : Article -> Cmd Msg
-unfavouriteArticle article =
+unfavoriteArticle : Model -> Article -> Cmd Msg
+unfavoriteArticle model article =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
 
-        -- headers =
-        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "DELETE"
-        , headers = []
+        , headers = headers
         , body = body
-        , expect = Http.expectJson GotProfileArticles (list (field "article" articleDecoder))
+        , expect = Http.expectJson GotArticleLoadArticles (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+favoriteArticleYF : Model -> Article -> Cmd Msg
+favoriteArticleYF model article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.request
+        { method = "POST"
+        , headers = headers
+        , body = body
+        , expect = Http.expectJson GotArticleLoadFavArticles (field "article" articleDecoder)
+        , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+unfavoriteArticleYF : Model -> Article -> Cmd Msg
+unfavoriteArticleYF model article =
+    let
+        body =
+            Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| article ) ]
+
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.request
+        { method = "DELETE"
+        , headers = headers
+        , body = body
+        , expect = Http.expectJson GotArticleLoadFavArticles (field "article" articleDecoder)
         , url = baseUrl ++ "api/articles/" ++ article.slug ++ "/favorite"
         , timeout = Nothing
         , tracker = Nothing
@@ -288,6 +350,8 @@ type Msg
     | GotFavoritedArticles (Result Http.Error Feed)
     | LoadArticlesMade
     | LoadFavoritedArticles
+    | GotArticleLoadArticles (Result Http.Error Article)
+    | GotArticleLoadFavArticles (Result Http.Error Article)
 
 
 toggleFollow : ProfileType -> ProfileType
@@ -299,16 +363,16 @@ toggleFollow author =
         { author | following = not author.following }
 
 
-toggleLike : Article -> Article
-toggleLike article =
-    -- favoritesCount should update automatically when the server returns the new Article!!!!
-    if article.favorited then
-        -- favoritesCount = article.favoritesCount - 1
-        { article | favorited = not article.favorited }
 
-    else
-        -- favoritesCount = article.favoritesCount + 1
-        { article | favorited = not article.favorited }
+-- toggleLike : Article -> Article
+-- toggleLike article =
+--     -- favoritesCount should update automatically when the server returns the new Article!!!!
+--     if article.favorited then
+--         -- favoritesCount = article.favoritesCount - 1
+--         { article | favorited = not article.favorited }
+--     else
+--         -- favoritesCount = article.favoritesCount + 1
+--         { article | favorited = not article.favorited }
 
 
 updateAuthor : (ProfileType -> ProfileType) -> ProfileType -> ProfileType
@@ -316,22 +380,20 @@ updateAuthor makeChanges author =
     makeChanges author
 
 
-updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
-updateArticleBySlug updateArticle article feed =
-    List.map
-        (\currArticle ->
-            if currArticle.slug == article.slug then
-                updateArticle currArticle
 
-            else
-                currArticle
-        )
-        feed
-
-
-updateArticlePreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
-updateArticlePreviewLikes updateArticle article maybeFeed =
-    Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
+-- updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
+-- updateArticleBySlug updateArticle article feed =
+--     List.map
+--         (\currArticle ->
+--             if currArticle.slug == article.slug then
+--                 updateArticle currArticle
+--             else
+--                 currArticle
+--         )
+--         feed
+-- updateArticlePreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
+-- updateArticlePreviewLikes updateArticle article maybeFeed =
+--     Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -339,10 +401,12 @@ update message model =
     case message of
         ToggleLike article ->
             if article.favorited then
-                ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, favouriteArticle article )
+                -- ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, favouriteArticle model article )
+                ( model, unfavoriteArticle model article )
 
             else
-                ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, unfavouriteArticle article )
+                -- ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, unfavouriteArticle model article )
+                ( model, favoriteArticle model article )
 
         --need lazy execution
         ToggleFollow ->
@@ -376,6 +440,18 @@ update message model =
         LoadFavoritedArticles ->
             ( model, fetchFavoritedArticles model.profile.username )
 
+        GotArticleLoadArticles (Ok article) ->
+            ( model, fetchProfileArticles model.profile.username )
+
+        GotArticleLoadArticles (Err _) ->
+            ( model, Cmd.none )
+
+        GotArticleLoadFavArticles (Ok article) ->
+            ( model, fetchFavoritedArticles model.profile.username )
+
+        GotArticleLoadFavArticles (Err _) ->
+            ( model, Cmd.none )
+
 
 
 -- subscriptions : Model -> Sub Msg
@@ -392,6 +468,14 @@ maybeImageBio maybeIB =
 
         Nothing ->
             ""
+
+
+viewSettingsButton : Model -> Html Msg
+viewSettingsButton model =
+    a [ class "btn btn-sm btn-outline-secondary action-btn", Routes.href Routes.Settings ]
+        [ i [ class "ion-gear-a" ] []
+        , text " Edit Profile Settings "
+        ]
 
 
 viewFollowButton : Model -> Html Msg
@@ -443,6 +527,77 @@ viewLoveButton articlePreview =
         ]
 
 
+formatDate : String -> String
+formatDate dateStr =
+    case splitDate dateStr of
+        Just ( year, month, day ) ->
+            monthName month ++ " " ++ day ++ ", " ++ year
+
+        Nothing ->
+            "Invalid date"
+
+
+splitDate : String -> Maybe ( String, String, String )
+splitDate dateStr =
+    let
+        parts =
+            String.split "-" dateStr
+    in
+    case parts of
+        [ year, month, dayWithTime ] ->
+            let
+                day =
+                    String.left 2 dayWithTime
+            in
+            Just ( year, month, day )
+
+        _ ->
+            Nothing
+
+
+monthName : String -> String
+monthName month =
+    case month of
+        "01" ->
+            "January"
+
+        "02" ->
+            "February"
+
+        "03" ->
+            "March"
+
+        "04" ->
+            "April"
+
+        "05" ->
+            "May"
+
+        "06" ->
+            "June"
+
+        "07" ->
+            "July"
+
+        "08" ->
+            "August"
+
+        "09" ->
+            "September"
+
+        "10" ->
+            "October"
+
+        "11" ->
+            "November"
+
+        "12" ->
+            "December"
+
+        _ ->
+            "Invalid month"
+
+
 viewArticlePreview : Article -> Html Msg
 viewArticlePreview article =
     div [ class "post-preview" ]
@@ -451,7 +606,7 @@ viewArticlePreview article =
             , text " "
             , div [ class "info" ]
                 [ a [ Routes.href (Routes.Profile article.author.username), class "author" ] [ text article.author.username ]
-                , span [ class "date" ] [ text article.createdAt ]
+                , span [ class "date" ] [ text (formatDate article.createdAt) ]
                 ]
             , viewLoveButton article
             ]
@@ -514,7 +669,11 @@ view model =
                             , h4 [] [ text model.profile.username ]
                             , p [] [ text (maybeImageBio model.profile.bio) ]
                             , text " "
-                            , viewFollowButton model
+                            , if model.user.username == model.profile.username then
+                                viewSettingsButton model
+
+                              else
+                                viewFollowButton model
                             ]
                         ]
                     ]
