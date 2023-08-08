@@ -709,7 +709,7 @@ viewHeader model =
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
 
                 -- add user's profile information
-                , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username) ] [ img [ class "user-img", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
+                , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username) ] [ img [ {- class "user-img",-} style "width" "32px", style "height" "32px", style "border-radius" "30px", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
                 ]
             ]
         ]
