@@ -68,11 +68,11 @@ type alias Comments =
 
 type alias Model =
     { article : Article
-
-    -- , author : Author
     , comments : Maybe Comments
     , newComment : String
     , user : User
+
+    -- , author : Author
     }
 
 
@@ -316,7 +316,7 @@ deleteArticle model =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "article", encodeArticle <| model.article ) ]
-        
+
         headers =
             [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
@@ -324,7 +324,7 @@ deleteArticle model =
         { method = "DELETE"
         , headers = headers
         , body = body
-        , expect = Http.expectWhatever DeleteResponse
+        , expect = Http.expectWhatever DeletedArticle
         , url = baseUrl ++ "api/articles/" ++ model.article.slug
         , timeout = Nothing
         , tracker = Nothing
@@ -416,6 +416,7 @@ type Msg
     | GotComment (Result Http.Error Comment)
     | DeleteResponse (Result Http.Error ())
     | FetchProfileArticle String
+    | DeletedArticle (Result Http.Error ())
 
 
 addComment : Comment -> Maybe Comments -> Maybe Comments
@@ -529,7 +530,7 @@ update message model =
         --     --send to Editor page with appropriate article information
         --     ( model, editArticle model.article )
         DeleteArticle ->
-            --delete the article using API call AND THEN SEND BACK TO MAIN PAGE
+            --delete the article using API call AND THEN SEND BACK TO INDEX PAGE
             ( model, deleteArticle model )
 
         GotComments (Ok comments) ->
@@ -551,6 +552,10 @@ update message model =
             ( model, fetchComments model.article.slug )
 
         FetchProfileArticle username ->
+            ( model, Cmd.none )
+
+        DeletedArticle _ ->
+            -- this is intercepted in main to send back to Index page :)
             ( model, Cmd.none )
 
 

@@ -19,7 +19,7 @@ import Profile
 import Routes exposing (Route(..))
 import Settings
 import Url exposing (Url)
-import Url.Builder 
+import Url.Builder
 
 
 type CurrentPage
@@ -504,6 +504,19 @@ update msg model =
             ( { model | page = Auth updatedAuthUser }, Cmd.map AuthMessage authCmd )
 
         -- Editor
+        -- intercept this message :)
+        ( EditorMessage (Editor.GotArticle (Ok gotArticle)), _ ) ->
+            let
+                ( articleModel, articleCmd ) =
+                    Article.init
+            in
+            -- change the page to Article after creating an article
+            ( { model
+                | page = Article { article = gotArticle, comments = Nothing, newComment = "", user = model.user }
+              }
+            , Cmd.map ArticleMessage articleCmd
+            )
+
         ( EditorMessage editorMsg, Editor editorArticle ) ->
             let
                 ( updatedEditorArticle, editorCmd ) =
@@ -535,6 +548,20 @@ update msg model =
             ( { model | page = Login updatedLoginUser }, Cmd.map LoginMessage loginCmd )
 
         -- Article
+        -- intercept this message :)
+        ( ArticleMessage (Article.DeletedArticle _), _ ) ->
+            let
+                ( publicFeedModel, publicFeedCmd ) =
+                    PublicFeed.init
+            in
+            -- change the page to the home page after deleting an article
+            ( { model
+                | page = PublicFeed publicFeedModel
+                , currentPage = "Home"
+              }
+            , Cmd.map PublicFeedMessage publicFeedCmd
+            )
+
         ( ArticleMessage articleMsg, Article articleModel ) ->
             let
                 ( updatedArticleModel, articleCmd ) =
@@ -710,7 +737,7 @@ viewHeader model =
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
 
                 -- add user's profile information
-                , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username) ] [ img [ {- class "user-img",-} style "width" "32px", style "height" "32px", style "border-radius" "30px", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
+                , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username) ] [ img [ {- class "user-img", -} style "width" "32px", style "height" "32px", style "border-radius" "30px", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
                 ]
             ]
         ]

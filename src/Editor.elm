@@ -1,4 +1,4 @@
-module Editor exposing (Article, Author, Model, Msg, articleDecoder, authorDecoder, init, initialModel, update, view)
+module Editor exposing (Article, Author, Model, Msg(..), articleDecoder, authorDecoder, init, initialModel, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_, value)
@@ -282,6 +282,7 @@ update message model =
 
         GotArticle (Ok gotArticle) ->
             -- get the article and then change page to new article :)
+            -- intercepted in main now :)
             ( { model | article = gotArticle }, Cmd.none )
 
         GotArticle (Err _) ->
