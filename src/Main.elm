@@ -434,8 +434,9 @@ update msg model =
         ( GotProfile (Err _), _ ) ->
             ( { model
                 | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = defaultProfile, user = model.user }
+              , profile = defaultProfile
               }
-            , Cmd.none 
+            , Cmd.none
             )
 
         ( GotProfileArticles (Ok articlesMade), _ ) ->
@@ -447,7 +448,12 @@ update msg model =
             )
 
         ( GotProfileArticles (Err _), _ ) ->
-            ( model, Cmd.none )
+            ( { model
+                | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user }
+                , articlesMade = Nothing 
+              }
+            , Cmd.none
+            )
 
         -- get the user to go to their settings
         ( GotUser (Ok user), _ ) ->
