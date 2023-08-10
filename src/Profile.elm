@@ -59,6 +59,7 @@ type alias Model =
     , articlesMade : Maybe Feed
     , favoritedArticles : Maybe Feed
     , user : User
+    , showMA : Bool
     }
 
 
@@ -131,6 +132,7 @@ initialModel =
     , articlesMade = Just [ articlePreview1, articlePreview2 ]
     , favoritedArticles = Just []
     , user = defaultUser
+    , showMA = True
     }
 
 
@@ -207,10 +209,10 @@ fetchProfileArticles username =
 
 fetchFavoritedArticles : String -> Cmd Msg
 fetchFavoritedArticles username =
-    -- get the articles the user has favorited from the author of the profile
+    -- get the articles the author has favorited 
     Http.get
-        { url = baseUrl ++ "api/articles?favorited=" ++ username
-        , expect = Http.expectJson GotFavoritedArticles (list (field "article" articleDecoder))
+        { url = baseUrl ++ "api/articles?favorited=" ++ username  
+        , expect = Http.expectJson GotFavoritedArticles (field "articles" (list articleDecoder))
         }
 
 
@@ -404,11 +406,23 @@ update message model =
         ToggleLike article ->
             if article.favorited then
                 -- ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, favouriteArticle model article )
-                ( model, unfavoriteArticle model article )
+                ( model
+                , if model.showMA then
+                    unfavoriteArticle model article
+
+                  else
+                    unfavoriteArticleYF model article
+                )
 
             else
                 -- ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, unfavouriteArticle model article )
-                ( model, favoriteArticle model article )
+                ( model
+                , if model.showMA then
+                    favoriteArticle model article
+
+                  else
+                    favoriteArticleYF model article
+                )
 
         --need lazy execution
         ToggleFollow ->
@@ -427,13 +441,13 @@ update message model =
             ( { model | profile = defaultProfile }, Cmd.none )
 
         GotProfileArticles (Ok articlesMade) ->
-            ( { model | articlesMade = Just articlesMade }, Cmd.none )
+            ( { model | articlesMade = Just articlesMade, showMA = True }, Cmd.none )
 
         GotProfileArticles (Err _) ->
             ( model, Cmd.none )
 
         GotFavoritedArticles (Ok favoritedArticles) ->
-            ( { model | favoritedArticles = Just favoritedArticles }, Cmd.none )
+            ( { model | favoritedArticles = Just favoritedArticles, showMA = False }, Cmd.none )
 
         GotFavoritedArticles (Err _) ->
             ( model, Cmd.none )
@@ -652,13 +666,36 @@ viewArticles : Maybe Feed -> Html Msg
 viewArticles maybeArticlesMade =
     case maybeArticlesMade of
         Just articles ->
-            div []
-                --ul and li = weird dot :)
-                (List.map viewArticlePreview articles)
+            if List.isEmpty articles then
+                div [ class "post-preview" ]
+                    [ text "No articles are here... yet :)"]
+            else 
+                div []
+                    --ul and li = weird dot :)
+                    (List.map viewArticlePreview articles)
 
         Nothing ->
             div [ class "loading-feed" ]
                 [ text "Loading Feed..." ]
+
+
+viewTwoFeeds : Model -> Html Msg
+viewTwoFeeds model =
+    if model.showMA then 
+        ul [ class "nav nav-pills outline-active" ]
+            [ li [ class "nav-item" ]
+                [ a [ class "nav-link active", href "", onClick LoadArticlesMade ] [ text "My Articles" ] ]
+            , li [ class "nav-item" ]
+                [ a [ class "nav-link", href "", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
+            ]
+    else 
+        ul [ class "nav nav-pills outline-active" ]
+            [ li [ class "nav-item" ]
+                [ a [ class "nav-link", href "", onClick LoadArticlesMade ] [ text "My Articles" ] ]
+            , li [ class "nav-item" ]
+                [ a [ class "nav-link active", href "", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
+            ]
+
 
 
 view : Model -> Html Msg
@@ -686,14 +723,11 @@ view model =
                 [ div [ class "row" ]
                     [ div [ class "col-md-10 col-md-offset-1" ]
                         [ div [ class "articles-toggle" ]
-                            [ ul [ class "nav nav-pills outline-active" ]
-                                [ li [ class "nav-item" ]
-                                    [ a [ class "nav-link active", href "", onClick LoadArticlesMade ] [ text "My Articles" ] ]
-                                , li [ class "nav-item" ]
-                                    [ a [ class "nav-link", href "", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
-                                ]
-                            ]
-                        , viewArticles model.articlesMade
+                            [ viewTwoFeeds model ]
+                        , if model.showMA then
+                            viewArticles model.articlesMade                            
+                          else 
+                            viewArticles model.favoritedArticles
                         ]
                     ]
                 ]

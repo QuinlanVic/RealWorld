@@ -430,7 +430,7 @@ update msg model =
         -- get the profile you are going to visit
         ( GotProfile (Ok profile), _ ) ->
             ( { model
-                | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = profile, user = model.user }
+                | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = profile, user = model.user, showMA = True }
                 , profile = profile
               }
             , Cmd.none
@@ -439,7 +439,7 @@ update msg model =
         -- error, just display the same page as before (Probably could do more)
         ( GotProfile (Err _), _ ) ->
             ( { model
-                | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = defaultProfile, user = model.user }
+                | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = defaultProfile, user = model.user, showMA = True }
                 , profile = defaultProfile
               }
             , Cmd.none
@@ -447,7 +447,7 @@ update msg model =
 
         ( GotProfileArticles (Ok articlesMade), _ ) ->
             ( { model
-                | page = Profile { profile = model.profile, articlesMade = Just articlesMade, favoritedArticles = Nothing, user = model.user }
+                | page = Profile { profile = model.profile, articlesMade = Just articlesMade, favoritedArticles = Nothing, user = model.user, showMA = True }
                 , articlesMade = Just articlesMade
               }
             , Cmd.none
@@ -455,7 +455,7 @@ update msg model =
 
         ( GotProfileArticles (Err _), _ ) ->
             ( { model
-                | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user }
+                | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = True }
                 , articlesMade = Nothing
               }
             , Cmd.none

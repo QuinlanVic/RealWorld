@@ -488,7 +488,7 @@ viewTags maybeTags =
         Just tags ->
             if List.isEmpty tags then
                 div [ class "loading-tags" ]
-                    [ text "There are no tags... yet :)" ]
+                    [ text "There are no tags here... yet :)" ]
 
             else
                 div [ class "tag-list" ]
