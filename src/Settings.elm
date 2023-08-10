@@ -232,6 +232,7 @@ update message model =
         LogOut ->
             ( model, Cmd.none )
 
+        -- get intercepted in main to update the user and change the page to their profile page :)
         GotUser (Ok gotUser) ->
             ( { model | user = gotUser, signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
 

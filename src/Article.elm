@@ -631,7 +631,7 @@ viewLoveButton model =
 
 viewEditArticleButtons : String -> Html Msg
 viewEditArticleButtons slug =
-    -- show the buttons to edit/delete an article
+    -- show the buttons to edit/delete an article 
     span [ class "ng-scope" ]
         [ a [ class "btn btn-outline-secondary btn-sm", Routes.href (Routes.Editor slug) ]
             --need to give user? Or is done in main nice :)

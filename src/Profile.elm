@@ -294,18 +294,18 @@ unfavoriteArticleYF model article =
         }
 
 
-followUser : ProfileType -> Cmd Msg
-followUser profile =
+followUser : Model -> ProfileType -> Cmd Msg
+followUser model profile =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "profile", encodeProfile <| profile ) ]
 
-        -- headers =
-        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "POST"
-        , headers = []
+        , headers = headers
         , body = body
         , expect = Http.expectJson GotProfile (field "profile" profileDecoder)
         , url = baseUrl ++ "api/profiles/" ++ profile.username ++ "/follow"
@@ -314,18 +314,18 @@ followUser profile =
         }
 
 
-unfollowUser : ProfileType -> Cmd Msg
-unfollowUser profile =
+unfollowUser : Model -> ProfileType -> Cmd Msg
+unfollowUser model profile =
     let
         body =
             Http.jsonBody <| Encode.object [ ( "profile", encodeProfile <| profile ) ]
 
-        -- headers =
-        --     [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
     in
     Http.request
         { method = "DELETE"
-        , headers = []
+        , headers = headers
         , body = body
         , expect = Http.expectJson GotProfile (field "profile" profileDecoder)
         , url = baseUrl ++ "api/profiles/" ++ profile.username ++ "/follow"
@@ -364,16 +364,13 @@ type Msg
     | GotArticleLoadFavArticles (Result Http.Error Article)
 
 
-toggleFollow : ProfileType -> ProfileType
-toggleFollow author =
-    if author.following then
-        { author | following = not author.following }
 
-    else
-        { author | following = not author.following }
-
-
-
+-- toggleFollow : ProfileType -> ProfileType
+-- toggleFollow author =
+--     if author.following then
+--         { author | following = not author.following }
+--     else
+--         { author | following = not author.following }
 -- toggleLike : Article -> Article
 -- toggleLike article =
 --     -- favoritesCount should update automatically when the server returns the new Article!!!!
@@ -383,14 +380,9 @@ toggleFollow author =
 --     else
 --         -- favoritesCount = article.favoritesCount + 1
 --         { article | favorited = not article.favorited }
-
-
-updateAuthor : (ProfileType -> ProfileType) -> ProfileType -> ProfileType
-updateAuthor makeChanges author =
-    makeChanges author
-
-
-
+-- updateAuthor : (ProfileType -> ProfileType) -> ProfileType -> ProfileType
+-- updateAuthor makeChanges author =
+--     makeChanges author
 -- updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
 -- updateArticleBySlug updateArticle article feed =
 --     List.map
@@ -421,10 +413,12 @@ update message model =
         --need lazy execution
         ToggleFollow ->
             if model.profile.following then
-                ( { model | profile = updateAuthor toggleFollow model.profile }, followUser model.profile )
+                -- ( { model | profile = updateAuthor toggleFollow model.profile }, followUser model.profile )
+                ( model, unfollowUser model model.profile )
 
             else
-                ( { model | profile = updateAuthor toggleFollow model.profile }, unfollowUser model.profile )
+                -- ( { model | profile = updateAuthor toggleFollow model.profile }, unfollowUser model.profile )
+                ( model, followUser model model.profile )
 
         GotProfile (Ok userProfile) ->
             ( { model | profile = userProfile }, Cmd.none )

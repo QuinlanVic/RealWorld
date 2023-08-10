@@ -1,25 +1,29 @@
 module Main exposing (main)
 
+-- import Debug exposing (log)
+-- import Html.Events exposing (onClick)
+-- import Json.Encode as Encode
+
 import Article
 import Auth
 import Browser exposing (Document, UrlRequest(..))
 import Browser.Navigation as Navigation
-import Debug exposing (log)
 import Editor
 import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, src, style, type_)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (class, src, style)
 import Http
 import Index as PublicFeed
-import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, required)
-import Json.Encode as Encode
+import Json.Decode exposing (Decoder, field, list, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (required)
 import Login
 import Profile
 import Routes exposing (Route(..))
 import Settings
 import Url exposing (Url)
-import Url.Builder
+
+
+
+-- import Url.Builder
 
 
 type CurrentPage
@@ -34,7 +38,7 @@ type CurrentPage
 
 
 type alias User =
-    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    { email : String --all of these fields are contained in the response from the server
     , token : String
     , username : String
     , bio : Maybe String
@@ -192,14 +196,16 @@ fetchProfileArticles username =
         }
 
 
-encodeUser : RegUser -> Encode.Value
-encodeUser user =
-    --used to encode user sent to the server via POST request body (for registering)
-    Encode.object
-        [ ( "username", Encode.string user.username )
-        , ( "email", Encode.string user.email )
-        , ( "password", Encode.string user.password )
-        ]
+
+-- not needed/used in Main
+-- encodeUser : RegUser -> Encode.Value
+-- encodeUser user =
+--     --used to encode user sent to the server via POST request body (for registering)
+--     Encode.object
+--         [ ( "username", Encode.string user.username )
+--         , ( "email", Encode.string user.email )
+--         , ( "password", Encode.string user.password )
+--         ]
 
 
 userDecoder : Decoder User
@@ -473,7 +479,7 @@ update msg model =
             )
 
         -- error, just display the same page as before (Probably could do more)
-        ( GotUser (Err error), _ ) ->
+        ( GotUser (Err _), _ ) ->
             ( { model | currentPage = "Home" }, Cmd.none )
 
         -- Index
@@ -588,18 +594,35 @@ update msg model =
             ( { model | page = Profile updatedProfileModel }, Cmd.map ProfileMessage profileCmd )
 
         -- Settings
+        -- intercept this message
         ( SettingsMessage Settings.LogOut, _ ) ->
             let
                 ( publicFeedModel, publicFeedCmd ) =
                     PublicFeed.init
             in
+            -- change the page to the home page and log a user out
             ( { model
                 | page = PublicFeed publicFeedModel
                 , currentPage = "Home"
                 , user = defaultUser -- logged user out :)
-                , isLoggedIn = False 
+                , isLoggedIn = False
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
+            )
+
+        -- intercept this message
+        ( SettingsMessage (Settings.GotUser (Ok gotUser)), _ ) ->
+            let
+                -- initialise the profile page and its messages
+                ( initProfileModel, profileCmd ) =
+                    Profile.init
+            in
+            -- change the page to their profile page after updating their details (fetch their new profile though)
+            ( { model
+                | page = Profile initProfileModel
+                , user = gotUser -- new user
+              }
+            , fetchProfile gotUser.username
             )
 
         ( SettingsMessage settingsMsg, Settings settingsUserSettings ) ->
@@ -645,13 +668,12 @@ viewContent :
     Model
     -> ( String, Html Msg ) --Model
 viewContent model =
-    let
-        url =
-            model.url
-
-        -- isLoggedIn =
-        --     model.isLoggedIn
-    in
+    -- let
+    --     url =
+    --         model.url
+    --     -- isLoggedIn =
+    --     --     model.isLoggedIn
+    -- in
     case model.page of
         PublicFeed publicFeedModel ->
             ( "Conduit - Conduit"
