@@ -1,4 +1,4 @@
-module Settings exposing (Model, Msg, init, update, view)
+module Settings exposing (Model, Msg(..), init, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
@@ -226,6 +226,7 @@ update message model =
             else
                 ( validatedModel, Cmd.none )
 
+        -- get intercepted in main to log a user out and change to the main page :)
         LogOut ->
             ( model, Cmd.none )
 

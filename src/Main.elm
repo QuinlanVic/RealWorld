@@ -434,7 +434,7 @@ update msg model =
         ( GotProfile (Err _), _ ) ->
             ( { model
                 | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = defaultProfile, user = model.user }
-              , profile = defaultProfile
+                , profile = defaultProfile
               }
             , Cmd.none
             )
@@ -450,7 +450,7 @@ update msg model =
         ( GotProfileArticles (Err _), _ ) ->
             ( { model
                 | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user }
-                , articlesMade = Nothing 
+                , articlesMade = Nothing
               }
             , Cmd.none
             )
@@ -588,6 +588,19 @@ update msg model =
             ( { model | page = Profile updatedProfileModel }, Cmd.map ProfileMessage profileCmd )
 
         -- Settings
+        ( SettingsMessage Settings.LogOut, _ ) ->
+            let
+                ( publicFeedModel, publicFeedCmd ) =
+                    PublicFeed.init
+            in
+            ( { model
+                | page = PublicFeed publicFeedModel
+                , currentPage = "Home"
+                , user = defaultUser -- logged user out :)
+              }
+            , Cmd.map PublicFeedMessage publicFeedCmd
+            )
+
         ( SettingsMessage settingsMsg, Settings settingsUserSettings ) ->
             let
                 ( updatedSettingsUserSettings, settingsCmd ) =
