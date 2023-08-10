@@ -57,6 +57,7 @@ type alias Model =
     , yourfeed : Maybe Feed
     , tags : Maybe Tags --tag may exist or not hehe
     , user : User
+    , showGF : Bool
     }
 
 
@@ -94,6 +95,7 @@ initialModel =
     , yourfeed = Just []
     , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
     , user = defaultUser
+    , showGF = True
     }
 
 
@@ -342,7 +344,7 @@ update msg model =
 
         -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
-            ( { model | globalfeed = Just globalfeed }, Cmd.none )
+            ( { model | globalfeed = Just globalfeed, showGF = True }, Cmd.none )
 
         GotGlobalFeed (Err _) ->
             ( model, Cmd.none )
@@ -354,7 +356,7 @@ update msg model =
             ( model, Cmd.none )
 
         GotYourFeed (Ok yourfeed) ->
-            ( { model | yourfeed = Just yourfeed }, Cmd.none )
+            ( { model | yourfeed = Just yourfeed, showGF = False }, Cmd.none )
 
         GotYourFeed (Err _) ->
             ( model, Cmd.none )
@@ -466,31 +468,31 @@ viewArticles : Maybe Feed -> Html Msg
 viewArticles maybeFeed =
     case maybeFeed of
         Just feed ->
-            div []
-                (List.map viewarticlePreview feed)
+            if List.isEmpty feed then
+                div [ class "post-preview" ]
+                    [ text "No articles are here... yet :)" ]
+
+            else
+                div []
+                    (List.map viewarticlePreview feed)
 
         Nothing ->
             --put something nice here :)
             div [ class "loading-feed" ]
-                [ text "Loading Feed..." ]
-
-
-
--- viewTags : List String -> Html msg
--- viewTags tags =
---     case tags of
---         [] ->
---             text ""
---         _ ->
---             div [ class "tag-list" ] (List.map viewTag tags)
+                [ text "Loading feed :)" ]
 
 
 viewTags : Maybe Tags -> Html Msg
 viewTags maybeTags =
     case maybeTags of
         Just tags ->
-            div [ class "tag-list" ]
-                (List.map viewTag tags)
+            if List.isEmpty tags then
+                div [ class "loading-tags" ]
+                    [ text "There are no tags... yet :)" ]
+
+            else
+                div [ class "tag-list" ]
+                    (List.map viewTag tags)
 
         Nothing ->
             div [ class "loading-tags" ]
@@ -499,28 +501,46 @@ viewTags maybeTags =
 
 
 -- Only show the Global Feed if the user is not logged in (Maybe this will go into the )
--- viewTwoFeeds : LoggedIn -> Html Msg
--- viewTwoFeeds loggedIn =
---     if loggedIn then
---         [ ul [ class "nav nav-pills outline-active" ]
---             [ li [ class "nav-item" ]
---                 [ a [ class "nav-link disabled", href "#", onClick LoadYF ]
---                     [ text "Your Feed" ]
---                 ]
---             , li [ class "nav-item" ]
---                 [ a [ class "nav-link active", href "#", onClick LoadGF ]
---                     [ text "Global Feed" ]
---                 ]
---             ]
---         ]
---     else
---         [ ul [ class "nav nav-pills outline-active" ]
---             li [ class "nav-item" ]
---                 [ a [ class "nav-link active", href "#" ]
---                     [ text "Global Feed" ]
---                 ]
---         ]
---
+
+
+viewTwoFeeds : Model -> Html Msg
+viewTwoFeeds model =
+    if model.user.token /= "" then
+        -- if the user's token is not empty then they are logged in and we can show the Your Feed tab
+        if model.showGF then
+            ul [ class "nav nav-pills outline-active" ]
+                [ li [ class "nav-item" ]
+                    [ a [ class "nav-link", href "", onClick LoadYF ]
+                        -- nav-link active
+                        [ text "Your Feed" ]
+                    ]
+                , li [ class "nav-item" ]
+                    [ a [ class "nav-link active", href "", onClick LoadGF ]
+                        [ text "Global Feed" ]
+                    ]
+                ]
+
+        else
+            ul [ class "nav nav-pills outline-active" ]
+                [ li [ class "nav-item" ]
+                    [ a [ class "nav-link active", href "", onClick LoadYF ]
+                        -- nav-link active
+                        [ text "Your Feed" ]
+                    ]
+                , li [ class "nav-item" ]
+                    [ a [ class "nav-link", href "", onClick LoadGF ]
+                        [ text "Global Feed" ]
+                    ]
+                ]
+
+    else
+        -- if their token is empty then the user is not logged in and we should only display the Global Feed tab
+        ul [ class "nav nav-pills outline-active" ]
+            [ li [ class "nav-item" ]
+                [ a [ class "nav-link active", href "", onClick LoadGF ]
+                    [ text "Global Feed" ]
+                ]
+            ]
 
 
 formatDate : String -> String
@@ -609,20 +629,12 @@ view model =
                 [ div [ class "row" ]
                     [ div [ class "col-md-9" ]
                         [ div [ class "feed-toggle" ]
-                            --  , viewTwoFeeds (isloggedIn)
-                            [ ul [ class "nav nav-pills outline-active" ]
-                                [ li [ class "nav-item" ]
-                                    [ a [ class "nav-link disabled", href "#" ]
-                                        -- onClick LoadYF
-                                        [ text "Your Feed" ]
-                                    ]
-                                , li [ class "nav-item" ]
-                                    [ a [ class "nav-link active", href "#", onClick LoadGF ]
-                                        [ text "Global Feed" ]
-                                    ]
-                                ]
-                            ]
-                        , viewArticles model.globalfeed
+                            [ viewTwoFeeds model ]
+                        , if model.showGF then
+                            viewArticles model.globalfeed
+
+                          else
+                            viewArticles model.yourfeed
                         ]
                     , div [ class "col-md-3" ]
                         [ div [ class "sidebar" ]
