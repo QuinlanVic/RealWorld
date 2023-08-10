@@ -432,7 +432,11 @@ update msg model =
 
         -- error, just display the same page as before (Probably could do more)
         ( GotProfile (Err _), _ ) ->
-            ( model, Cmd.none )
+            ( { model
+                | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = defaultProfile, user = model.user }
+              }
+            , Cmd.none 
+            )
 
         ( GotProfileArticles (Ok articlesMade), _ ) ->
             ( { model

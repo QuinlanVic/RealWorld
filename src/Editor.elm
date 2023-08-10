@@ -5,7 +5,7 @@ import Html.Attributes exposing (class, href, placeholder, rows, style, type_, v
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Routes
 

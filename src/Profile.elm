@@ -62,11 +62,21 @@ type alias Model =
     }
 
 
+
+-- defaultProfile : ProfileType
+-- defaultProfile =
+--     { username = "Eric Simons"
+--     , bio = Just " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
+--     , image = Just "http://i.imgur.com/Qr71crq.jpg"
+--     , following = False
+--     }
+
+
 defaultProfile : ProfileType
 defaultProfile =
-    { username = "Eric Simons"
-    , bio = Just " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
-    , image = Just "http://i.imgur.com/Qr71crq.jpg"
+    { username = ""
+    , bio = Just ""
+    , image = Just ""
     , following = False
     }
 
@@ -420,7 +430,7 @@ update message model =
             ( { model | profile = userProfile }, Cmd.none )
 
         GotProfile (Err _) ->
-            ( model, Cmd.none )
+            ( { model | profile = defaultProfile }, Cmd.none )
 
         GotProfileArticles (Ok articlesMade) ->
             ( { model | articlesMade = Just articlesMade }, Cmd.none )
@@ -470,8 +480,8 @@ maybeImageBio maybeIB =
             ""
 
 
-viewSettingsButton : Model -> Html Msg
-viewSettingsButton model =
+viewSettingsButton : Html Msg
+viewSettingsButton =
     a [ class "btn btn-sm btn-outline-secondary action-btn", Routes.href Routes.Settings ]
         [ i [ class "ion-gear-a" ] []
         , text " Edit Profile Settings "
@@ -669,8 +679,8 @@ view model =
                             , h4 [] [ text model.profile.username ]
                             , p [] [ text (maybeImageBio model.profile.bio) ]
                             , text " "
-                            , if model.user.username == model.profile.username then
-                                viewSettingsButton model
+                            , if (model.user.username == model.profile.username) && (model.user.username /= "") then
+                                viewSettingsButton
 
                               else
                                 viewFollowButton model

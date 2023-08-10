@@ -3,12 +3,12 @@ module Article exposing (Article, Comment, Comments, Model, Msg(..), articleDeco
 -- import Browser
 
 import Html exposing (..)
-import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, target, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
-import Html.Lazy exposing (lazy)
+import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, type_, value)
+import Html.Events exposing (onClick, onInput)
+-- import Html.Lazy exposing (lazy)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Routes
 

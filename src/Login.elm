@@ -7,8 +7,8 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, null, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Decode exposing (field)
+-- import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Routes exposing (Route(..))
 
@@ -163,14 +163,6 @@ view user =
     let
         mainStuff =
             let
-                loggedIn : Bool
-                loggedIn =
-                    if String.length user.token > 0 then
-                        True
-
-                    else
-                        False
-
                 greeting : String
                 greeting =
                     "Hello, " ++ user.username ++ "!"
