@@ -336,11 +336,11 @@ update msg model =
             -- how to distinguish between yourfeed and globalfeed articles? (Don't, do both (FOR NOW...))
             if article.favorited then
                 --  ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle model article )
-                ( model, unfavoriteArticle model article )
+                ( model, if model.showGF then unfavoriteArticle model article else unfavoriteArticleYF model article )
 
             else
                 -- ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle model article )
-                ( model, favoriteArticle model article )
+                ( model, if model.showGF then favoriteArticle model article else favoriteArticleYF model article )
 
         -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
