@@ -9,7 +9,7 @@ import Html.Attributes exposing (class, href, placeholder, rows, style, type_, v
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Routes
 
@@ -86,22 +86,24 @@ updateUser model =
         }
 
 
-getUser : User -> Cmd Msg
-getUser user =
-    --GET logged in user upon loadin
-    let
-        headers =
-            [ Http.header "Authorization" ("Token " ++ user.token) ]
-    in
-    Http.request
-        { method = "GET"
-        , headers = headers
-        , url = baseUrl ++ "api/user"
-        , expect = Http.expectJson GotUser (field "user" userDecoder)
-        , body = Http.emptyBody
-        , timeout = Nothing
-        , tracker = Nothing
-        }
+
+-- this is now done in Main when switching pages :)
+-- getUser : User -> Cmd Msg
+-- getUser user =
+--     --GET logged in user upon loadin
+--     let
+--         headers =
+--             [ Http.header "Authorization" ("Token " ++ user.token) ]
+--     in
+--     Http.request
+--         { method = "GET"
+--         , headers = headers
+--         , url = baseUrl ++ "api/user"
+--         , expect = Http.expectJson GotUser (field "user" userDecoder)
+--         , body = Http.emptyBody
+--         , timeout = Nothing
+--         , tracker = Nothing
+--         }
 
 
 encodeMaybeString : Maybe String -> Encode.Value
@@ -226,7 +228,7 @@ update message model =
             else
                 ( validatedModel, Cmd.none )
 
-        -- get intercepted in main to log a user out and change to the main page :)
+        -- get intercepted in main to log a user out and change to the index page :)
         LogOut ->
             ( model, Cmd.none )
 

@@ -10,8 +10,8 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (Decoder, bool, field, int, list, null, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Routes
 

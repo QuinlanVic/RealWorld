@@ -597,6 +597,7 @@ update msg model =
                 | page = PublicFeed publicFeedModel
                 , currentPage = "Home"
                 , user = defaultUser -- logged user out :)
+                , isLoggedIn = False 
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
             )
