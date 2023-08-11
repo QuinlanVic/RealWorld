@@ -369,7 +369,7 @@ setNewPage maybeRoute model =
                 ( profileModel, profileCmd ) =
                     Profile.init
             in
-            ( { model | page = Profile profileModel, currentPage = "Profile" }, Cmd.batch [ fetchProfile username, fetchProfileArticles username ] )
+            ( { model | page = Profile profileModel, currentPage = if model.user.username == username then "Profile" else "" }, Cmd.batch [ fetchProfile username, fetchProfileArticles username ] )
 
         -- tricky
         Just Routes.Settings ->
@@ -436,7 +436,7 @@ update msg model =
             , Cmd.none
             )
 
-        -- error, just display the same page as before (Probably could do more)
+        -- error, just display the same page as before with default profile (Probably could do more)
         ( GotProfile (Err _), _ ) ->
             ( { model
                 | page = Profile { articlesMade = model.articlesMade, favoritedArticles = Nothing, profile = defaultProfile, user = model.user, showMA = True }

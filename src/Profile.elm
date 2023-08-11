@@ -8,7 +8,7 @@ import Html.Attributes exposing (class, href, src, style, type_)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Routes
 
@@ -188,14 +188,15 @@ encodeArticle article =
         [ ( "slug", Encode.string article.slug ) ]
 
 
-fetchProfile : String -> Cmd Msg
-fetchProfile username =
-    -- done in main now
-    -- need to fetch the profile
-    Http.get
-        { url = baseUrl ++ "api/profiles/" ++ username
-        , expect = Http.expectJson GotProfile profileDecoder
-        }
+
+-- fetchProfile : String -> Cmd Msg
+-- fetchProfile username =
+--     -- done in main now
+--     -- need to fetch the profile
+--     Http.get
+--         { url = baseUrl ++ "api/profiles/" ++ username
+--         , expect = Http.expectJson GotProfile profileDecoder
+--         }
 
 
 fetchProfileArticles : String -> Cmd Msg
@@ -209,9 +210,9 @@ fetchProfileArticles username =
 
 fetchFavoritedArticles : String -> Cmd Msg
 fetchFavoritedArticles username =
-    -- get the articles the author has favorited 
+    -- get the articles the author has favorited
     Http.get
-        { url = baseUrl ++ "api/articles?favorited=" ++ username  
+        { url = baseUrl ++ "api/articles?favorited=" ++ username
         , expect = Http.expectJson GotFavoritedArticles (field "articles" (list articleDecoder))
         }
 
@@ -668,8 +669,9 @@ viewArticles maybeArticlesMade =
         Just articles ->
             if List.isEmpty articles then
                 div [ class "post-preview" ]
-                    [ text "No articles are here... yet :)"]
-            else 
+                    [ text "No articles are here... yet :)" ]
+
+            else
                 div []
                     --ul and li = weird dot :)
                     (List.map viewArticlePreview articles)
@@ -681,21 +683,21 @@ viewArticles maybeArticlesMade =
 
 viewTwoFeeds : Model -> Html Msg
 viewTwoFeeds model =
-    if model.showMA then 
+    if model.showMA then
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
                 [ a [ class "nav-link active", href "", onClick LoadArticlesMade ] [ text "My Articles" ] ]
             , li [ class "nav-item" ]
                 [ a [ class "nav-link", href "", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
             ]
-    else 
+
+    else
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
                 [ a [ class "nav-link", href "", onClick LoadArticlesMade ] [ text "My Articles" ] ]
             , li [ class "nav-item" ]
                 [ a [ class "nav-link active", href "", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
             ]
-
 
 
 view : Model -> Html Msg
@@ -725,8 +727,9 @@ view model =
                         [ div [ class "articles-toggle" ]
                             [ viewTwoFeeds model ]
                         , if model.showMA then
-                            viewArticles model.articlesMade                            
-                          else 
+                            viewArticles model.articlesMade
+
+                          else
                             viewArticles model.favoritedArticles
                         ]
                     ]
