@@ -361,8 +361,8 @@ type Msg
     | GotProfile (Result Http.Error ProfileType)
     | GotProfileArticles (Result Http.Error Feed)
     | GotFavoritedArticles (Result Http.Error Feed)
-    | LoadArticlesMade
-    | LoadFavoritedArticles
+    | LoadArticlesMade String
+    | LoadFavoritedArticles String
     | GotArticleLoadArticles (Result Http.Error Article)
     | GotArticleLoadFavArticles (Result Http.Error Article)
 
@@ -439,7 +439,7 @@ update message model =
             ( { model | profile = userProfile }, Cmd.none )
 
         GotProfile (Err _) ->
-            ( { model | profile = defaultProfile }, Cmd.none )
+            ( model, Cmd.none )
 
         GotProfileArticles (Ok articlesMade) ->
             ( { model | articlesMade = Just articlesMade, showMA = True }, Cmd.none )
@@ -453,11 +453,11 @@ update message model =
         GotFavoritedArticles (Err _) ->
             ( model, Cmd.none )
 
-        LoadArticlesMade ->
-            ( model, fetchProfileArticles model.profile.username )
+        LoadArticlesMade profile ->
+            ( model, fetchProfileArticles profile )
 
-        LoadFavoritedArticles ->
-            ( model, fetchFavoritedArticles model.profile.username )
+        LoadFavoritedArticles profile ->
+            ( model, fetchFavoritedArticles profile )
 
         GotArticleLoadArticles (Ok article) ->
             ( model, fetchProfileArticles model.profile.username )
@@ -686,17 +686,17 @@ viewTwoFeeds model =
     if model.showMA then
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a [ class "nav-link active", href "", onClick LoadArticlesMade ] [ text "My Articles" ] ]
+                [ a [ class "nav-link active", Routes.href (Routes.Profile model.profile.username), onClick (LoadArticlesMade model.profile.username) ] [ text "My Articles" ] ]
             , li [ class "nav-item" ]
-                [ a [ class "nav-link", href "", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
+                [ a [ class "nav-link", Routes.href (Routes.Profile model.profile.username), onClick (LoadFavoritedArticles model.profile.username) ] [ text "Favorited Articles" ] ]
             ]
 
     else
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a [ class "nav-link", href "", onClick LoadArticlesMade ] [ text "My Articles" ] ]
+                [ a [ class "nav-link", Routes.href (Routes.Profile model.profile.username), onClick (LoadArticlesMade model.profile.username) ] [ text "My Articles" ] ]
             , li [ class "nav-item" ]
-                [ a [ class "nav-link active", href "", onClick LoadFavoritedArticles ] [ text "Favorited Articles" ] ]
+                [ a [ class "nav-link active", Routes.href (Routes.Profile model.profile.username), onClick (LoadFavoritedArticles model.profile.username) ] [ text "Favorited Articles" ] ]
             ]
 
 

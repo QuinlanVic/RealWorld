@@ -510,12 +510,12 @@ viewTwoFeeds model =
         if model.showGF then
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a [ class "nav-link", href "", onClick LoadYF ]
+                    [ a [ class "nav-link", Routes.href Routes.Index, onClick LoadYF ]
                         -- nav-link active
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a [ class "nav-link active", href "", onClick LoadGF ]
+                    [ a [ class "nav-link active", Routes.href Routes.Index, onClick LoadGF ]
                         [ text "Global Feed" ]
                     ]
                 ]
@@ -523,12 +523,12 @@ viewTwoFeeds model =
         else
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a [ class "nav-link active", href "", onClick LoadYF ]
+                    [ a [ class "nav-link active", Routes.href Routes.Index, onClick LoadYF ]
                         -- nav-link active
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a [ class "nav-link", href "", onClick LoadGF ]
+                    [ a [ class "nav-link", Routes.href Routes.Index, onClick LoadGF ]
                         [ text "Global Feed" ]
                     ]
                 ]
@@ -537,7 +537,7 @@ viewTwoFeeds model =
         -- if their token is empty then the user is not logged in and we should only display the Global Feed tab
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a [ class "nav-link active", href "", onClick LoadGF ]
+                [ a [ class "nav-link active", Routes.href Routes.Index, onClick LoadGF ]
                     [ text "Global Feed" ]
                 ]
             ]
