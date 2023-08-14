@@ -470,7 +470,7 @@ checkNewComment newComment =
 -- updateAuthor : (Author -> Author) -> Author -> Author
 -- updateAuthor makeChanges author =
 --     makeChanges author
-
+  
 
 updateAuthor : Article -> Author -> Article
 updateAuthor article author =

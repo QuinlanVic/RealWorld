@@ -164,6 +164,53 @@ fetchArticle slug =
         }
 
 
+handleJsonResponse : Decoder a -> Http.Response String -> Result Http.Error a
+handleJsonResponse decoder response =
+    case response of
+        Http.BadUrl_ url ->
+            Err (Http.BadUrl url)
+
+        Http.Timeout_ ->
+            Err Http.Timeout
+
+        Http.BadStatus_ { statusCode } _ ->
+            Err (Http.BadStatus statusCode)
+
+        Http.NetworkError_ ->
+            Err Http.NetworkError
+
+        Http.GoodStatus_ _ body ->
+            case Json.Decode.decodeString decoder body of
+                Err _ ->
+                    Err (Http.BadBody body)
+
+                Ok result ->
+                    Ok result
+
+
+fetchArticle2 : String -> Task Http.Error Article.Article
+fetchArticle2 slug =
+    Http.task
+        { url = baseUrl ++ "api/articles/" ++ slug
+        , body = Http.emptyBody
+        , headers = []
+        , method = "GET"
+        , resolver = Http.stringResolver <| handleJsonResponse <| field "article" Article.articleDecoder -- Decoder Article.Article
+        , timeout = Nothing
+        }
+
+
+fetchArticleAndComments : String -> Task Http.Error ( Article.Article, Article.Comments )
+fetchArticleAndComments slug =
+    -- Function to fetch both article and comments sequentially
+    fetchArticle2 slug
+        |> Task.andThen
+            (\article ->
+                fetchComments2 slug
+                    |> Task.map (\comments -> ( article, comments ))
+            )
+
+
 fetchArticleEditor : String -> Cmd Msg
 fetchArticleEditor slug =
     Http.get
@@ -177,6 +224,18 @@ fetchComments slug =
     Http.get
         { url = baseUrl ++ "api/articles/" ++ slug ++ "/comments"
         , expect = Http.expectJson GotComments (field "comments" (list Article.commentDecoder))
+        }
+
+
+fetchComments2 : String -> Task Http.Error Article.Comments
+fetchComments2 slug =
+    Http.task
+        { url = baseUrl ++ "api/articles/" ++ slug ++ "/comments"
+        , method = "GET"
+        , headers = []
+        , body = Http.emptyBody
+        , resolver = Http.stringResolver <| handleJsonResponse <| field "comments" (list Article.commentDecoder)
+        , timeout = Nothing
         }
 
 
@@ -195,6 +254,42 @@ fetchProfileArticles username =
         { url = baseUrl ++ "api/articles?author=" ++ username
         , expect = Http.expectJson GotProfileArticles (field "articles" (list Article.articleDecoder))
         }
+
+
+fetchProfile2 : String -> Task Http.Error Profile.ProfileType
+fetchProfile2 username =
+    Http.task
+        { url = baseUrl ++ "api/profiles/" ++ username
+        , resolver = Http.stringResolver <| handleJsonResponse <| field "profile" Profile.profileDecoder
+        , method = "GET"
+        , headers = []
+        , body = Http.emptyBody
+        , timeout = Nothing
+        }
+
+
+fetchProfileArticles2 : String -> Task Http.Error Profile.Feed
+fetchProfileArticles2 username =
+    -- get the articles the author of the profile has created
+    Http.task
+        { url = baseUrl ++ "api/articles?author=" ++ username
+        , resolver = Http.stringResolver <| handleJsonResponse <| field "articles" (list Article.articleDecoder)
+        , method = "GET"
+        , headers = []
+        , body = Http.emptyBody
+        , timeout = Nothing
+        }
+
+
+fetchProfileAndArticles : String -> Task Http.Error ( Profile.ProfileType, Profile.Feed )
+fetchProfileAndArticles slug =
+    -- Function to fetch both profile and profile articles sequentially
+    fetchProfile2 slug
+        |> Task.andThen
+            (\article ->
+                fetchProfileArticles2 slug
+                    |> Task.map (\comments -> ( article, comments ))
+            )
 
 
 
@@ -260,8 +355,8 @@ getUser user =
 -- processPageUpdate : (pageModel -> Page) -> (pageMsg -> Msg) -> Model -> (pageModel, Cmd pageMsg) -> (Model, Cmd Msg)
 -- processPageUpdate createPage wrapMsg model (pageModel, pageCmd) =
 --     ({model | page = createPage pageModel}, Cmd.map wrapMsg pageCmd)
-
-
+ 
+  
 type Msg
     = NewRoute (Maybe Routes.Route)
     | Visit UrlRequest
@@ -279,6 +374,7 @@ type Msg
     | GotComments (Result Http.Error Article.Comments)
     | GotProfileArticles (Result Http.Error Profile.Feed)
     | GotArticleAndComments (Result Http.Error ( Article.Article, Article.Comments ))
+    | GotProfileAndArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
 
 
 convertUser : RegUser -> User
@@ -364,7 +460,7 @@ setNewPage maybeRoute model =
             in
             -- first do fetchArticle then do fetchComments using Task.attempt
             -- Cmd.batch [ fetchArticle slug, fetchComments slug ]
-            ( { model | page = Article articleModel }, Task.attempt GotArticleAndComments (fetchArticle slug) )
+            ( { model | page = Article articleModel }, Task.attempt GotArticleAndComments (fetchArticleAndComments slug) )
 
         -- tricky
         Just (Routes.Profile username) ->
@@ -382,7 +478,8 @@ setNewPage maybeRoute model =
                     else
                         ""
               }
-            , Cmd.batch [ fetchProfile username, fetchProfileArticles username ]
+              -- Cmd.batch [ fetchProfile username, fetchProfileArticles username ]
+            , Task.attempt GotProfileAndArticles (fetchProfileAndArticles username)
             )
 
         -- tricky
@@ -512,6 +609,24 @@ update msg model =
                 Err error ->
                     -- Handle the error if needed
                     ( model, Cmd.none )
+
+        ( GotProfileAndArticles result, _ ) ->
+            case result of
+                Ok ( profile, articlesMade ) ->
+                    ( { model
+                        | page = Profile { articlesMade = Just articlesMade, favoritedArticles = Nothing, profile = profile, user = model.user, showMA = True }
+                        , profile = profile
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( { model
+                        | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = True }
+                        , articlesMade = Nothing
+                      }
+                    , Cmd.none
+                    )
 
         -- Index
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
