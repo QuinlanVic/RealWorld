@@ -665,8 +665,9 @@ update msg model =
 
                 Err error ->
                     ( { model
-                        | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = True }
+                        | page = Profile { profile = defaultProfile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = True }
                         , articlesMade = Nothing
+                        , profile = defaultProfile
                       }
                     , Cmd.none
                     )
@@ -683,8 +684,9 @@ update msg model =
 
                 Err error ->
                     ( { model
-                        | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = False }
+                        | page = Profile { profile = defaultProfile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = False }
                         , articlesMade = Nothing
+                        , profile = defaultProfile
                       }
                     , Cmd.none
                     )
