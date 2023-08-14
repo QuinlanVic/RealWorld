@@ -1,11 +1,11 @@
 module Article exposing (Article, Comment, Comments, Model, Msg(..), articleDecoder, commentDecoder, init, initialModel, update, view)
 
 -- import Browser
+-- import Html.Lazy exposing (lazy)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
--- import Html.Lazy exposing (lazy)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (required)
@@ -470,7 +470,7 @@ checkNewComment newComment =
 -- updateAuthor : (Author -> Author) -> Author -> Author
 -- updateAuthor makeChanges author =
 --     makeChanges author
-  
+
 
 updateAuthor : Article -> Author -> Article
 updateAuthor article author =
@@ -631,7 +631,7 @@ viewLoveButton model =
 
 viewEditArticleButtons : String -> Html Msg
 viewEditArticleButtons slug =
-    -- show the buttons to edit/delete an article 
+    -- show the buttons to edit/delete an article
     span [ class "ng-scope" ]
         [ a [ class "btn btn-outline-secondary btn-sm", Routes.href (Routes.Editor slug) ]
             --need to give user? Or is done in main nice :)
@@ -733,17 +733,15 @@ viewComment comment =
             ]
         , div [ class "card-footer" ]
             [ a
-                [ Routes.href (Routes.Profile comment.author.username)
-
-                -- onClick (FetchProfileArticle comment.author.username)
+                [ Routes.href (Routes.Profile comment.author.username Routes.WholeProfile)
+                , onClick (FetchProfileArticle comment.author.username)
                 , class "comment-author"
                 ]
                 [ img [ src (maybeImageBio comment.author.image), class "comment-author-img" ] [] ]
             , text " \u{00A0} "
             , a
-                [ Routes.href (Routes.Profile comment.author.username)
-
-                -- onClick (FetchProfileArticle comment.author.username)
+                [ Routes.href (Routes.Profile comment.author.username Routes.WholeProfile)
+                , onClick (FetchProfileArticle comment.author.username)
                 , class "comment-author"
                 ]
                 [ text comment.author.username ]
@@ -892,7 +890,7 @@ viewArticle model =
         , div [ class "post-actions" ]
             [ div [ class "post-meta" ]
                 [ a
-                    [ Routes.href (Routes.Profile model.article.author.username)
+                    [ Routes.href (Routes.Profile model.article.author.username Routes.WholeProfile)
 
                     -- onClick (FetchProfileArticle model.author.username)
                     ]
@@ -900,7 +898,7 @@ viewArticle model =
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , div [ class "info" ]
                     [ a
-                        [ Routes.href (Routes.Profile model.article.author.username)
+                        [ Routes.href (Routes.Profile model.article.author.username Routes.WholeProfile)
 
                         -- onClick (FetchProfileArticle model.author.username)
                         , class "author"
@@ -977,7 +975,7 @@ view model =
                     [ h1 [] [ text model.article.title ]
                     , div [ class "post-meta" ]
                         [ a
-                            [ Routes.href (Routes.Profile model.article.author.username)
+                            [ Routes.href (Routes.Profile model.article.author.username Routes.WholeProfile)
 
                             -- onClick (FetchProfileArticle model.author.username)
                             ]
@@ -985,7 +983,7 @@ view model =
                         , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                         , div [ class "info" ]
                             [ a
-                                [ Routes.href (Routes.Profile model.article.author.username)
+                                [ Routes.href (Routes.Profile model.article.author.username Routes.WholeProfile)
 
                                 -- onClick (FetchProfileArticle model.author.username)
                                 , class "author"

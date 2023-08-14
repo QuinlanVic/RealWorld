@@ -1,4 +1,4 @@
-module Routes exposing (Route(..), href, match)
+module Routes exposing (ProfileDestination(..), Route(..), href, match)
 
 -- import Browser
 
@@ -7,6 +7,11 @@ import Html.Attributes
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser)
 
+ 
+type ProfileDestination
+    = Favorited
+    | WholeProfile
+
 
 type
     Route
@@ -14,10 +19,10 @@ type
     -- Going to add strings and stuff that they input to know what specific page to go to :)
     = Index
     | Auth
-    | Editor String 
+    | Editor String
     | Login
     | Article String
-    | Profile String
+    | Profile String ProfileDestination
     | Settings
 
 
@@ -29,7 +34,8 @@ routes =
         , Parser.map Editor (Parser.s "createpost" </> Parser.string)
         , Parser.map Login (Parser.s "login")
         , Parser.map Article (Parser.s "article" </> Parser.string) --article slug
-        , Parser.map Profile (Parser.s "profile" </> Parser.string) --profile username
+        , Parser.map (\s -> Profile s Favorited) (Parser.s "profile" </> Parser.string </> Parser.s "favorites") -- profile username
+        , Parser.map (\s -> Profile s WholeProfile) (Parser.s "profile" </> Parser.string) --profile username
         , Parser.map Settings (Parser.s "settings")
         ]
 
@@ -53,8 +59,11 @@ routeToUrl route =
         Article slug ->
             "/article/" ++ slug
 
-        Profile username ->
+        Profile username WholeProfile ->
             "/profile/" ++ username
+
+        Profile username Favorited ->
+            "/profile/" ++ username ++ "/favorites"
 
         Settings ->
             "/settings"

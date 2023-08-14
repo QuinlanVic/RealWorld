@@ -270,9 +270,22 @@ fetchProfile2 username =
 
 fetchProfileArticles2 : String -> Task Http.Error Profile.Feed
 fetchProfileArticles2 username =
-    -- get the articles the author of the profile has created
+    -- get the articles the author of the profile has created and convert into a task
     Http.task
         { url = baseUrl ++ "api/articles?author=" ++ username
+        , resolver = Http.stringResolver <| handleJsonResponse <| field "articles" (list Article.articleDecoder)
+        , method = "GET"
+        , headers = []
+        , body = Http.emptyBody
+        , timeout = Nothing
+        }
+
+
+fetchFavoritedArticles : String -> Task Http.Error Profile.Feed
+fetchFavoritedArticles username =
+    -- get the articles the author has favorited and convert into a task
+    Http.task
+        { url = baseUrl ++ "api/articles?favorited=" ++ username
         , resolver = Http.stringResolver <| handleJsonResponse <| field "articles" (list Article.articleDecoder)
         , method = "GET"
         , headers = []
@@ -288,6 +301,17 @@ fetchProfileAndArticles slug =
         |> Task.andThen
             (\article ->
                 fetchProfileArticles2 slug
+                    |> Task.map (\comments -> ( article, comments ))
+            )
+
+
+fetchProfileAndFavArticles : String -> Task Http.Error ( Profile.ProfileType, Profile.Feed )
+fetchProfileAndFavArticles slug =
+    -- Function to fetch both profile and profile articles sequentially
+    fetchProfile2 slug
+        |> Task.andThen
+            (\article ->
+                fetchFavoritedArticles slug
                     |> Task.map (\comments -> ( article, comments ))
             )
 
@@ -355,8 +379,8 @@ getUser user =
 -- processPageUpdate : (pageModel -> Page) -> (pageMsg -> Msg) -> Model -> (pageModel, Cmd pageMsg) -> (Model, Cmd Msg)
 -- processPageUpdate createPage wrapMsg model (pageModel, pageCmd) =
 --     ({model | page = createPage pageModel}, Cmd.map wrapMsg pageCmd)
- 
-  
+
+
 type Msg
     = NewRoute (Maybe Routes.Route)
     | Visit UrlRequest
@@ -375,7 +399,7 @@ type Msg
     | GotProfileArticles (Result Http.Error Profile.Feed)
     | GotArticleAndComments (Result Http.Error ( Article.Article, Article.Comments ))
     | GotProfileAndArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
-
+    | GotProfileAndFavArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
 
 convertUser : RegUser -> User
 convertUser regUser =
@@ -463,24 +487,43 @@ setNewPage maybeRoute model =
             ( { model | page = Article articleModel }, Task.attempt GotArticleAndComments (fetchArticleAndComments slug) )
 
         -- tricky
-        Just (Routes.Profile username) ->
-            -- ( model, fetchProfile username )
-            let
-                ( profileModel, profileCmd ) =
-                    Profile.init
-            in
-            ( { model
-                | page = Profile profileModel
-                , currentPage =
-                    if model.user.username == username then
-                        "Profile"
+        Just (Routes.Profile username dest) ->    
+            -- ( model, fetchProfile username )  
+            case dest of 
+                Routes.WholeProfile ->
+                    let 
+                        ( profileModel, profileCmd ) =
+                            Profile.init
+                    in
+                    ( { model
+                        | page = Profile profileModel
+                        , currentPage =
+                            if model.user.username == username then
+                                "Profile"
 
-                    else
-                        ""
-              }
-              -- Cmd.batch [ fetchProfile username, fetchProfileArticles username ]
-            , Task.attempt GotProfileAndArticles (fetchProfileAndArticles username)
-            )
+                            else
+                                ""
+                      }
+                    -- Cmd.batch [ fetchProfile username, fetchProfileArticles username ]
+                    , Task.attempt GotProfileAndArticles (fetchProfileAndArticles username)
+                    )
+                Routes.Favorited ->
+                    let 
+                        ( profileModel, profileCmd ) =
+                            Profile.init
+                    in
+                    ( { model
+                        | page = Profile profileModel
+                        , currentPage =
+                            if model.user.username == username then
+                                "Profile"
+
+                            else
+                                ""
+                      }              
+                    -- Cmd.map ProfileMessage (Profile.fetchFavoritedArticles username)
+                    , Task.attempt GotProfileAndFavArticles (fetchProfileAndFavArticles username)
+                    )
 
         -- tricky
         Just Routes.Settings ->
@@ -623,6 +666,24 @@ update msg model =
                 Err error ->
                     ( { model
                         | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = True }
+                        , articlesMade = Nothing
+                      }
+                    , Cmd.none
+                    )
+        
+        ( GotProfileAndFavArticles result, _ ) ->
+            case result of
+                Ok ( profile, favoritedArticles ) ->
+                    ( { model
+                        | page = Profile { articlesMade = Nothing, favoritedArticles = Just favoritedArticles, profile = profile, user = model.user, showMA = False }
+                        , profile = profile
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( { model
+                        | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = False }
                         , articlesMade = Nothing
                       }
                     , Cmd.none
@@ -929,7 +990,7 @@ viewHeader model =
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
 
                 -- add user's profile information
-                , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username) ] [ img [ {- class "user-img", -} style "width" "32px", style "height" "32px", style "border-radius" "30px", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
+                , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username Routes.WholeProfile) ] [ img [ {- class "user-img", -} style "width" "32px", style "height" "32px", style "border-radius" "30px", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
                 ]
             ]
         ]

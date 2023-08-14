@@ -430,16 +430,16 @@ viewarticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
             [ a
-                [ Routes.href (Routes.Profile article.author.username)
+                [ Routes.href (Routes.Profile article.author.username Routes.WholeProfile)
 
                 --   href ""
-                -- , onClick (FetchProfileIndex article.author.username)
+                --, onClick (FetchProfileIndex article.author.username)
                 ]
                 [ img [ src (maybeImageBio article.author.image) ] [] ]
             , text " "
             , div [ class "info" ]
                 [ a
-                    [ Routes.href (Routes.Profile article.author.username)
+                    [ Routes.href (Routes.Profile article.author.username Routes.WholeProfile)
 
                     --   href ""
                     -- , onClick (FetchProfileIndex article.author.username)

@@ -1,4 +1,4 @@
-module Profile exposing (Feed, Model, Msg(..), ProfileType, articleDecoder, fetchProfileArticles, init, profileDecoder, update, view)
+module Profile exposing (Feed, Model, Msg(..), ProfileType, articleDecoder, fetchProfileArticles, fetchFavoritedArticles, init, profileDecoder, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
@@ -12,8 +12,8 @@ import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Routes
 
- 
-   
+
+
 -- Model --
 
 
@@ -621,10 +621,10 @@ viewArticlePreview : Article -> Html Msg
 viewArticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ Routes.href (Routes.Profile article.author.username) ] [ img [ src (maybeImageBio article.author.image) ] [] ]
+            [ a [ Routes.href (Routes.Profile article.author.username Routes.WholeProfile) ] [ img [ src (maybeImageBio article.author.image) ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href (Routes.Profile article.author.username), class "author" ] [ text article.author.username ]
+                [ a [ Routes.href (Routes.Profile article.author.username Routes.WholeProfile), class "author" ] [ text article.author.username ]
                 , span [ class "date" ] [ text (formatDate article.createdAt) ]
                 ]
             , viewLoveButton article
@@ -652,26 +652,46 @@ viewArticles maybeArticlesMade =
 
         Nothing ->
             div [ class "loading-feed" ]
-                [ text "Loading Feed..." ]
+                [ text "Loading Feed..." ] 
 
 
 viewTwoFeeds : Model -> Html Msg
 viewTwoFeeds model =
-    -- function to display the 2 different feeds depending on if they are viewing articles the profile has made or favorited 
+    -- function to display the 2 different feeds depending on if they are viewing articles the profile has made or favorited
     if model.showMA then
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a [ class "nav-link active", Routes.href (Routes.Profile model.profile.username), onClick (LoadArticlesMade model.profile.username) ] [ text "My Articles" ] ]
+                [ a
+                    [ class "nav-link active"
+                    , Routes.href (Routes.Profile model.profile.username Routes.WholeProfile)
+                    --, onClick (LoadArticlesMade model.profile.username)
+                    ]
+                    [ text "My Articles" ] ]
             , li [ class "nav-item" ]
-                [ a [ class "nav-link", Routes.href (Routes.Profile model.profile.username), onClick (LoadFavoritedArticles model.profile.username) ] [ text "Favorited Articles" ] ]
+                [ a
+                    [ class "nav-link"
+                    , Routes.href (Routes.Profile model.profile.username Routes.Favorited)
+                    --, onClick (LoadFavoritedArticles model.profile.username)
+                    ]
+                    [ text "Favorited Articles" ] ]
             ]
 
     else
-        ul [ class "nav nav-pills outline-active" ] 
+        ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a [ class "nav-link", Routes.href (Routes.Profile model.profile.username), onClick (LoadArticlesMade model.profile.username) ] [ text "My Articles" ] ]
+                [ a
+                    [ class "nav-link"
+                    , Routes.href (Routes.Profile model.profile.username Routes.WholeProfile)
+                    --, onClick (LoadArticlesMade model.profile.username)
+                    ]
+                    [ text "My Articles" ] ]
             , li [ class "nav-item" ]
-                [ a [ class "nav-link active", Routes.href (Routes.Profile model.profile.username), onClick (LoadFavoritedArticles model.profile.username) ] [ text "Favorited Articles" ] ]
+                [ a
+                    [ class "nav-link active"
+                    , Routes.href (Routes.Profile model.profile.username Routes.Favorited)
+                    --, onClick (LoadFavoritedArticles model.profile.username)
+                    ]
+                    [ text "Favorited Articles" ] ]
             ]
 
 
