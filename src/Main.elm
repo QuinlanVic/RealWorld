@@ -24,9 +24,6 @@ import Url exposing (Url)
 
 
 
--- import Url.Builder
-
-
 type CurrentPage
     = PublicFeed PublicFeed.Model
     | Auth Auth.User
@@ -316,6 +313,69 @@ fetchProfileAndFavArticles slug =
             )
 
 
+fetchYourFeed : Model -> Task Http.Error PublicFeed.Feed
+fetchYourFeed model =
+    -- need some kind of authentication to know which articles to fetch depended on the user
+    let
+        headers =
+            [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+    in
+    Http.task
+        { method = "GET"
+        , headers = headers
+        , body = Http.emptyBody
+        , resolver = Http.stringResolver <| handleJsonResponse <| field "articles" (list Article.articleDecoder)
+        , url = baseUrl ++ "api/articles/feed"
+        , timeout = Nothing
+        }
+
+
+fetchTags : Task Http.Error PublicFeed.Tags
+fetchTags =
+    Http.task
+        { url = baseUrl ++ "api/tags"
+        , resolver = Http.stringResolver <| handleJsonResponse <| PublicFeed.tagDecoder
+        , method = "GET"
+        , headers = []
+        , body = Http.emptyBody
+        , timeout = Nothing
+        }
+
+
+fetchGlobalFeed : Task Http.Error PublicFeed.Feed 
+fetchGlobalFeed =
+    Http.task
+        { method = "GET"
+        , headers = []
+        , body = Http.emptyBody
+        , resolver = Http.stringResolver <| handleJsonResponse <| field "articles" (list Article.articleDecoder)
+        , url = baseUrl ++ "api/articles"
+        , timeout = Nothing
+        }
+
+
+fetchYourFeedAndTags : Model -> Task Http.Error ( PublicFeed.Feed, PublicFeed.Tags )
+fetchYourFeedAndTags model =
+    -- Function to fetch both profile and profile articles sequentially
+    fetchYourFeed model
+        |> Task.andThen
+            (\articles ->
+                fetchTags
+                    |> Task.map (\tags -> ( articles, tags ))
+            )
+
+
+fetchGlobalFeedAndTags : Task Http.Error ( PublicFeed.Feed, PublicFeed.Tags )
+fetchGlobalFeedAndTags =
+    -- Function to fetch both profile and profile articles sequentially
+    fetchGlobalFeed 
+        |> Task.andThen
+            (\articles ->
+                fetchTags
+                    |> Task.map (\tags -> ( articles, tags ))
+            )
+
+
 
 -- not needed/used in Main
 -- encodeUser : RegUser -> Encode.Value
@@ -400,6 +460,9 @@ type Msg
     | GotArticleAndComments (Result Http.Error ( Article.Article, Article.Comments ))
     | GotProfileAndArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
     | GotProfileAndFavArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
+    | GotYFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
+    | GotGFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
+
 
 convertUser : RegUser -> User
 convertUser regUser =
@@ -415,12 +478,26 @@ setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
 setNewPage maybeRoute model =
     --update model's page based on the new route
     case maybeRoute of
-        Just Routes.Index ->
-            let
-                ( publicFeedModel, publicFeedCmd ) =
-                    PublicFeed.init
-            in
-            ( { model | page = PublicFeed { publicFeedModel | user = model.user }, currentPage = "Home" }, Cmd.map PublicFeedMessage publicFeedCmd )
+        Just (Routes.Index dest) ->
+            case dest of
+                Routes.Global ->
+                    let
+                        ( publicFeedModel, publicFeedCmd ) =
+                            PublicFeed.init
+                    in
+                    ( { model | page = PublicFeed { publicFeedModel | user = model.user }, currentPage = "Home" }
+                    -- Cmd.map PublicFeedMessage publicFeedCmd 
+                    , Task.attempt GotGFAndTags fetchGlobalFeedAndTags 
+                    )
+
+                Routes.Yours ->
+                    let
+                        ( publicFeedModel, publicFeedCmd ) =
+                            PublicFeed.init
+                    in
+                    ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False }, currentPage = "Home" }
+                    , Task.attempt GotYFAndTags (fetchYourFeedAndTags model)
+                    )
 
         Just Routes.Auth ->
             let
@@ -487,11 +564,11 @@ setNewPage maybeRoute model =
             ( { model | page = Article articleModel }, Task.attempt GotArticleAndComments (fetchArticleAndComments slug) )
 
         -- tricky
-        Just (Routes.Profile username dest) ->    
-            -- ( model, fetchProfile username )  
-            case dest of 
+        Just (Routes.Profile username dest) ->
+            -- ( model, fetchProfile username )
+            case dest of
                 Routes.WholeProfile ->
-                    let 
+                    let
                         ( profileModel, profileCmd ) =
                             Profile.init
                     in
@@ -504,11 +581,12 @@ setNewPage maybeRoute model =
                             else
                                 ""
                       }
-                    -- Cmd.batch [ fetchProfile username, fetchProfileArticles username ]
+                      -- Cmd.batch [ fetchProfile username, fetchProfileArticles username ]
                     , Task.attempt GotProfileAndArticles (fetchProfileAndArticles username)
                     )
+
                 Routes.Favorited ->
-                    let 
+                    let
                         ( profileModel, profileCmd ) =
                             Profile.init
                     in
@@ -520,8 +598,8 @@ setNewPage maybeRoute model =
 
                             else
                                 ""
-                      }              
-                    -- Cmd.map ProfileMessage (Profile.fetchFavoritedArticles username)
+                      }
+                      -- Cmd.map ProfileMessage (Profile.fetchFavoritedArticles username)
                     , Task.attempt GotProfileAndFavArticles (fetchProfileAndFavArticles username)
                     )
 
@@ -671,7 +749,7 @@ update msg model =
                       }
                     , Cmd.none
                     )
-        
+
         ( GotProfileAndFavArticles result, _ ) ->
             case result of
                 Ok ( profile, favoritedArticles ) ->
@@ -687,6 +765,38 @@ update msg model =
                         | page = Profile { profile = defaultProfile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = False }
                         , articlesMade = Nothing
                         , profile = defaultProfile
+                      }
+                    , Cmd.none
+                    )
+
+        ( GotYFAndTags result, _ ) ->
+            case result of
+                Ok ( yourfeed, tags ) ->
+                    ( { model
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Just yourfeed, tags = Just tags, user = model.user, showGF = False }
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( { model
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False }
+                      }
+                    , Cmd.none
+                    )
+        
+        ( GotGFAndTags result, _ ) ->
+            case result of
+                Ok ( globalfeed, tags ) ->
+                    ( { model
+                        | page = PublicFeed { globalfeed = Just globalfeed, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = True }
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( { model
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = True }
                       }
                     , Cmd.none
                     )
@@ -956,10 +1066,10 @@ viewHeaderLO model =
     in
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
-            [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
+            [ a [ class "navbar-brand", Routes.href (Routes.Index Routes.Global) ] [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
                 --could make a function for doing all of this
-                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
+                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href (Routes.Index Routes.Global) ] [ text "Home :)" ] ]
 
                 -- , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.Editor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
                 , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
@@ -984,10 +1094,10 @@ viewHeader model =
     in
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
-            [ a [ class "navbar-brand", Routes.href Routes.Index ] [ text "conduit" ]
+            [ a [ class "navbar-brand", Routes.href (Routes.Index Routes.Global) ] [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
                 -- could make a function for doing all of this
-                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Index ] [ text "Home :)" ] ]
+                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href (Routes.Index Routes.Global) ] [ text "Home :)" ] ]
                 , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href (Routes.Editor "default") ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ] --&nbsp; in Elm?
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ] -- \u{00A0}
 

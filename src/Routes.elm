@@ -1,4 +1,4 @@
-module Routes exposing (ProfileDestination(..), Route(..), href, match)
+module Routes exposing (FeedType(..), ProfileDestination(..), Route(..), href, match)
 
 -- import Browser
 
@@ -12,12 +12,15 @@ type ProfileDestination
     = Favorited
     | WholeProfile
 
+type FeedType
+    = Global
+    | Yours 
 
 type
     Route
     -- URL parsing = extract information from the url
     -- Going to add strings and stuff that they input to know what specific page to go to :)
-    = Index
+    = Index FeedType
     | Auth
     | Editor String
     | Login
@@ -28,8 +31,10 @@ type
 
 routes : Parser (Route -> a) a
 routes =
+    -- Parser.s "/#/" </> 
     Parser.oneOf
-        [ Parser.map Index Parser.top --#/ ?
+        [ Parser.map (Index Global) Parser.top --#/ ? 
+        , Parser.map (Index Yours) (Parser.s "Y") 
         , Parser.map Auth (Parser.s "register")
         , Parser.map Editor (Parser.s "createpost" </> Parser.string)
         , Parser.map Login (Parser.s "login")
@@ -44,8 +49,11 @@ routeToUrl : Route -> String
 routeToUrl route =
     --accept route and convert it to a string path via pattern matching
     case route of
-        Index ->
+        Index Global ->
             "/"
+        
+        Index Yours ->
+            "/Y"
 
         Auth ->
             "/register"

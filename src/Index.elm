@@ -1,4 +1,4 @@
-module Index exposing (Article, Model, Msg(..), init, update, view)
+module Index exposing (Article, Feed, Model, Msg(..), Tags, init, tagDecoder, update, view)
 
 -- import Exts.Html exposing (nbsp)
 -- import Browser
@@ -218,8 +218,9 @@ unfavoriteArticleYF model article =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] )
- 
+    -- Cmd.batch [ fetchGlobalArticles, fetchTags ] (Done in Main now)
+    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] ) 
+
 
 author1 : Editor.Author
 author1 =
@@ -336,11 +337,23 @@ update msg model =
             -- how to distinguish between yourfeed and globalfeed articles? (Don't, do both (FOR NOW...))
             if article.favorited then
                 --  ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle model article )
-                ( model, if model.showGF then unfavoriteArticle model article else unfavoriteArticleYF model article )
+                ( model
+                , if model.showGF then
+                    unfavoriteArticle model article
+
+                  else
+                    unfavoriteArticleYF model article
+                )
 
             else
                 -- ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle model article )
-                ( model, if model.showGF then favoriteArticle model article else favoriteArticleYF model article )
+                ( model
+                , if model.showGF then
+                    favoriteArticle model article
+
+                  else
+                    favoriteArticleYF model article
+                )
 
         -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
@@ -478,7 +491,7 @@ viewArticles maybeFeed =
 
         Nothing ->
             --put something nice here :)
-            div [ class "loading-feed" ]
+            div [ class "post-preview" ]
                 [ text "Loading feed :)" ]
 
 
@@ -510,12 +523,15 @@ viewTwoFeeds model =
         if model.showGF then
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a [ class "nav-link", Routes.href Routes.Index, onClick LoadYF ]
-                        -- nav-link active
+                    [ a [ class "nav-link", Routes.href (Routes.Index Routes.Yours)
+                        -- , onClick LoadYF 
+                        ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a [ class "nav-link active", Routes.href Routes.Index, onClick LoadGF ]
+                    [ a [ class "nav-link active", Routes.href (Routes.Index Routes.Global)
+                        -- , onClick LoadGF 
+                        ]
                         [ text "Global Feed" ]
                     ]
                 ]
@@ -523,12 +539,15 @@ viewTwoFeeds model =
         else
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a [ class "nav-link active", Routes.href Routes.Index, onClick LoadYF ]
-                        -- nav-link active
+                    [ a [ class "nav-link active", Routes.href (Routes.Index Routes.Yours)
+                        -- , onClick LoadYF 
+                        ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a [ class "nav-link", Routes.href Routes.Index, onClick LoadGF ]
+                    [ a [ class "nav-link", Routes.href (Routes.Index Routes.Global)
+                        -- , onClick LoadGF 
+                        ]
                         [ text "Global Feed" ]
                     ]
                 ]
@@ -537,7 +556,9 @@ viewTwoFeeds model =
         -- if their token is empty then the user is not logged in and we should only display the Global Feed tab
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a [ class "nav-link active", Routes.href Routes.Index, onClick LoadGF ]
+                [ a [ class "nav-link active", Routes.href (Routes.Index Routes.Global)
+                    -- , onClick LoadGF 
+                    ]
                     [ text "Global Feed" ]
                 ]
             ]
@@ -647,7 +668,7 @@ view model =
             ]
         , footer []
             [ div [ class "container" ]
-                [ a [ Routes.href Routes.Index, class "logo-font" ] [ text "conduit" ]
+                [ a [ Routes.href (Routes.Index Routes.Global), class "logo-font" ] [ text "conduit" ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "

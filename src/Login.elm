@@ -225,7 +225,7 @@ view user =
         --     ]
         , footer []
             [ div [ class "container" ]
-                [ a [ Routes.href Routes.Index, class "logo-font" ] [ text "conduit" ]
+                [ a [ Routes.href (Routes.Index Routes.Global), class "logo-font" ] [ text "conduit" ]
                 , text " " --helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
