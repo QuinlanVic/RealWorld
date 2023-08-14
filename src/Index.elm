@@ -219,7 +219,7 @@ unfavoriteArticleYF model article =
 init : ( Model, Cmd Msg )
 init =
     ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] )
-
+ 
 
 author1 : Editor.Author
 author1 =

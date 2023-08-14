@@ -637,32 +637,6 @@ viewArticlePreview article =
         ]
 
 
-
--- , div [class "post-preview"]
---     [div [class "post-meta"]
---         [ a [href "profileelm.html"] [img [src "http://i.imgur.com/Qr71crq.jpg"] []]
---         , text nbsp
---         , div [class "info"]
---             [ a [href "profileelm.html", class "author"] [text "Eric Simons"]
---             , span [class "date"] [text "January 20th"]
---             ]
---         , viewLoveButton model
---         -- , button [class "btn btn-outline-primary btn-sm pull-xs-right"]
---         --     [ i [class "ion-heart"] []
---         --     , text " 29"
---         --     ]
---         ]
---     , a [href "post-meta", class "preview-link"]
---         [ h1 [] [text "How to build webapps that scale"]
---         , p [] [text """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above.
---                         Regardless, we're interested in the class names and the appearance of sections in the markup as opposed to the
---                         actual elements themselves. In particular, take note of the modifier classes used on the two sidebars, and the
---                         trivial order in which they appear in the markup. Let's break this down to paint a clear picture of what's happening..."""]
---         , span [] [text "Read more..."]
---         ]
---     ]
-
-
 viewArticles : Maybe Feed -> Html Msg
 viewArticles maybeArticlesMade =
     case maybeArticlesMade of
@@ -683,6 +657,7 @@ viewArticles maybeArticlesMade =
 
 viewTwoFeeds : Model -> Html Msg
 viewTwoFeeds model =
+    -- function to display the 2 different feeds depending on if they are viewing articles the profile has made or favorited 
     if model.showMA then
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
@@ -692,7 +667,7 @@ viewTwoFeeds model =
             ]
 
     else
-        ul [ class "nav nav-pills outline-active" ]
+        ul [ class "nav nav-pills outline-active" ] 
             [ li [ class "nav-item" ]
                 [ a [ class "nav-link", Routes.href (Routes.Profile model.profile.username), onClick (LoadArticlesMade model.profile.username) ] [ text "My Articles" ] ]
             , li [ class "nav-item" ]
