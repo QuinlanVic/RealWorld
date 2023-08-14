@@ -19,6 +19,7 @@ import Login
 import Profile
 import Routes exposing (Route(..))
 import Settings
+import Task exposing (Task)
 import Url exposing (Url)
 
 
@@ -277,6 +278,7 @@ type Msg
     | GotArticleEditor (Result Http.Error Article.Article)
     | GotComments (Result Http.Error Article.Comments)
     | GotProfileArticles (Result Http.Error Profile.Feed)
+    | GotArticleAndComments (Result Http.Error ( Article.Article, Article.Comments ))
 
 
 convertUser : RegUser -> User
@@ -360,7 +362,9 @@ setNewPage maybeRoute model =
                 ( articleModel, articleCmd ) =
                     Article.init
             in
-            ( { model | page = Article articleModel }, Cmd.batch [ fetchArticle slug, fetchComments slug ] )
+            -- first do fetchArticle then do fetchComments using Task.attempt
+            -- Cmd.batch [ fetchArticle slug, fetchComments slug ]
+            ( { model | page = Article articleModel }, Task.attempt GotArticleAndComments (fetchArticle slug) )
 
         -- tricky
         Just (Routes.Profile username) ->
@@ -369,7 +373,17 @@ setNewPage maybeRoute model =
                 ( profileModel, profileCmd ) =
                     Profile.init
             in
-            ( { model | page = Profile profileModel, currentPage = if model.user.username == username then "Profile" else "" }, Cmd.batch [ fetchProfile username, fetchProfileArticles username ] )
+            ( { model
+                | page = Profile profileModel
+                , currentPage =
+                    if model.user.username == username then
+                        "Profile"
+
+                    else
+                        ""
+              }
+            , Cmd.batch [ fetchProfile username, fetchProfileArticles username ]
+            )
 
         -- tricky
         Just Routes.Settings ->
@@ -481,6 +495,23 @@ update msg model =
         -- error, just display the same page as before (Probably could do more)
         ( GotUser (Err _), _ ) ->
             ( { model | currentPage = "Home" }, Cmd.none )
+
+        ( GotArticleAndComments result, _ ) ->
+            case result of
+                Ok ( article, comments ) ->
+                    -- Update your model with the fetched article and comments
+                    -- You can also trigger further actions here if needed
+                    ( { model
+                        | page = Article { article = article, comments = Just comments, newComment = "", user = model.user }
+                        , article = article
+                        , comments = Just comments
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    -- Handle the error if needed
+                    ( model, Cmd.none )
 
         -- Index
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
