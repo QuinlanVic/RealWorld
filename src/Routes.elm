@@ -31,10 +31,10 @@ type
 
 routes : Parser (Route -> a) a
 routes =
-    -- Parser.s "/#/" </> 
+    -- Parser.s "#" </> 
     Parser.oneOf
         [ Parser.map (Index Global) Parser.top --#/ ? 
-        , Parser.map (Index Yours) (Parser.s "Y") 
+        , Parser.map (Index Yours) (Parser.s "Y") --hmm how do I fix
         , Parser.map Auth (Parser.s "register")
         , Parser.map Editor (Parser.s "createpost" </> Parser.string)
         , Parser.map Login (Parser.s "login")
@@ -50,31 +50,31 @@ routeToUrl route =
     --accept route and convert it to a string path via pattern matching
     case route of
         Index Global ->
-            "/"
+            "/#/"
         
-        Index Yours ->
-            "/Y"
+        Index Yours -> -- want this to be the same
+            "/#/Y"
 
         Auth ->
-            "/register"
+            "/#/register"
 
         Editor slug ->
-            "/createpost/" ++ slug
+            "/#/createpost/" ++ slug
 
         Login ->
-            "/login"
+            "/#/login"
 
         Article slug ->
             "/article/" ++ slug
 
         Profile username WholeProfile ->
-            "/profile/" ++ username
+            "/#/profile/" ++ username
 
         Profile username Favorited ->
-            "/profile/" ++ username ++ "/favorites"
+            "/#/profile/" ++ username ++ "/favorites"
 
         Settings ->
-            "/settings"
+            "/#/settings"
 
 
 href : Route -> Html.Attribute msg
@@ -88,7 +88,6 @@ match : Url -> Maybe Route
 match url =
     -- match function that uses the routes parser to convert URLs
     Parser.parse routes url
-
 
 
 -- Parser.parse tries to parse the url’s path field with the provided parser. It returns
