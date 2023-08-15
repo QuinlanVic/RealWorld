@@ -58,6 +58,8 @@ type alias Model =
     , tags : Maybe Tags --tag may exist or not hehe
     , user : User
     , showGF : Bool
+    , showTag : Bool
+    , tagfeed : Maybe Feed
     }
 
 
@@ -96,6 +98,8 @@ initialModel =
     , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
     , user = defaultUser
     , showGF = True
+    , showTag = False
+    , tagfeed = Just []
     }
 
 
@@ -219,7 +223,7 @@ unfavoriteArticleYF model article =
 init : ( Model, Cmd Msg )
 init =
     -- Cmd.batch [ fetchGlobalArticles, fetchTags ] (Done in Main now)
-    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] ) 
+    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] )
 
 
 author1 : Editor.Author
@@ -425,7 +429,7 @@ viewLoveButton articlePreview =
 
 viewTag : String -> Html msg
 viewTag tag =
-    a [ href "#", class "label label-pill label-default" ] [ text tag ]
+    a [ Routes.href (Routes.Index (Routes.Tag tag)), class "label label-pill label-default" ] [ text tag ]
 
 
 maybeImageBio : Maybe String -> String
@@ -512,25 +516,61 @@ viewTags maybeTags =
                 [ text "Loading tags..." ]
 
 
-
--- Only show the Global Feed if the user is not logged in (Maybe this will go into the )
-
-
-viewTwoFeeds : Model -> Html Msg
-viewTwoFeeds model =
+viewThreeFeeds : Model -> Html Msg
+viewThreeFeeds model =
     if model.user.token /= "" then
         -- if the user's token is not empty then they are logged in and we can show the Your Feed tab
-        if model.showGF then
+        if model.showTag then
+            -- if we have to show the Tag Feed
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a [ class "nav-link", Routes.href (Routes.Index Routes.Yours)
-                        -- , onClick LoadYF 
+                    [ a
+                        [ class "nav-link"
+                        , Routes.href (Routes.Index Routes.Yours)
+
+                        -- , onClick LoadYF
                         ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a [ class "nav-link active", Routes.href (Routes.Index Routes.Global)
-                        -- , onClick LoadGF 
+                    [ a
+                        [ class "nav-link"
+                        , Routes.href (Routes.Index Routes.Global)
+
+                        -- , onClick LoadGF
+                        ]
+                        [ text "Global Feed" ]
+                    ]
+                , li [ class "nav-item" ]
+                    [ a
+                        [ class "nav-link active"
+                        , Routes.href (Routes.Index (Routes.Tag "tag"))
+
+                        -- , onClick LoadGF
+                        ]
+                        [ i [ class "ion-pound" ] []
+                        , text " Tag "
+                        ]
+                    ]
+                ]
+
+        else if model.showGF then
+            ul [ class "nav nav-pills outline-active" ]
+                [ li [ class "nav-item" ]
+                    [ a
+                        [ class "nav-link"
+                        , Routes.href (Routes.Index Routes.Yours)
+
+                        -- , onClick LoadYF
+                        ]
+                        [ text "Your Feed" ]
+                    ]
+                , li [ class "nav-item" ]
+                    [ a
+                        [ class "nav-link active"
+                        , Routes.href (Routes.Index Routes.Global)
+
+                        -- , onClick LoadGF
                         ]
                         [ text "Global Feed" ]
                     ]
@@ -539,25 +579,60 @@ viewTwoFeeds model =
         else
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a [ class "nav-link active", Routes.href (Routes.Index Routes.Yours)
-                        -- , onClick LoadYF 
+                    [ a
+                        [ class "nav-link active"
+                        , Routes.href (Routes.Index Routes.Yours)
+
+                        -- , onClick LoadYF
                         ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a [ class "nav-link", Routes.href (Routes.Index Routes.Global)
-                        -- , onClick LoadGF 
+                    [ a
+                        [ class "nav-link"
+                        , Routes.href (Routes.Index Routes.Global)
+
+                        -- , onClick LoadGF
                         ]
                         [ text "Global Feed" ]
                     ]
                 ]
 
-    else
-        -- if their token is empty then the user is not logged in and we should only display the Global Feed tab
+    else if model.showTag then
+        -- if their token is empty then the user is not logged in and we should not display the Your Feed tab
+        -- if we are supposed to show the Tag Feed
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a [ class "nav-link active", Routes.href (Routes.Index Routes.Global)
-                    -- , onClick LoadGF 
+                [ a
+                    [ class "nav-link"
+                    , Routes.href (Routes.Index Routes.Global)
+
+                    -- , onClick LoadGF
+                    ]
+                    [ text "Global Feed" ]
+                ]
+            , li [ class "nav-item" ]
+                [ a
+                    [ class "nav-link active"
+                    , Routes.href (Routes.Index (Routes.Tag "tag"))
+
+                    -- , onClick LoadGF
+                    ]
+                    [ i [ class "ion-pound" ] []
+                    , text " Tag "
+                    ]
+                ]
+            ]
+
+    else
+        -- if we are not supposed to show the Tag Feed
+        ul [ class "nav nav-pills outline-active" ]
+            [ li [ class "nav-item" ]
+                [ a
+                    [ class "nav-link active"
+                    , Routes.href (Routes.Index Routes.Global)
+
+                    -- , onClick LoadGF
                     ]
                     [ text "Global Feed" ]
                 ]
@@ -650,8 +725,11 @@ view model =
                 [ div [ class "row" ]
                     [ div [ class "col-md-9" ]
                         [ div [ class "feed-toggle" ]
-                            [ viewTwoFeeds model ]
-                        , if model.showGF then
+                            [ viewThreeFeeds model ]
+                        , if model.showTag then
+                            viewArticles model.tagfeed
+
+                          else if model.showGF then
                             viewArticles model.globalfeed
 
                           else

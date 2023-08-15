@@ -23,7 +23,6 @@ import Task exposing (Task)
 import Url exposing (Url)
 
 
-
 type CurrentPage
     = PublicFeed PublicFeed.Model
     | Auth Auth.User
@@ -342,7 +341,7 @@ fetchTags =
         }
 
 
-fetchGlobalFeed : Task Http.Error PublicFeed.Feed 
+fetchGlobalFeed : Task Http.Error PublicFeed.Feed
 fetchGlobalFeed =
     Http.task
         { method = "GET"
@@ -354,9 +353,21 @@ fetchGlobalFeed =
         }
 
 
+fetchTagFeed : String -> Task Http.Error PublicFeed.Feed
+fetchTagFeed tag =
+    Http.task
+        { method = "GET"
+        , headers = []
+        , body = Http.emptyBody
+        , resolver = Http.stringResolver <| handleJsonResponse <| field "articles" (list Article.articleDecoder)
+        , url = baseUrl ++ "api/articles?tag=" ++ tag
+        , timeout = Nothing
+        }
+
+
 fetchYourFeedAndTags : Model -> Task Http.Error ( PublicFeed.Feed, PublicFeed.Tags )
 fetchYourFeedAndTags model =
-    -- Function to fetch both profile and profile articles sequentially
+    -- Function to fetch your feed and tags sequentially
     fetchYourFeed model
         |> Task.andThen
             (\articles ->
@@ -367,8 +378,19 @@ fetchYourFeedAndTags model =
 
 fetchGlobalFeedAndTags : Task Http.Error ( PublicFeed.Feed, PublicFeed.Tags )
 fetchGlobalFeedAndTags =
-    -- Function to fetch both profile and profile articles sequentially
-    fetchGlobalFeed 
+    -- Function to fetch both global feed and tags sequentially
+    fetchGlobalFeed
+        |> Task.andThen
+            (\articles ->
+                fetchTags
+                    |> Task.map (\tags -> ( articles, tags ))
+            )
+
+
+fetchTagFeedAndTags : String -> Task Http.Error ( PublicFeed.Feed, PublicFeed.Tags )
+fetchTagFeedAndTags tag =
+    -- Function to fetch both tag feed and tags sequentially
+    fetchTagFeed tag
         |> Task.andThen
             (\articles ->
                 fetchTags
@@ -462,6 +484,7 @@ type Msg
     | GotProfileAndFavArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
     | GotYFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
     | GotGFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
+    | GotTFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
 
 
 convertUser : RegUser -> User
@@ -481,22 +504,34 @@ setNewPage maybeRoute model =
         Just (Routes.Index dest) ->
             case dest of
                 Routes.Global ->
+                    -- fetch the global feed
                     let
                         ( publicFeedModel, publicFeedCmd ) =
                             PublicFeed.init
                     in
                     ( { model | page = PublicFeed { publicFeedModel | user = model.user }, currentPage = "Home" }
-                    -- Cmd.map PublicFeedMessage publicFeedCmd 
-                    , Task.attempt GotGFAndTags fetchGlobalFeedAndTags 
+                      -- Cmd.map PublicFeedMessage publicFeedCmd
+                    , Task.attempt GotGFAndTags fetchGlobalFeedAndTags
                     )
 
                 Routes.Yours ->
+                    -- fetch your feed
                     let
                         ( publicFeedModel, publicFeedCmd ) =
                             PublicFeed.init
                     in
-                    ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False }, currentPage = "Home" }
+                    ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = False }, currentPage = "Home" }
                     , Task.attempt GotYFAndTags (fetchYourFeedAndTags model)
+                    )
+
+                Routes.Tag tag ->
+                    -- fetch the feed that has that tag
+                    let
+                        ( publicFeedModel, publicFeedCmd ) =
+                            PublicFeed.init
+                    in
+                    ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = True }, currentPage = "Home" }
+                    , Task.attempt GotTFAndTags (fetchTagFeedAndTags tag)
                     )
 
         Just Routes.Auth ->
@@ -522,6 +557,7 @@ setNewPage maybeRoute model =
                             , titleError = Just ""
                             , bodyError = Just ""
                             , descError = Just ""
+                            , tagInput = "" 
                             }
                     , currentPage = "Editor"
                   }
@@ -538,6 +574,7 @@ setNewPage maybeRoute model =
                             , titleError = Just ""
                             , bodyError = Just ""
                             , descError = Just ""
+                            , tagInput = ""
                             }
                     , currentPage = "Editor"
                   }
@@ -638,7 +675,8 @@ update msg model =
 
         ( GotArticleEditor (Ok article), _ ) ->
             ( { model
-                | page = Editor { user = model.user, article = article, created = False, titleError = Just "", bodyError = Just "", descError = Just "" }
+                -- change taglist into taginput to display the old tags in a string format :)
+                | page = Editor { user = model.user, article = article, created = False, titleError = Just "", bodyError = Just "", descError = Just "", tagInput = (String.join "," article.tagList)  }
                 , article = article
               }
             , Cmd.none
@@ -773,30 +811,46 @@ update msg model =
             case result of
                 Ok ( yourfeed, tags ) ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Just yourfeed, tags = Just tags, user = model.user, showGF = False }
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Just yourfeed, tags = Just tags, user = model.user, showGF = False, showTag = False, tagfeed = Nothing }
                       }
                     , Cmd.none
                     )
 
                 Err error ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False }
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = False, tagfeed = Nothing }
                       }
                     , Cmd.none
                     )
-        
+
         ( GotGFAndTags result, _ ) ->
             case result of
                 Ok ( globalfeed, tags ) ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Just globalfeed, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = True }
+                        | page = PublicFeed { globalfeed = Just globalfeed, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = True, showTag = False, tagfeed = Nothing }
                       }
                     , Cmd.none
                     )
 
                 Err error ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = True }
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = True, showTag = False, tagfeed = Nothing }
+                      }
+                    , Cmd.none
+                    )
+
+        ( GotTFAndTags result, _ ) ->
+            case result of
+                Ok ( tagfeed, tags ) ->
+                    ( { model
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = False, showTag = True, tagfeed = Just tagfeed }
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( { model
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = True, tagfeed = Nothing }
                       }
                     , Cmd.none
                     )

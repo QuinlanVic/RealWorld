@@ -15,6 +15,7 @@ type ProfileDestination
 type FeedType
     = Global
     | Yours 
+    | Tag String 
 
 type
     Route
@@ -33,9 +34,10 @@ routes : Parser (Route -> a) a
 routes =
     -- Parser.s "#" </> 
     Parser.oneOf
-        [ Parser.map (Index Global) Parser.top --#/ ? 
+        [ Parser.map (Index Global) (Parser.top) --#/ ? 
         , Parser.map (Index Yours) (Parser.s "Y") --hmm how do I fix
-        , Parser.map Auth (Parser.s "register")
+        , Parser.map (\s -> Index (Tag s)) (Parser.s "T" </> Parser.string)
+        , Parser.map Auth (Parser.s "#" </> Parser.s "register")
         , Parser.map Editor (Parser.s "createpost" </> Parser.string)
         , Parser.map Login (Parser.s "login")
         , Parser.map Article (Parser.s "article" </> Parser.string) --article slug
@@ -53,28 +55,31 @@ routeToUrl route =
             "/#/"
         
         Index Yours -> -- want this to be the same
-            "/#/Y"
+            "/Y"
+
+        Index (Tag tag) ->
+            "/T/" ++ tag  
 
         Auth ->
-            "/#/register"
+            "/#/" ++ "register"
 
         Editor slug ->
-            "/#/createpost/" ++ slug
+            "/createpost/" ++ slug
 
         Login ->
-            "/#/login"
+            "/login"
 
         Article slug ->
             "/article/" ++ slug
 
         Profile username WholeProfile ->
-            "/#/profile/" ++ username
+            "/profile/" ++ username
 
         Profile username Favorited ->
-            "/#/profile/" ++ username ++ "/favorites"
+            "/profile/" ++ username ++ "/favorites"
 
         Settings ->
-            "/#/settings"
+            "/settings"
 
 
 href : Route -> Html.Attribute msg

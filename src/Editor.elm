@@ -54,6 +54,7 @@ type alias Model =
     , titleError : Maybe String
     , bodyError : Maybe String
     , descError : Maybe String
+    , tagInput : String
     }
 
 
@@ -80,7 +81,8 @@ saveArticle model =
         , timeout = Nothing
         , tracker = Nothing
         }
-    
+
+
 updateArticle : Model -> Cmd Msg
 updateArticle model =
     let
@@ -95,7 +97,7 @@ updateArticle model =
         , headers = headers
         , body = body
         , expect = Http.expectJson GotArticle (field "article" articleDecoder) -- wrap JSON received in GotArticle Msg
-        , url = baseUrl ++ "api/articles/" ++ model.article.slug 
+        , url = baseUrl ++ "api/articles/" ++ model.article.slug
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -110,9 +112,9 @@ encodeArticle article =
         , ( "body", Encode.string article.body )
         , ( "tagList", Encode.list Encode.string article.tagList )
         ]
-    
 
-encodeArticleUpdate : Article -> Encode.Value 
+
+encodeArticleUpdate : Article -> Encode.Value
 encodeArticleUpdate article =
     --used to encode Article sent to the server via Article request body (for updating)
     Encode.object
@@ -189,6 +191,7 @@ initialModel =
     , titleError = Just ""
     , bodyError = Just ""
     , descError = Just ""
+    , tagInput = ""
     }
 
 
@@ -206,10 +209,10 @@ type Msg
     = SaveTitle String --maybe string
     | SaveDescription String
     | SaveBody String
-    | SaveTags (List String)
+    | SaveTags String
     | CreateArticle
     | GotArticle (Result Http.Error Article)
-    | UpdateArticle 
+    | UpdateArticle
 
 
 validateTitle : String -> Maybe String
@@ -266,16 +269,20 @@ update message model =
         SaveBody body ->
             ( { model | article = updateBody model.article body, bodyError = validateBody body }, Cmd.none )
 
-        SaveTags tagList ->
-            ( { model | article = updateTags model.article tagList }, Cmd.none )
+        SaveTags tagInput ->
+            ( { model | tagInput = tagInput }, Cmd.none )
 
         CreateArticle ->
             let
+                tags =
+                    String.split "," model.tagInput
+                        |> List.map String.trim
+
                 validatedModel =
                     { model | titleError = validateTitle model.article.title, bodyError = validateBody model.article.body, descError = validateTitle model.article.description }
             in
             if isFormValid validatedModel then
-                ( validatedModel, saveArticle validatedModel )
+                ( { validatedModel | article = updateTags model.article tags }, saveArticle validatedModel )
 
             else
                 ( validatedModel, Cmd.none )
@@ -287,11 +294,11 @@ update message model =
 
         GotArticle (Err _) ->
             ( model, Cmd.none )
-        
-        UpdateArticle -> 
-            let 
+
+        UpdateArticle ->
+            let
                 validatedModel =
-                        { model | titleError = validateTitle model.article.title, bodyError = validateBody model.article.body, descError = validateTitle model.article.description }
+                    { model | titleError = validateTitle model.article.title, bodyError = validateBody model.article.body, descError = validateTitle model.article.description }
             in
             if isFormValid validatedModel then
                 ( validatedModel, updateArticle validatedModel )
@@ -330,17 +337,19 @@ view model =
                             , fieldset [ class "form-group" ]
                                 [ textarea [ class "form-control", rows 8, placeholder "Write your article (in markdown)", onInput SaveBody, value model.article.body ] [] ]
                             , fieldset [ class "form-group" ]
-                                [ input [ class "form-control", type_ "text", placeholder "Enter tags", value (String.join ", " model.article.tagList) ] [] --, onInput SaveTags (tags are seperated by spaces)
+                                [ input [ class "form-control", type_ "text", placeholder "Enter tags", onInput SaveTags, value model.tagInput ] [] ]
+                            , button
+                                [ class "btn btn-lg btn-primary pull-xs-right"
+                                , type_ "button"
+                                , onClick
+                                    (if model.article.slug == "default" then
+                                        CreateArticle
 
-                                -- , div [ class "tag-list" ]
-                                --     [ span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " programming" ] --function
-                                --     , text " "
-                                --     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " javascript" ]
-                                --     , text " "
-                                --     , span [ class "label label-pill label-default" ] [ i [ class "ion-close-round" ] [], text " webdev" ]
-                                --     ]
+                                     else
+                                        UpdateArticle
+                                    )
                                 ]
-                            , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick (if (model.article.slug == "default") then CreateArticle else UpdateArticle)] [ text "Publish Article" ]
+                                [ text "Publish Article" ]
                             ]
                         ]
                     ]
