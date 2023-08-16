@@ -69,6 +69,7 @@ type alias Model =
     , comments : Maybe Article.Comments
     , profile : Profile.ProfileType
     , articlesMade : Maybe Profile.Feed
+    , tag : String 
     }
 
 
@@ -137,6 +138,7 @@ initialModel navigationKey url =
     , comments = Just [ defaultComment ]
     , profile = defaultProfile
     , articlesMade = Nothing
+    , tag = ""
     }
 
 
@@ -530,7 +532,7 @@ setNewPage maybeRoute model =
                         ( publicFeedModel, publicFeedCmd ) =
                             PublicFeed.init
                     in
-                    ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = True }, currentPage = "Home" }
+                    ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = True, tag = tag }, currentPage = "Home", tag = tag }
                     , Task.attempt GotTFAndTags (fetchTagFeedAndTags tag)
                     )
 
@@ -811,14 +813,14 @@ update msg model =
             case result of
                 Ok ( yourfeed, tags ) ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Just yourfeed, tags = Just tags, user = model.user, showGF = False, showTag = False, tagfeed = Nothing }
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Just yourfeed, tags = Just tags, user = model.user, showGF = False, showTag = False, tagfeed = Nothing, tag = "" }
                       }
                     , Cmd.none
                     )
 
                 Err error ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = False, tagfeed = Nothing }
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = False, tagfeed = Nothing, tag = "" }
                       }
                     , Cmd.none
                     )
@@ -827,14 +829,14 @@ update msg model =
             case result of
                 Ok ( globalfeed, tags ) ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Just globalfeed, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = True, showTag = False, tagfeed = Nothing }
+                        | page = PublicFeed { globalfeed = Just globalfeed, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = True, showTag = False, tagfeed = Nothing, tag = "" }
                       }
                     , Cmd.none
                     )
 
                 Err error ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = True, showTag = False, tagfeed = Nothing }
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = True, showTag = False, tagfeed = Nothing, tag = "" }
                       }
                     , Cmd.none
                     )
@@ -843,14 +845,14 @@ update msg model =
             case result of
                 Ok ( tagfeed, tags ) ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = False, showTag = True, tagfeed = Just tagfeed }
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = False, showTag = True, tagfeed = Just tagfeed, tag = model.tag }
                       }
                     , Cmd.none
                     )
 
                 Err error ->
                     ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = True, tagfeed = Nothing }
+                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = True, tagfeed = Nothing, tag = "" }, tag = ""
                       }
                     , Cmd.none
                     )

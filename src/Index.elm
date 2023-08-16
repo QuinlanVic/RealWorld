@@ -60,6 +60,7 @@ type alias Model =
     , showGF : Bool
     , showTag : Bool
     , tagfeed : Maybe Feed
+    , tag : String 
     }
 
 
@@ -100,6 +101,7 @@ initialModel =
     , showGF = True
     , showTag = False
     , tagfeed = Just []
+    , tag = ""
     }
 
 
@@ -544,12 +546,12 @@ viewThreeFeeds model =
                 , li [ class "nav-item" ]
                     [ a
                         [ class "nav-link active"
-                        , Routes.href (Routes.Index (Routes.Tag "tag"))
+                        , Routes.href (Routes.Index (Routes.Tag model.tag))
 
                         -- , onClick LoadGF
                         ]
                         [ i [ class "ion-pound" ] []
-                        , text " Tag "
+                        , text (" " ++ model.tag ++ " ")
                         ]
                     ]
                 ]
@@ -614,12 +616,12 @@ viewThreeFeeds model =
             , li [ class "nav-item" ]
                 [ a
                     [ class "nav-link active"
-                    , Routes.href (Routes.Index (Routes.Tag "tag"))
+                    , Routes.href (Routes.Index (Routes.Tag model.tag))
 
                     -- , onClick LoadGF
                     ]
                     [ i [ class "ion-pound" ] []
-                    , text " Tag "
+                    , text (" " ++ model.tag ++ " ")
                     ]
                 ]
             ]
