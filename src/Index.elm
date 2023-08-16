@@ -457,7 +457,7 @@ maybeImageBio maybeIB =
 viewTagInPreview : String -> Html msg
 viewTagInPreview tag =
     -- css skill issue :(
-    li [ class "label label-pill label-default"
+    li [ class "tag-default tag-pill tag-outline"
        ] 
        [ text tag ]
     

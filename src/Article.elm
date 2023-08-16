@@ -794,7 +794,7 @@ viewComments model =
                 , div [ class "card-footer" ]
                     -- this has to be the user's image!
                     -- onClick redirect to user's own profile
-                    [ img [ src (maybeImageBio model.article.author.image), class "comment-author-img" ] []
+                    [ img [ src (maybeImageBio model.user.image), class "comment-author-img" ] []
                     , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick (SaveComment model.newComment) ] [ text " Post Comment" ]
                     ]
                 ]

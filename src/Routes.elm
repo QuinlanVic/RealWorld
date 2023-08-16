@@ -54,13 +54,16 @@ routeToUrl route =
         Index Global ->
             "/#/"
         
-        Index Yours -> -- want this to be the same
+        Index Yours -> 
+            -- want this to be the same as above one
             "/Y"
 
-        Index (Tag tag) ->
+        Index (Tag tag) -> 
+            -- want this to be same as top one
             "/T/" ++ tag  
 
-        Auth ->
+        Auth -> 
+            -- need /#/ before all of these 
             "/register"
 
         Editor slug ->
@@ -73,10 +76,12 @@ routeToUrl route =
             "/article/" ++ slug
 
         Profile username WholeProfile ->
-            "/profile/" ++ username -- @
+            -- @ before username
+            "/profile/" ++ username 
 
         Profile username Favorited ->
-            "/profile/" ++ username ++ "/favorites" -- @
+            -- @ before username
+            "/profile/" ++ username ++ "/favorites" 
 
         Settings ->
             "/settings"
