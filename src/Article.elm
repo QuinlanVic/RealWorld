@@ -723,8 +723,8 @@ maybeImageBio maybeIB =
             ""
 
 
-viewComment : Comment -> Html Msg
-viewComment comment =
+viewComment : Model -> Comment -> Html Msg
+viewComment model comment =
     --display a comment
     div [ class "card" ]
         --(div)
@@ -748,19 +748,19 @@ viewComment comment =
             , text " "
             , span [ class "date-posted" ] [ text comment.createdAt ]
             , span [ class "mod-options" ]
-                [ i [ class "ion-trash-a", onClick (DeleteComment comment.id) ] []
+                [ i [ if (model.user.username == comment.author.username) then class "ion-trash-a" else class "", onClick (DeleteComment comment.id) ] []
                 ]
             ]
         ]
 
 
-viewCommentList : Maybe Comments -> Html Msg
-viewCommentList maybeComments =
+viewCommentList : Model -> Maybe Comments -> Html Msg
+viewCommentList model maybeComments =
     --display a list of comments (if there are)
     case maybeComments of
         Just comments ->
             div []
-                (List.map viewComment comments)
+                (List.map (viewComment model) comments)
 
         Nothing ->
             text ""
@@ -785,7 +785,7 @@ viewComments model =
     --display all the comments and a place for adding a new comment
     div [ class "row" ]
         [ div [ class "col-md-8 col-md-offset-2" ]
-            [ viewCommentList model.comments
+            [ viewCommentList model model.comments
             , form [ class "card comment-form" ]
                 [ div [ class "card-block" ]
                     [ textarea [ class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment ] [] ]
