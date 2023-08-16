@@ -746,7 +746,7 @@ viewComment model comment =
                 ]
                 [ text comment.author.username ]
             , text " "
-            , span [ class "date-posted" ] [ text comment.createdAt ]
+            , span [ class "date-posted" ] [ text (formatDate comment.createdAt) ]
             , span [ class "mod-options" ]
                 [ i [ if (model.user.username == comment.author.username) then class "ion-trash-a" else class "", onClick (DeleteComment comment.id) ] []
                 ]
