@@ -154,12 +154,12 @@ baseUrl =
     "http://localhost:8000/"
 
 
-fetchArticle : String -> Cmd Msg
-fetchArticle slug =
-    Http.get
-        { url = baseUrl ++ "api/articles/" ++ slug
-        , expect = Http.expectJson GotArticleArticle (field "article" Article.articleDecoder)
-        }
+-- fetchArticle : String -> Cmd Msg
+-- fetchArticle slug =
+--     Http.get
+--         { url = baseUrl ++ "api/articles/" ++ slug
+--         , expect = Http.expectJson GotArticleArticle (field "article" Article.articleDecoder)
+--         }
 
 
 handleJsonResponse : Decoder a -> Http.Response String -> Result Http.Error a
@@ -217,12 +217,12 @@ fetchArticleEditor slug =
         }
 
 
-fetchComments : String -> Cmd Msg
-fetchComments slug =
-    Http.get
-        { url = baseUrl ++ "api/articles/" ++ slug ++ "/comments"
-        , expect = Http.expectJson GotComments (field "comments" (list Article.commentDecoder))
-        }
+-- fetchComments : String -> Cmd Msg
+-- fetchComments slug =
+--     Http.get
+--         { url = baseUrl ++ "api/articles/" ++ slug ++ "/comments"
+--         , expect = Http.expectJson GotComments (field "comments" (list Article.commentDecoder))
+--         }
 
 
 fetchComments2 : String -> Task Http.Error Article.Comments
@@ -245,13 +245,13 @@ fetchProfile username =
         }
 
 
-fetchProfileArticles : String -> Cmd Msg
-fetchProfileArticles username =
-    -- get the articles the author of the profile has created
-    Http.get
-        { url = baseUrl ++ "api/articles?author=" ++ username
-        , expect = Http.expectJson GotProfileArticles (field "articles" (list Article.articleDecoder))
-        }
+-- fetchProfileArticles : String -> Cmd Msg
+-- fetchProfileArticles username =
+--     -- get the articles the author of the profile has created
+--     Http.get
+--         { url = baseUrl ++ "api/articles?author=" ++ username
+--         , expect = Http.expectJson GotProfileArticles (field "articles" (list Article.articleDecoder))
+--         }
 
 
 fetchProfile2 : String -> Task Http.Error Profile.ProfileType
@@ -475,12 +475,12 @@ type Msg
     | ArticleMessage Article.Msg
     | ProfileMessage Profile.Msg
     | SettingsMessage Settings.Msg
-    | GotArticleArticle (Result Http.Error Article.Article)
+    -- | GotArticleArticle (Result Http.Error Article.Article)
     | GotProfile (Result Http.Error Profile.ProfileType)
     | GotUser (Result Http.Error User)
     | GotArticleEditor (Result Http.Error Article.Article)
-    | GotComments (Result Http.Error Article.Comments)
-    | GotProfileArticles (Result Http.Error Profile.Feed)
+    -- | GotComments (Result Http.Error Article.Comments)
+    -- | GotProfileArticles (Result Http.Error Profile.Feed)
     | GotArticleAndComments (Result Http.Error ( Article.Article, Article.Comments ))
     | GotProfileAndArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
     | GotProfileAndFavArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
@@ -663,17 +663,17 @@ update msg model =
             setNewPage maybeRoute model
 
         -- got the article, now pass it to Article's model
-        ( GotArticleArticle (Ok article), _ ) ->
-            ( { model
-                | page = Article { article = article, comments = model.comments, newComment = "", user = model.user }
-                , article = article
-              }
-            , Cmd.none
-            )
+        -- ( GotArticleArticle (Ok article), _ ) ->
+        --     ( { model
+        --         | page = Article { article = article, comments = model.comments, newComment = "", user = model.user }
+        --         , article = article
+        --       }
+        --     , Cmd.none
+        --     )
 
-        -- error, just display the same page as before (Probably could do more here)
-        ( GotArticleArticle (Err _), _ ) ->
-            ( model, Cmd.none )
+        -- -- error, just display the same page as before (Probably could do more here)
+        -- ( GotArticleArticle (Err _), _ ) ->
+        --     ( model, Cmd.none )
 
         ( GotArticleEditor (Ok article), _ ) ->
             ( { model
@@ -687,17 +687,17 @@ update msg model =
         ( GotArticleEditor (Err _), _ ) ->
             ( model, Cmd.none )
 
-        ( GotComments (Ok comments), _ ) ->
-            -- hack job ree
-            ( { model
-                | page = Article { article = model.article, comments = Just comments, newComment = "", user = model.user }
-                , comments = Just comments
-              }
-            , Cmd.none
-            )
+        -- ( GotComments (Ok comments), _ ) ->
+        --     -- hack job ree
+        --     ( { model
+        --         | page = Article { article = model.article, comments = Just comments, newComment = "", user = model.user }
+        --         , comments = Just comments
+        --       }
+        --     , Cmd.none
+        --     )
 
-        ( GotComments (Err _), _ ) ->
-            ( model, Cmd.none )
+        -- ( GotComments (Err _), _ ) ->
+        --     ( model, Cmd.none )
 
         -- get the profile you are going to visit
         ( GotProfile (Ok profile), _ ) ->
@@ -717,21 +717,21 @@ update msg model =
             , Cmd.none
             )
 
-        ( GotProfileArticles (Ok articlesMade), _ ) ->
-            ( { model
-                | page = Profile { profile = model.profile, articlesMade = Just articlesMade, favoritedArticles = Nothing, user = model.user, showMA = True }
-                , articlesMade = Just articlesMade
-              }
-            , Cmd.none
-            )
+        -- ( GotProfileArticles (Ok articlesMade), _ ) ->
+        --     ( { model
+        --         | page = Profile { profile = model.profile, articlesMade = Just articlesMade, favoritedArticles = Nothing, user = model.user, showMA = True }
+        --         , articlesMade = Just articlesMade
+        --       }
+        --     , Cmd.none
+        --     )
 
-        ( GotProfileArticles (Err _), _ ) ->
-            ( { model
-                | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = True }
-                , articlesMade = Nothing
-              }
-            , Cmd.none
-            )
+        -- ( GotProfileArticles (Err _), _ ) ->
+        --     ( { model
+        --         | page = Profile { profile = model.profile, articlesMade = Nothing, favoritedArticles = Nothing, user = model.user, showMA = True }
+        --         , articlesMade = Nothing
+        --       }
+        --     , Cmd.none
+        --     )
 
         -- get the user to go to their settings
         ( GotUser (Ok user), _ ) ->
@@ -834,7 +834,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                Err error ->
+                Err _ ->
                     ( { model
                         | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = True, showTag = False, tagfeed = Nothing, tag = "" }
                       }
@@ -850,7 +850,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                Err error ->
+                Err _ ->
                     ( { model
                         | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = True, tagfeed = Nothing, tag = "" }, tag = ""
                       }

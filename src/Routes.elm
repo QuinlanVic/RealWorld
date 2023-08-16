@@ -73,10 +73,10 @@ routeToUrl route =
             "/article/" ++ slug
 
         Profile username WholeProfile ->
-            "/profile/" ++ username
+            "/profile/" ++ username -- @
 
         Profile username Favorited ->
-            "/profile/" ++ username ++ "/favorites"
+            "/profile/" ++ username ++ "/favorites" -- @
 
         Settings ->
             "/settings"
