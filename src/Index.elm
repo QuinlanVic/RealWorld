@@ -429,9 +429,21 @@ viewLoveButton articlePreview =
         ]
 
 
+bunchOfStyles : List (String, String)
+bunchOfStyles =
+    [ ("font-weight", "300")
+    , ("font-size", ".8rem")
+    , ("padding-top", "0")
+    , ("padding-bottom", "0")
+    ]
+
+inlineStyles : List (String, String) -> List (Html.Attribute msg)
+inlineStyles styleList =
+    [ style styleList ]
+
 viewTag : String -> Html msg
 viewTag tag =
-    a [ Routes.href (Routes.Index (Routes.Tag tag)), class "label label-pill label-default" ] [ text tag ]
+    a [ Routes.href (Routes.Index (Routes.Tag tag)), class "label label-pill label-default", style bunchOfStyles] [ text tag ]
 
 
 maybeImageBio : Maybe String -> String
@@ -442,6 +454,20 @@ maybeImageBio maybeIB =
 
         Nothing ->
             ""
+
+
+viewTagInPreview : String -> Html msg
+viewTagInPreview tag =
+    li [ class "label label-pill label-default" ] [ text tag ]
+    
+
+viewTagsInPreview : List String -> Html Msg
+viewTagsInPreview maybeTags =
+        if (List.isEmpty maybeTags) then
+            span [] []
+        else 
+            ul [ class "tag-list" ]
+                (List.map viewTagInPreview maybeTags)
 
 
 viewarticlePreview : Article -> Html Msg
@@ -479,6 +505,7 @@ viewarticlePreview article =
             [ h1 [] [ text article.title ]
             , p [] [ text article.description ]
             , span [] [ text "Read more..." ]
+            , viewTagsInPreview article.tagList
             ]
         ]
 

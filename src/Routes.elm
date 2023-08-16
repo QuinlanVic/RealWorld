@@ -35,9 +35,9 @@ routes =
     -- Parser.s "#" </> 
     Parser.oneOf
         [ Parser.map (Index Global) (Parser.top) --#/ ? 
-        , Parser.map (Index Yours) (Parser.s "Y") --hmm how do I fix
+        , Parser.map (Index Yours) (Parser.top </> Parser.s "Y") --hmm how do I fix
         , Parser.map (\s -> Index (Tag s)) (Parser.s "T" </> Parser.string)
-        , Parser.map Auth (Parser.s "#" </> Parser.s "register")
+        , Parser.map Auth (Parser.s "register")
         , Parser.map Editor (Parser.s "createpost" </> Parser.string)
         , Parser.map Login (Parser.s "login")
         , Parser.map Article (Parser.s "article" </> Parser.string) --article slug
@@ -61,7 +61,7 @@ routeToUrl route =
             "/T/" ++ tag  
 
         Auth ->
-            "/#/" ++ "register"
+            "/register"
 
         Editor slug ->
             "/createpost/" ++ slug
@@ -93,6 +93,14 @@ match : Url -> Maybe Route
 match url =
     -- match function that uses the routes parser to convert URLs
     Parser.parse routes url
+
+-- match : Url -> Maybe Route
+-- match url =
+--     -- The RealWorld spec treats the fragment like a path.
+--     -- This makes it *literally* the path, so we can proceed
+--     -- with parsing as if it had been a normal path all along.
+--     { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
+--         |> Parser.parse routes
 
 
 -- Parser.parse tries to parse the url’s path field with the provided parser. It returns
