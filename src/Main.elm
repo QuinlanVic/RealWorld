@@ -988,7 +988,7 @@ viewContent model =
             )
 
         Editor editorArticle ->
-            ( "Editor - Conduit"
+            ( "New Article - Conduit"
             , Editor.view editorArticle |> Html.map EditorMessage
             )
 
@@ -998,12 +998,12 @@ viewContent model =
             )
 
         Article articleModel ->
-            ( "Article - Conduit"
+            ( articleModel.article.title ++ " - Conduit"
             , Article.view articleModel |> Html.map ArticleMessage
             )
 
         Profile profileModel ->
-            ( "Profile - Conduit"
+            ( profileModel.profile.username ++ " - Conduit" 
             , Profile.view profileModel |> Html.map ProfileMessage
             )
 
