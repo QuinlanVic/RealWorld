@@ -467,8 +467,9 @@ viewTagsInPreview maybeTags =
         if (List.isEmpty maybeTags) then
             span [] []
         else 
-            ul [ class "tag-list" ]
-                (List.map viewTagInPreview maybeTags)
+            ul [ class "tag-list", style "float" "right"
+               ]
+               (List.map viewTagInPreview maybeTags)
 
 
 viewarticlePreview : Article -> Html Msg
