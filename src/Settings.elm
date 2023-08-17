@@ -1,8 +1,5 @@
 module Settings exposing (Model, Msg(..), init, update, view)
 
--- import Exts.Html exposing (nbsp)
--- import Browser
-
 import Auth exposing (initialModel, trimString, validateEmail, validatePassword, validateUsername)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, type_, value)
@@ -19,7 +16,8 @@ import Routes
 
 
 type alias User =
-    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    -- all of these fields are contained in the response from the server
+    { email : String
     , token : String
     , username : String
     , bio : Maybe String
@@ -67,7 +65,7 @@ baseUrl =
 
 updateUser : Model -> Cmd Msg
 updateUser model =
-    --PUT/user
+    -- PUT/user
     let
         body =
             Http.jsonBody <| Encode.object [ ( "user", encodeUser <| model ) ]
@@ -87,7 +85,7 @@ updateUser model =
 
 
 
--- this is now done in Main when switching pages :)
+-- this is now done in Main now when switching pages :)
 -- getUser : User -> Cmd Msg
 -- getUser user =
 --     --GET logged in user upon loadin
@@ -118,7 +116,7 @@ encodeMaybeString maybeString =
 
 encodeUser : Model -> Encode.Value
 encodeUser model =
-    --used to encode user sent to the server via PUT request body (for registering)
+    -- used to encode user sent to the server
     Encode.object
         [ ( "email", Encode.string model.user.email )
         , ( "password", Encode.string model.password )
@@ -145,12 +143,6 @@ init =
 
 
 
--- fetchUser : Cmd Msg
--- fetchUser =
---     Http.get
---         { url = baseUrl ++ "api/users"
---         , expect = Http.expectJson GotUser userDecoder -- wrap JSON received in GotUser Msg
---         }
 --Update--
 
 
@@ -241,23 +233,11 @@ update message model =
 
 
 
+-- Now that Settings is a component this is no longer needed
 -- subscriptions : User -> Sub Msg
 -- subscriptions user =
 --     Sub.none
 --View--
--- getType : String -> String -> Msg
--- getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)
---     case messageType of
---         "Your Name" -> SaveName
---         "Email" -> SaveEmail
---         "Password" -> SavePassword
---         _ -> Error
--- viewForm : String -> String -> Html Msg
--- viewForm textType textHolder =
---     fieldset [class "form-group"]
---         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder] []
---         ]
--- #373a3c
 
 
 maybeImageBio : Maybe String -> String
@@ -300,7 +280,9 @@ view model =
                                 , button [ class "btn btn-lg btn-primary pull-xs-right", type_ "button", onClick UpdateSettings ] [ text "Update Settings" ]
                                 ]
                             , hr [] []
-                            , button [ class "btn btn-outline-danger", type_ "button", onClick LogOut ] [ text "Or click here to logout." ] --needs to be inside form for events to work!
+
+                            -- needs to be inside form for events to work!
+                            , button [ class "btn btn-outline-danger", type_ "button", onClick LogOut ] [ text "Or click here to logout." ]
                             ]
                         ]
                     ]
@@ -309,10 +291,10 @@ view model =
         , footer []
             [ div [ class "container" ]
                 [ a [ Routes.href (Routes.Index Routes.Global), class "logo-font" ] [ text "conduit" ]
-                , text " " --helps make spacing perfect even though it's not exactly included in the og html version
+                , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] -- external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]
@@ -321,6 +303,7 @@ view model =
 
 
 
+-- Now Settings is a component and no longer an application
 -- main : Program () User Msg
 -- main =
 --     Browser.element
@@ -329,4 +312,3 @@ view model =
 --         , update = update
 --         , subscriptions = subscriptions
 --         }
---Now settings is a component and no longer an application

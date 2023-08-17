@@ -1,26 +1,23 @@
 module Routes exposing (FeedType(..), ProfileDestination(..), Route(..), href, match)
 
--- import Browser
-
 import Html
 import Html.Attributes
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser)
 
- 
+
 type ProfileDestination
     = Favorited
     | WholeProfile
 
+
 type FeedType
     = Global
-    | Yours 
-    | Tag String 
+    | Yours
+    | Tag String
 
-type
-    Route
-    -- URL parsing = extract information from the url
-    -- Going to add strings and stuff that they input to know what specific page to go to :)
+
+type Route
     = Index FeedType
     | Auth
     | Editor String
@@ -32,9 +29,10 @@ type
 
 routes : Parser (Route -> a) a
 routes =
-    -- Parser.s "#" </> 
+    -- URL parsing = extract information from the url
+    -- Parser.s "#" </>
     Parser.oneOf
-        [ Parser.map (Index Global) (Parser.top) --#/ ? 
+        [ Parser.map (Index Global) Parser.top --#/ ?
         , Parser.map (Index Yours) (Parser.top </> Parser.s "Y") --hmm how do I fix
         , Parser.map (\s -> Index (Tag s)) (Parser.s "T" </> Parser.string)
         , Parser.map Auth (Parser.s "register")
@@ -53,17 +51,17 @@ routeToUrl route =
     case route of
         Index Global ->
             "/#/"
-        
-        Index Yours -> 
+
+        Index Yours ->
             -- want this to be the same as above one
             "/Y"
 
-        Index (Tag tag) -> 
+        Index (Tag tag) ->
             -- want this to be same as top one
-            "/T/" ++ tag  
+            "/T/" ++ tag
 
-        Auth -> 
-            -- need /#/ before all of these 
+        Auth ->
+            -- need /#/ before all of these
             "/register"
 
         Editor slug ->
@@ -77,11 +75,11 @@ routeToUrl route =
 
         Profile username WholeProfile ->
             -- @ before username
-            "/profile/" ++ username 
+            "/profile/" ++ username
 
         Profile username Favorited ->
             -- @ before username
-            "/profile/" ++ username ++ "/favorites" 
+            "/profile/" ++ username ++ "/favorites"
 
         Settings ->
             "/settings"
@@ -97,7 +95,13 @@ href route =
 match : Url -> Maybe Route
 match url =
     -- match function that uses the routes parser to convert URLs
+    -- Parser.parse tries to parse the url’s path field with the provided parser.
+    -- It returns a Maybe because the parser may not match the current path.
+    -- In this case, if the parser matches, then Parser.parse will return a Route constructor inside Just.
+    -- Otherwise, it will return Nothing.
     Parser.parse routes url
+
+
 
 -- match : Url -> Maybe Route
 -- match url =
@@ -106,9 +110,3 @@ match url =
 --     -- with parsing as if it had been a normal path all along.
 --     { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
 --         |> Parser.parse routes
-
-
--- Parser.parse tries to parse the url’s path field with the provided parser. It returns
--- a Maybe because the parser may not match the current path. In this case, if
--- the parser matches, then Parser.parse will return a Route constructor inside Just.
--- Otherwise, it will return Nothing.

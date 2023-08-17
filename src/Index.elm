@@ -1,8 +1,5 @@
 module Index exposing (Article, Feed, Model, Msg(..), Tags, init, tagDecoder, update, view)
 
--- import Exts.Html exposing (nbsp)
--- import Browser
-
 import Article exposing (Msg(..))
 import Auth exposing (baseUrl)
 import Editor exposing (authorDecoder)
@@ -21,7 +18,7 @@ import Routes
 
 
 type alias Article =
-    --whole article
+    -- whole article
     { slug : String
     , title : String
     , description : String
@@ -36,7 +33,8 @@ type alias Article =
 
 
 type alias User =
-    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    -- all of these fields are contained in the response from the server
+    { email : String
     , token : String
     , username : String
     , bio : Maybe String
@@ -53,14 +51,14 @@ type alias Tags =
 
 
 type alias Model =
-    { globalfeed : Maybe Feed --articlePreview may exist or not lol
+    { globalfeed : Maybe Feed -- articlePreview may exist or not lol
     , yourfeed : Maybe Feed
-    , tags : Maybe Tags --tag may exist or not hehe
+    , tags : Maybe Tags -- tag may exist or not hehe
     , user : User
     , showGF : Bool
     , showTag : Bool
     , tagfeed : Maybe Feed
-    , tag : String 
+    , tag : String
     }
 
 
@@ -92,17 +90,8 @@ encodeArticle article =
         [ ( "slug", Encode.string article.slug ) ]
 
 
-initialModel : Model
-initialModel =
-    { globalfeed = Just [ articlePreview1, articlePreview2 ]
-    , yourfeed = Just []
-    , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
-    , user = defaultUser
-    , showGF = True
-    , showTag = False
-    , tagfeed = Just []
-    , tag = ""
-    }
+
+-- SERVER CALLS --
 
 
 fetchGlobalArticles : Cmd Msg
@@ -222,25 +211,23 @@ unfavoriteArticleYF model article =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    -- Cmd.batch [ fetchGlobalArticles, fetchTags ] (Done in Main now)
-    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] )
+
+-- END OF SERVER CALLS --
 
 
 author1 : Editor.Author
 author1 =
+    -- default stuff for testing at first and in case things break
     { username = "Eric Simons"
     , bio = Just ""
     , image = Just "http://i.imgur.com/Qr71crq.jpg"
     , following = False
-
-    -- , authorpage = "profileelm.html"
     }
 
 
 articlePreview1 : Article
 articlePreview1 =
+    -- default stuff for testing at first and in case things break
     { slug = "slug1"
     , title = "How to build webapps that scale"
     , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
@@ -258,17 +245,17 @@ articlePreview1 =
 
 author2 : Editor.Author
 author2 =
+    -- default stuff for testing at first and in case things break
     { username = "Albert Pai"
     , bio = Just ""
     , image = Just "http://i.imgur.com/N4VcUeJ.jpg"
     , following = False
-
-    -- , authorpage = "profileelm.html"
     }
 
 
 articlePreview2 : Article
 articlePreview2 =
+    -- default stuff for testing at first and in case things break
     { slug = "slug2"
     , title = "The song you won't ever stop singing. No matter how hard you try."
     , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
@@ -286,12 +273,32 @@ articlePreview2 =
 
 defaultUser : User
 defaultUser =
+    -- default stuff for testing at first and in case things break
     { email = ""
     , token = ""
     , username = ""
     , bio = Just ""
     , image = Just ""
     }
+
+
+initialModel : Model
+initialModel =
+    { globalfeed = Just [ articlePreview1, articlePreview2 ]
+    , yourfeed = Just []
+    , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
+    , user = defaultUser
+    , showGF = True
+    , showTag = False
+    , tagfeed = Just []
+    , tag = ""
+    }
+
+
+init : ( Model, Cmd Msg )
+init =
+    -- probably only place where these calls are done and needed
+    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags ] )
 
 
 
@@ -311,38 +318,11 @@ type Msg
     | GotArticleLoadYF (Result Http.Error Article)
 
 
-
--- toggleLike : Article -> Article
--- toggleLike article =
---     -- favoritesCount should update automatically when the server returns the new Article!!!!
---     if article.favorited then
---         -- favoritesCount = article.favoritesCount - 1
---         { article | favorited = not article.favorited }
---     else
---         -- , favoritesCount = article.favoritesCount + 1
---         { article | favorited = not article.favorited }
--- updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
--- updateArticleBySlug updateArticle article feed =
---     List.map
---         (\currArticle ->
---             if currArticle.slug == article.slug then
---                 updateArticle currArticle
---             else
---                 currArticle
---         )
---         feed
--- updatearticlePreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
--- updatearticlePreviewLikes updateArticle article maybeFeed =
---     Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ToggleLike article ->
-            -- how to distinguish between yourfeed and globalfeed articles? (Don't, do both (FOR NOW...))
             if article.favorited then
-                --  ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, unfavoriteArticle model article )
                 ( model
                 , if model.showGF then
                     unfavoriteArticle model article
@@ -352,7 +332,6 @@ update msg model =
                 )
 
             else
-                -- ( { model | globalfeed = updatearticlePreviewLikes toggleLike article model.globalfeed, yourfeed = updatearticlePreviewLikes toggleLike article model.yourfeed }, favoriteArticle model article )
                 ( model
                 , if model.showGF then
                     favoriteArticle model article
@@ -361,7 +340,6 @@ update msg model =
                     favoriteArticleYF model article
                 )
 
-        -- need lazy execution?
         GotGlobalFeed (Ok globalfeed) ->
             ( { model | globalfeed = Just globalfeed, showGF = True }, Cmd.none )
 
@@ -407,6 +385,7 @@ update msg model =
 
 
 
+-- Not that Index is a component this is not needed
 -- subscriptions : Model -> Sub Msg
 -- subscriptions articles =
 --     Sub.none
@@ -429,19 +408,10 @@ viewLoveButton articlePreview =
         ]
 
 
--- bunchOfStyles : List (String, String)
--- bunchOfStyles =
---     [ ("font-weight", "300")
---     , ("font-size", ".8rem")
---     , ("padding-top", "0")
---     , ("padding-bottom", "0")
---     ]
-
-
 viewTag : String -> Html msg
 viewTag tag =
-    a [ Routes.href (Routes.Index (Routes.Tag tag)), class "label label-pill label-default" ] 
-      [ text tag ]
+    a [ Routes.href (Routes.Index (Routes.Tag tag)), class "label label-pill label-default" ]
+        [ text tag ]
 
 
 maybeImageBio : Maybe String -> String
@@ -456,20 +426,20 @@ maybeImageBio maybeIB =
 
 viewTagInPreview : String -> Html msg
 viewTagInPreview tag =
-    -- css skill issue :(
-    li [ class "tag-default tag-pill tag-outline"
-       ] 
-       [ text tag ]
-    
+    -- css skill issue :( (fixed?)
+    li [ class "tag-default tag-pill tag-outline" ]
+        [ text tag ]
+
 
 viewTagsInPreview : List String -> Html Msg
 viewTagsInPreview maybeTags =
-        if (List.isEmpty maybeTags) then
-            span [] []
-        else 
-            ul [ class "tag-list", style "float" "right"
-               ]
-               (List.map viewTagInPreview maybeTags)
+    -- display tags on far right in line with "Read more..."
+    if List.isEmpty maybeTags then
+        span [] []
+
+    else
+        ul [ class "tag-list", style "float" "right" ]
+            (List.map viewTagInPreview maybeTags)
 
 
 viewarticlePreview : Article -> Html Msg
@@ -500,14 +470,14 @@ viewarticlePreview article =
         , a
             [ Routes.href (Routes.Article article.slug)
 
-            --   href ""
+            --  href ""
             -- , onClick (FetchArticleIndex article.slug)
             , class "preview-link"
             ]
             [ h1 [] [ text article.title ]
             , p [] [ text article.description ]
             , span [] [ text "Read more..." ]
-            , viewTagsInPreview article.tagList
+            , viewTagsInPreview article.tagList -- show tags in preview now
             ]
         ]
 
@@ -522,10 +492,10 @@ viewArticles maybeFeed =
 
             else
                 div []
+                    -- ul and li = weird dot :)
                     (List.map viewarticlePreview feed)
 
         Nothing ->
-            --put something nice here :)
             div [ class "post-preview" ]
                 [ text "Loading feed :)" ]
 
@@ -778,10 +748,10 @@ view model =
         , footer []
             [ div [ class "container" ]
                 [ a [ Routes.href (Routes.Index Routes.Global), class "logo-font" ] [ text "conduit" ]
-                , text " " --helps make spacing perfect even though it's not exactly included in the og html version
+                , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] -- external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]
@@ -790,6 +760,7 @@ view model =
 
 
 
+-- Now that Index is a component this is not needed
 -- main : Program () Model Msg
 -- main =
 --     Browser.element

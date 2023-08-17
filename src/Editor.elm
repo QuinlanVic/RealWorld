@@ -15,7 +15,7 @@ import Routes
 
 
 type alias Author =
-    --inside article what we need to fetch
+    -- inside article what we need to fetch
     { username : String
     , bio : Maybe String
     , image : Maybe String
@@ -24,7 +24,7 @@ type alias Author =
 
 
 type alias Article =
-    --whole article
+    -- whole article
     { slug : String
     , title : String
     , description : String
@@ -39,7 +39,8 @@ type alias Article =
 
 
 type alias User =
-    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    --all of these fields are contained in the response from the server
+    { email : String
     , token : String
     , username : String
     , bio : Maybe String
@@ -105,7 +106,7 @@ updateArticle model =
 
 encodeArticle : Article -> Encode.Value
 encodeArticle article =
-    --used to encode Article sent to the server via Article request body (for creating)
+    -- used to encode Article sent to the server via Article request body (for creating)
     Encode.object
         [ ( "title", Encode.string article.title )
         , ( "description", Encode.string article.description )
@@ -116,7 +117,8 @@ encodeArticle article =
 
 encodeArticleUpdate : Article -> Encode.Value
 encodeArticleUpdate article =
-    --used to encode Article sent to the server via Article request body (for updating)
+    -- used to encode Article sent to the server via Article request body (for updating)
+    -- does not include taglist for some reason according to their specs
     Encode.object
         [ ( "title", Encode.string article.title )
         , ( "description", Encode.string article.description )
@@ -206,7 +208,7 @@ init =
 
 
 type Msg
-    = SaveTitle String --maybe string
+    = SaveTitle String
     | SaveDescription String
     | SaveBody String
     | SaveTags String
@@ -262,7 +264,6 @@ update message model =
         SaveTitle title ->
             ( { model | article = updateTitle model.article title, titleError = validateTitle title }, Cmd.none )
 
-        --update record syntax
         SaveDescription description ->
             ( { model | article = updateDescription model.article description, descError = validateTitle description }, Cmd.none )
 
@@ -313,6 +314,7 @@ isFormValid model =
 
 
 
+-- Editor is now a component so this is not needed
 -- subscriptions : Article -> Sub Msg
 -- subscriptions article =
 --     Sub.none
@@ -358,10 +360,10 @@ view model =
         , footer []
             [ div [ class "container" ]
                 [ a [ Routes.href (Routes.Index Routes.Global), class "logo-font" ] [ text "conduit" ]
-                , text " " --helps make spacing perfect even though it's not exactly included in the og html version
+                , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] -- external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]
@@ -370,6 +372,7 @@ view model =
 
 
 
+-- Now editor is a component and no longer an application
 -- main : Program () Article Msg
 -- main =
 --     Browser.element
@@ -378,4 +381,3 @@ view model =
 --         , update = update
 --         , subscriptions = subscriptions
 --         }
--- Now editor is a component and no longer an application

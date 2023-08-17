@@ -1,8 +1,5 @@
 module Article exposing (Article, Comment, Comments, Model, Msg(..), articleDecoder, commentDecoder, init, initialModel, update, view)
 
--- import Browser
--- import Html.Lazy exposing (lazy)
-
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, rows, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -27,7 +24,8 @@ type alias Author =
 
 
 type alias User =
-    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    --all of these fields are contained in the response from the server
+    { email : String
     , token : String
     , username : String
     , bio : Maybe String
@@ -47,9 +45,6 @@ type alias Article =
     , favorited : Bool
     , favoritesCount : Int
     , author : Author
-
-    -- , comments : List String
-    -- , newComment : String
     }
 
 
@@ -71,13 +66,12 @@ type alias Model =
     , comments : Maybe Comments
     , newComment : String
     , user : User
-
-    -- , author : Author
     }
 
 
 defaultArticle : Article
 defaultArticle =
+    -- default stuff for testing at first and for if something breaks
     { slug = "slug1"
     , title = "How to build webapps that scale"
     , description = ""
@@ -88,14 +82,12 @@ defaultArticle =
     , favorited = False
     , favoritesCount = 29
     , author = defaultAuthor
-
-    -- , comments = [ "With supporting text below as a natural lead-in to additional content." ]
-    -- , newComment = ""
     }
 
 
 defaultAuthor : Author
 defaultAuthor =
+    -- default stuff for testing at first and for if something breaks
     { username = "Eric Simons"
     , bio = Just ""
     , image = Just "http://i.imgur.com/Qr71crq.jpg"
@@ -105,6 +97,7 @@ defaultAuthor =
 
 defaultUser : User
 defaultUser =
+    -- default stuff for testing at first and for if something breaks
     { email = ""
     , token = ""
     , username = ""
@@ -115,6 +108,7 @@ defaultUser =
 
 defaultComment : Comment
 defaultComment =
+    -- default stuff for testing at first and for if something breaks
     { id = 0
     , createdAt = "Dec 29th"
     , updatedAt = ""
@@ -125,9 +119,8 @@ defaultComment =
 
 initialModel : Model
 initialModel =
+    -- filled with default stuff for testing at first and for if something breaks
     { article = defaultArticle
-
-    -- , author = defaultAuthor
     , comments = Just [ defaultComment ]
     , newComment = ""
     , user = defaultUser
@@ -190,6 +183,7 @@ encodeComment comment =
 
 encodeMaybeString : Maybe String -> Encode.Value
 encodeMaybeString maybeString =
+    -- image and bio can either be null or a string and we have to encode accordingly
     case maybeString of
         Just string ->
             Encode.string string
@@ -200,7 +194,7 @@ encodeMaybeString maybeString =
 
 encodeAuthor : Author -> Encode.Value
 encodeAuthor author =
-    --used to encode user sent to the server via PUT request body (for registering)
+    -- used to encode author sent to the server
     Encode.object
         [ ( "username", Encode.string author.username )
         , ( "bio", encodeMaybeString author.bio )
@@ -293,6 +287,7 @@ unfollowUser model author =
 
 
 
+-- Done in main now I believe
 -- editArticle : Article -> Cmd Msg
 -- editArticle article =
 --     --PUT/articles/slug
@@ -410,7 +405,7 @@ type Msg
     | DeleteComment Int
     | GotArticle (Result Http.Error Article)
     | GotAuthor (Result Http.Error Author)
-      -- | EditArticle
+      -- | EditArticle -- done in main now
     | DeleteArticle
     | GotComments (Result Http.Error Comments)
     | GotComment (Result Http.Error Comment)
@@ -421,6 +416,7 @@ type Msg
 
 addComment : Comment -> Maybe Comments -> Maybe Comments
 addComment newComment oldComments =
+    -- add a new comment
     case oldComments of
         Just comments ->
             Just (List.append comments [ newComment ])
@@ -432,44 +428,18 @@ addComment newComment oldComments =
 checkNewComment : String -> Bool
 checkNewComment newComment =
     let
+        --remove trailing spaces from the comment
         comment =
             String.trim newComment
-
-        --remove trailing spaces from the comment
     in
     case comment of
+        -- invalid comment as it is empty
         "" ->
-            -- invalid comment as it is empty
             False
 
+        -- add new comment
         _ ->
-            -- add new comment
             True
-
-   
-
--- toggleLike : Article -> Article
--- toggleLike article =
---     -- favoritesCount should update automatically when the server returns the new Article!!!!
---     if article.favorited then
---         -- favoritesCount = article.favoritesCount - 1
---         { article | favorited = not article.favorited }
---     else
---         -- , favoritesCount = article.favoritesCount + 1
---         { article | favorited = not article.favorited }
--- toggleFollow : Author -> Author
--- toggleFollow author =
---     if author.following then
---         { author | following = not author.following }
---     else
---         { author | following = not author.following }
--- updateArticle : (Article -> Article) -> Article -> Article
--- updateArticle makeChanges article =
---     --only one article so we do not have to worry about getting a specific one :)
---     makeChanges article
--- updateAuthor : (Author -> Author) -> Author -> Author
--- updateAuthor makeChanges author =
---     makeChanges author
 
 
 updateAuthor : Article -> Author -> Article
@@ -481,21 +451,19 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         ToggleLike ->
+            -- like and unlike article
             if model.article.favorited then
-                -- ( { model | article = updateArticle toggleLike model.article }, favoriteArticle model.article )
                 ( model, unfavoriteArticle model model.article )
 
             else
-                -- ( { model | article = updateArticle toggleLike model.article }, unfavoriteArticle model.article )
                 ( model, favoriteArticle model model.article )
 
         ToggleFollow ->
+            -- follow and unfollow author
             if model.article.author.following then
-                -- ( { model | author = updateAuthor toggleFollow model.author }, followUser model.author )
                 ( model, unfollowUser model model.article.author )
 
             else
-                -- ( { model | author = updateAuthor toggleFollow model.author }, unfollowUser model.author )
                 ( model, followUser model model.article.author )
 
         UpdateComment comment ->
@@ -503,6 +471,7 @@ update message model =
             ( { model | newComment = comment }, Cmd.none )
 
         SaveComment comment ->
+            -- save a new comment
             if checkNewComment comment then
                 ( model, createComment model comment )
 
@@ -515,17 +484,20 @@ update message model =
             ( model, deleteComment model id )
 
         GotArticle (Ok article) ->
+            -- we get an article from the server and update the model
             ( { model | article = article }, Cmd.none )
 
         GotArticle (Err _) ->
             ( model, Cmd.none )
 
         GotAuthor (Ok author) ->
+            -- we get an author from the server and update the model
             ( { model | article = updateAuthor model.article author }, Cmd.none )
 
         GotAuthor (Err _) ->
             ( model, Cmd.none )
 
+        -- done in main now :)
         -- EditArticle ->
         --     --send to Editor page with appropriate article information
         --     ( model, editArticle model.article )
@@ -534,6 +506,7 @@ update message model =
             ( model, deleteArticle model )
 
         GotComments (Ok comments) ->
+            -- got comments from the server and update the model
             ( { model | comments = Just comments }, Cmd.none )
 
         GotComments (Err _) ->
@@ -560,6 +533,7 @@ update message model =
 
 
 
+-- no longer needed as component?
 -- subscriptions : Model -> Sub Msg
 -- subscriptions model =
 --     Sub.none
@@ -568,11 +542,6 @@ update message model =
 
 viewFollowButton : Model -> Html Msg
 viewFollowButton model =
-    -- , button [class "btn btn-sm btn-outline-secondary"]
-    -- [ i [class "ion-plus-round"][]
-    -- , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
-    -- , span [class "counter"] [text "(10)"]
-    -- ]
     let
         buttonClass =
             if model.article.author.following then
@@ -600,11 +569,6 @@ viewFollowButton model =
 
 viewLoveButton : Model -> Html Msg
 viewLoveButton model =
-    -- , button [class "btn btn-sm btn-outline-primary"]
-    -- [i [class "ion-heart"] []
-    -- , text (nbsp ++ nbsp ++ "  Favorite Post ")
-    -- , span [class "counter"] [text "(29)"]
-    -- ]
     let
         buttonClass =
             if model.article.favorited then
@@ -634,7 +598,6 @@ viewEditArticleButtons slug =
     -- show the buttons to edit/delete an article
     span [ class "ng-scope" ]
         [ a [ class "btn btn-outline-secondary btn-sm", Routes.href (Routes.Editor slug) ]
-            --need to give user? Or is done in main nice :)
             [ i [ class "ion-edit" ] [], text " Edit Article " ]
         , text " "
         , button [ class "btn btn-outline-danger btn-sm", onClick DeleteArticle ]
@@ -727,7 +690,6 @@ viewComment : Model -> Comment -> Html Msg
 viewComment model comment =
     --display a comment
     div [ class "card" ]
-        --(div)
         [ div [ class "card-block" ]
             [ p [ class "card-text" ] [ text comment.body ]
             ]
@@ -748,7 +710,15 @@ viewComment model comment =
             , text " "
             , span [ class "date-posted" ] [ text (formatDate comment.createdAt) ]
             , span [ class "mod-options" ]
-                [ i [ if (model.user.username == comment.author.username) then class "ion-trash-a" else class "", onClick (DeleteComment comment.id) ] []
+                [ i
+                    [ if model.user.username == comment.author.username then
+                        class "ion-trash-a"
+
+                      else
+                        class ""
+                    , onClick (DeleteComment comment.id)
+                    ]
+                    []
                 ]
             ]
         ]
@@ -766,20 +736,6 @@ viewCommentList model maybeComments =
             text ""
 
 
-
--- onEnter : msg -> Attribute msg
--- onEnter msg =
---     keyCode
---         |> Decode.andThen
---             (\key ->
---                 if key == 13 then
---                     Decode.succeed msg
---                 else
---                     Decode.fail "Not enter"
---             )
---         |> on "keyup"
-
-
 viewComments : Model -> Html Msg
 viewComments model =
     --display all the comments and a place for adding a new comment
@@ -789,11 +745,7 @@ viewComments model =
             , form [ class "card comment-form" ]
                 [ div [ class "card-block" ]
                     [ textarea [ class "form-control", placeholder "Write a comment...", rows 3, value model.newComment, onInput UpdateComment ] [] ]
-
-                --add enter on enter and shift enter to move to next row :) (otherwise input) onEnter UpdateComment
                 , div [ class "card-footer" ]
-                    -- this has to be the user's image!
-                    -- onClick redirect to user's own profile
                     [ img [ src (maybeImageBio model.user.image), class "comment-author-img" ] []
                     , button [ class "btn btn-sm btn-primary", disabled (String.isEmpty model.newComment), type_ "button", onClick (SaveComment model.newComment) ] [ text " Post Comment" ]
                     ]
@@ -809,81 +761,9 @@ viewArticle model =
             [ div [ class "col-md-12" ]
                 [ div []
                     [ p [] [ text model.article.body ]
-                    ]
 
-                --   p [] [ text """Web development technologies have evolved at an incredible clip over the past few years.
-                --     We've gone from rudimentary DOM manipulation with libraries like jQuery to supercharged web
-                --     applications organized & powered by elegant MV* based frameworks like AngularJS.
-                --     Pair this with significant increases in browser rendering speeds, and it is now easier than ever
-                --     before to build production quality applications on top of Javascript, HTML5, and CSS3.""" ]
-                -- , p [] [ text """While these advances have been incredible, they are only just starting to affect the clear
-                --     platform of the future: mobile. For years, mobile rendering speeds were atrocious, and the MVC frameworks
-                --     & UI libraries provided by iOS and Android were far superior to writing mobile apps using web technologies.
-                --     There were also some very public failures -- Facebook famously wrote their first iOS app in 2011 using HTML5 but
-                --     ended up scrapping it due to terrible performance.""" ]
-                -- , p [] [ text """For years now, hybrid apps have been mocked and jeered by
-                --     native app developers for being clunky and ugly, having subpar performance, and having no advantages over native apps.
-                --     While these may have been valid reasons in 2011, they are now virtually baseless, thanks to a collection of new technologies
-                --     that have emerged over the past two years. With these technologies, you can design, build, and deploy robust mobile apps faster
-                --     than you could with native technologies, all while incurring little to no app performance penalties. This is thanks in large part
-                --     to super fast mobile browser rendering speeds and better JavaScript performance. This course is designed to teach you how to effectively
-                --     use these new technologies to build insanely great mobile apps.""" ]
-                -- , p [] [ text """Without further ado, we'd like to welcome you to the future of
-                --     mobile app development, freed from the shackles of native languages & frameworks.
-                --     Let's learn what the new mobile stack consists of and how it works.""" ]
-                -- , h2 [ id "introducing-ionic" ] [ text "Introducing Ionic." ]
-                -- , p []
-                --     [ text """Before, building hybrid apps was a chore -- not because it was hard to build web pages, but because it was hard to build full-fledged web applications.
-                --             With AngularJS, that has changed. As a result, Angular became the core innovation that made hybrid apps possible. The bright folks at Drifty were some of the
-                --             first to realize this and subsequently created the """
-                --     , a [ href "http://ionicframework.com/", target "_blank" ] [ text "Ionic Framework " ]
-                --     , text "to bridge the gap between AngularJS web apps and hybrid mobile apps. Since launching a little over a year ago, the Ionic Framework has "
-                --     , a [ href "http://www.google.com/trends/explore?hl=en-US&q=ionic+framework&cmpt=q&tz&tz&content=1", target "_blank" ] [ text "quickly grown in popularity amongst developers" ]
-                --     , text " and their "
-                --     , a [ href "https://github.com/driftyco/ionic", target "_blank" ] [ text "main Github repo" ]
-                --     , text " has over 13K stars as of this writing."
-                --     ]
-                -- , p []
-                --     [ text "Ionic provides similar functionality for AngularJS that "
-                --     , a [ href "https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIKit_Framework/", target "_blank" ] [ text "iOS UIKit" ]
-                --     , text " provides for Obj-C/Swift, and that "
-                --     , a [ href "http://developer.android.com/guide/topics/ui/overview.html", target "_blank" ] [ text "Android UI elements" ]
-                --     , text """ provides for Java. Core mobile UI paradigms are available to developers out of the box, which means that developers can focus on building apps,
-                --         instead of common user interface elements. Some examples of these include """
-                --     , a [ href "http://ionicframework.com/docs/api/directive/ionList/", target "_blank" ] [ text "list views" ]
-                --     , text ", "
-                --     , a [ href "http://ionicframework.com/docs/api/directive/ionNavView/", target "_blank" ] [ text "stateful navigation" ]
-                --     , text ", "
-                --     , a [ href "http://ionicframework.com/docs/nightly/api/directive/ionTabs/", target "_blank" ] [ text "tab bars" ]
-                --     , text ", "
-                --     , a [ href "http://ionicframework.com/docs/api/service/$ionicActionSheet/", target "_blank" ] [ text "action sheets" ]
-                --     , text ", and "
-                --     , a [ href "http://ionicframework.com/docs/nightly/api/", target "_blank" ] [ text "so much more" ]
-                --     , text "."
-                --     ]
-                -- , p [] [ text """Ionic is a great solution for creating both mobile web apps and native apps. The first sections of this course will go over structuring Ionic apps that can run on the web.
-                --     Then we will cover packaging that same exact code into a native app. We will be using a build tool called Cordova for packaging our app. For those unfamiliar with Cordova, it is
-                --     the open source core of Adobe's proprietary PhoneGap build system. Adobe describes it with this analogy: Cordova is to PhoneGap as Blink is to Chrome. Basically, PhoneGap is
-                --     Cordova plus a whole bunch of other Adobe stuff.""" ]
-                -- , p [] [ text """The folks at Ionic have done a fantastic job of making Cordova super easy to use by directly wrapping it in their 'ionic' command line tool (don't worry, we'll cover this later).
-                --     Just remember that Cordova is something that is running under the hood of your hybrid app that you will rarely need to worry about, but we will cover some common interactions with it in this course.""" ]
-                -- , h2 [ id "what-we-re-going-to-build" ] [ text "What we're going to build" ] --&#39
-                -- , p []
-                --     [ text """We will be building an app called Songhop, a "Tinder for music" app that allows you to listen to 30-second song samples and favorite the ones you like. This is based on a real
-                --     Ionic/Cordova powered app we built that exists on the """
-                --     , a [ href "https://itunes.apple.com/us/app/songhop/id899245239?mt=8", target "_blank" ] [ text "iOS App Store" ]
-                --     , text """ -- feel free to download it to get a feeling for what Ionic is capable of (and rate it 5 stars :). It's also worth noting that it only took us a month to build the Songhop app that's
-                --         on the App Store, so that should give you an idea of how fast you can build & iterate using Ionic / Cordova."""
-                --     ]
-                -- , p []
-                --     [ strong []
-                --         [ text "You can also see a "
-                --         , a [ href "https://ionic-songhop.herokuapp.com", target "_blank" ] [ text "live demo of the completed application we'll be building here" ]
-                --         , text " (resize your browser window to the size of a phone for the best experience)."
-                --         ]
-                --     ]
-                -- , p [] [ text """We'll be covering a wide variety of topics in this course: scaffolding a new application, testing it in the emulator, installing native plugins for manipulating audio &
-                --     files, swipe gestures for our interface, installing the app on your own device, deploying to the iOS & Android app stores, and so much more.""" ]
+                    -- could add tags here?
+                    ]
                 ]
             ]
         , hr [] []
@@ -919,50 +799,6 @@ viewArticle model =
                 ]
             ]
         , viewComments model
-
-        -- , div [class "row"]
-        --     [div [class "col-md-8 col-md-offset-2"]
-        --         [ div [class "card"] --function to do these 2
-        --             [ div [class "card-block"]
-        --                 [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
-        --                 ]
-        --             , div [class "card-footer"]
-        --                 [ a [href "profile.html", class "comment-author"]
-        --                     [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-        --                 , text (nbsp ++ nbsp ++ nbsp)
-        --                 , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
-        --                 , text nbsp
-        --                 , span [class "date-posted"] [text "Dec 29th"]
-        --                 ]
-        --             ]
-        --         , div [class "card"]
-        --             [div [class "card-block"]
-        --                 [p [class "card-text"] [text "With supporting text below as a natural lead-in to additional content."]
-        --                 ]
-        --             , div [class "card-footer"]
-        --                 [ a [href "profile.html", class "comment-author"]
-        --                     [img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []]
-        --                 , text (nbsp ++ nbsp ++ nbsp)
-        --                 , a [href "profile.html", class "comment-author"] [text "Jacob Schmidt"]
-        --                 , text nbsp
-        --                 , span [class "date-posted"] [text "Dec 29th"]
-        --                 , span [class "mod-options"]
-        --                     [ i [class "ion-edit"] []
-        --                     , text nbsp
-        --                     , i [class "ion-trash-a"] []
-        --                     ]
-        --                 ]
-        --             ]
-        --         , form [class "card comment-form"]
-        --             [ div [class "card-block"]
-        --                 [textarea [class "form-control", placeholder "Write a comment...", rows 3] []]
-        --             , div [class "card-footer"]
-        --                 [ img [src "http://i.imgur.com/Qr71crq.jpg", class "comment-author-img"] []
-        --                 , button [class "btn btn-sm btn-primary"] [text " Post Comment"]
-        --                 ]
-        --             ]
-        --         ]
-        --     ]
         ]
 
 
@@ -1009,10 +845,10 @@ view model =
         , footer []
             [ div [ class "container" ]
                 [ a [ Routes.href (Routes.Index Routes.Global), class "logo-font" ] [ text "conduit" ] -- gohome
-                , text " " --helps make spacing perfect even though it's not exactly included in the og html version
+                , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] -- external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]
@@ -1021,6 +857,7 @@ view model =
 
 
 
+--Now article is a component and no longer an application
 -- main : Program () Model Msg
 -- main =
 --     -- view initialModel
@@ -1030,4 +867,3 @@ view model =
 --         , update = update
 --         , subscriptions = subscriptions
 --         }
---Now article is a component and no longer an application

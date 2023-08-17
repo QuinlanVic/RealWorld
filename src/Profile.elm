@@ -1,7 +1,4 @@
-module Profile exposing (Feed, Model, Msg(..), ProfileType, articleDecoder, fetchProfileArticles, fetchFavoritedArticles, init, profileDecoder, update, view)
-
--- import Exts.Html exposing (nbsp)
--- import Browser
+module Profile exposing (Feed, Model, Msg(..), ProfileType, articleDecoder, fetchFavoritedArticles, fetchProfileArticles, init, profileDecoder, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
@@ -26,7 +23,8 @@ type alias ProfileType =
 
 
 type alias User =
-    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    -- all of these fields are contained in the response from the server
+    { email : String
     , token : String
     , username : String
     , bio : Maybe String
@@ -35,7 +33,7 @@ type alias User =
 
 
 type alias Article =
-    --whole article
+    -- whole article
     { slug : String
     , title : String
     , description : String
@@ -54,7 +52,6 @@ type alias Feed =
 
 
 type alias Model =
-    --put Articles inside? (Feed = List Article) & add Profile to basic Model :)
     { profile : ProfileType
     , articlesMade : Maybe Feed
     , favoritedArticles : Maybe Feed
@@ -63,18 +60,9 @@ type alias Model =
     }
 
 
-
--- defaultProfile : ProfileType
--- defaultProfile =
---     { username = "Eric Simons"
---     , bio = Just " Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games"
---     , image = Just "http://i.imgur.com/Qr71crq.jpg"
---     , following = False
---     }
-
-
 defaultProfile : ProfileType
 defaultProfile =
+    -- default stuff for testing at first and if something breaks
     { username = ""
     , bio = Just ""
     , image = Just ""
@@ -84,6 +72,7 @@ defaultProfile =
 
 defaultUser : User
 defaultUser =
+    -- default stuff for testing at first and if something breaks
     { email = ""
     , token = ""
     , username = ""
@@ -94,6 +83,7 @@ defaultUser =
 
 articlePreview1 : Article
 articlePreview1 =
+    -- default stuff for testing at first and if something breaks
     { slug = "slug1"
     , title = "How to build webapps that scale"
     , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
@@ -111,6 +101,7 @@ articlePreview1 =
 
 articlePreview2 : Article
 articlePreview2 =
+    -- default stuff for testing at first and if something breaks
     { slug = "slug2"
     , title = "The song you won't ever stop singing. No matter how hard you try."
     , description = """In my demo, the holy grail layout is nested inside a document, so there's no body or main tags like shown above. Regardless, we're interested in the class names 
@@ -173,7 +164,7 @@ encodeMaybeString maybeString =
 
 encodeProfile : ProfileType -> Encode.Value
 encodeProfile profile =
-    --used to encode user sent to the server via PUT request body (for registering)
+    -- used to encode profile sent to the server
     Encode.object
         [ ( "username", Encode.string profile.username )
         , ( "bio", encodeMaybeString profile.bio )
@@ -189,9 +180,9 @@ encodeArticle article =
 
 
 
+-- done in main now
 -- fetchProfile : String -> Cmd Msg
 -- fetchProfile username =
---     -- done in main now
 --     -- need to fetch the profile
 --     Http.get
 --         { url = baseUrl ++ "api/profiles/" ++ username
@@ -340,8 +331,7 @@ unfollowUser model profile =
 init : ( Model, Cmd Msg )
 init =
     -- () -> (No longer need unit flag as it's no longer an application but a component)
-    -- get a specific profile ( fetchProfile username ) in Main and then
-    -- fetch the articles that they have made here
+    -- get a specific profile ( fetchProfile username ) and the articles they have made in Main
     ( initialModel, Cmd.none )
 
 
@@ -352,7 +342,6 @@ baseUrl =
 
 
 -- Update --
---how do you get a specific profile after a user clicks on their page
 
 
 type Msg
@@ -367,46 +356,11 @@ type Msg
     | GotArticleLoadFavArticles (Result Http.Error Article)
 
 
-
--- toggleFollow : ProfileType -> ProfileType
--- toggleFollow author =
---     if author.following then
---         { author | following = not author.following }
---     else
---         { author | following = not author.following }
--- toggleLike : Article -> Article
--- toggleLike article =
---     -- favoritesCount should update automatically when the server returns the new Article!!!!
---     if article.favorited then
---         -- favoritesCount = article.favoritesCount - 1
---         { article | favorited = not article.favorited }
---     else
---         -- favoritesCount = article.favoritesCount + 1
---         { article | favorited = not article.favorited }
--- updateAuthor : (ProfileType -> ProfileType) -> ProfileType -> ProfileType
--- updateAuthor makeChanges author =
---     makeChanges author
--- updateArticleBySlug : (Article -> Article) -> Article -> Feed -> Feed
--- updateArticleBySlug updateArticle article feed =
---     List.map
---         (\currArticle ->
---             if currArticle.slug == article.slug then
---                 updateArticle currArticle
---             else
---                 currArticle
---         )
---         feed
--- updateArticlePreviewLikes : (Article -> Article) -> Article -> Maybe Feed -> Maybe Feed
--- updateArticlePreviewLikes updateArticle article maybeFeed =
---     Maybe.map (updateArticleBySlug updateArticle article) maybeFeed
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         ToggleLike article ->
             if article.favorited then
-                -- ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, favouriteArticle model article )
                 ( model
                 , if model.showMA then
                     unfavoriteArticle model article
@@ -416,7 +370,6 @@ update message model =
                 )
 
             else
-                -- ( { model | articlesMade = updateArticlePreviewLikes toggleLike article model.articlesMade, favoritedArticles = updateArticlePreviewLikes toggleLike article model.favoritedArticles }, unfavouriteArticle model article )
                 ( model
                 , if model.showMA then
                     favoriteArticle model article
@@ -425,14 +378,11 @@ update message model =
                     favoriteArticleYF model article
                 )
 
-        --need lazy execution
         ToggleFollow ->
             if model.profile.following then
-                -- ( { model | profile = updateAuthor toggleFollow model.profile }, followUser model.profile )
                 ( model, unfollowUser model model.profile )
 
             else
-                -- ( { model | profile = updateAuthor toggleFollow model.profile }, unfollowUser model.profile )
                 ( model, followUser model model.profile )
 
         GotProfile (Ok userProfile) ->
@@ -473,6 +423,7 @@ update message model =
 
 
 
+-- Now that Profile.elm is a component this is not neeeded
 -- subscriptions : Model -> Sub Msg
 -- subscriptions model =
 --     Sub.none
@@ -499,11 +450,6 @@ viewSettingsButton =
 
 viewFollowButton : Model -> Html Msg
 viewFollowButton model =
-    -- , button [class "btn btn-sm btn-outline-secondary action-btn"]
-    --     [i [class "ion-plus-round"] []
-    --     , text (nbsp ++ nbsp ++ "  Follow Eric Simons ")
-    --     , span [class "counter"] [text "(10)"]
-    --     ]
     let
         buttonClass =
             if model.profile.following then
@@ -531,7 +477,6 @@ viewFollowButton model =
 
 viewLoveButton : Article -> Html Msg
 viewLoveButton articlePreview =
-    --use from Article
     let
         buttonClass =
             if articlePreview.favorited then
@@ -617,14 +562,36 @@ monthName month =
             "Invalid month"
 
 
+viewTagInPreview : String -> Html msg
+viewTagInPreview tag =
+    -- css skill issue :( (fixed?)
+    li [ class "tag-default tag-pill tag-outline" ]
+        [ text tag ]
+
+
+viewTagsInPreview : List String -> Html Msg
+viewTagsInPreview maybeTags =
+    -- display tags on far right in line with "Read more..."
+    if List.isEmpty maybeTags then
+        span [] []
+
+    else
+        ul [ class "tag-list", style "float" "right" ]
+            (List.map viewTagInPreview maybeTags)
+
+
 viewArticlePreview : Article -> Html Msg
 viewArticlePreview article =
     div [ class "post-preview" ]
         [ div [ class "post-meta" ]
-            [ a [ Routes.href (Routes.Profile article.author.username Routes.WholeProfile) ] [ img [ src (maybeImageBio article.author.image) ] [] ]
+            [ a
+                [ Routes.href (Routes.Profile article.author.username Routes.WholeProfile) ]
+                [ img [ src (maybeImageBio article.author.image) ] [] ]
             , text " "
             , div [ class "info" ]
-                [ a [ Routes.href (Routes.Profile article.author.username Routes.WholeProfile), class "author" ] [ text article.author.username ]
+                [ a
+                    [ Routes.href (Routes.Profile article.author.username Routes.WholeProfile), class "author" ]
+                    [ text article.author.username ]
                 , span [ class "date" ] [ text (formatDate article.createdAt) ]
                 ]
             , viewLoveButton article
@@ -633,6 +600,7 @@ viewArticlePreview article =
             [ h1 [] [ text article.title ]
             , p [] [ text article.description ]
             , span [] [ text "Read more..." ]
+            , viewTagsInPreview article.tagList -- show tags in preview now
             ]
         ]
 
@@ -647,12 +615,12 @@ viewArticles maybeArticlesMade =
 
             else
                 div []
-                    --ul and li = weird dot :)
+                    -- ul and li = weird dot :)
                     (List.map viewArticlePreview articles)
 
         Nothing ->
             div [ class "loading-feed" ]
-                [ text "Loading Feed..." ] 
+                [ text "Loading Feed..." ]
 
 
 viewTwoFeeds : Model -> Html Msg
@@ -664,16 +632,20 @@ viewTwoFeeds model =
                 [ a
                     [ class "nav-link active"
                     , Routes.href (Routes.Profile model.profile.username Routes.WholeProfile)
+
                     --, onClick (LoadArticlesMade model.profile.username)
                     ]
-                    [ text "My Articles" ] ]
+                    [ text "My Articles" ]
+                ]
             , li [ class "nav-item" ]
                 [ a
                     [ class "nav-link"
                     , Routes.href (Routes.Profile model.profile.username Routes.Favorited)
+
                     --, onClick (LoadFavoritedArticles model.profile.username)
                     ]
-                    [ text "Favorited Articles" ] ]
+                    [ text "Favorited Articles" ]
+                ]
             ]
 
     else
@@ -682,16 +654,20 @@ viewTwoFeeds model =
                 [ a
                     [ class "nav-link"
                     , Routes.href (Routes.Profile model.profile.username Routes.WholeProfile)
+
                     --, onClick (LoadArticlesMade model.profile.username)
                     ]
-                    [ text "My Articles" ] ]
+                    [ text "My Articles" ]
+                ]
             , li [ class "nav-item" ]
                 [ a
                     [ class "nav-link active"
                     , Routes.href (Routes.Profile model.profile.username Routes.Favorited)
+
                     --, onClick (LoadFavoritedArticles model.profile.username)
                     ]
-                    [ text "Favorited Articles" ] ]
+                    [ text "Favorited Articles" ]
+                ]
             ]
 
 
@@ -733,10 +709,10 @@ view model =
         , footer []
             [ div [ class "container" ]
                 [ a [ Routes.href (Routes.Index Routes.Global), class "logo-font" ] [ text "conduit" ]
-                , text " " --helps make spacing perfect even though it's not exactly included in the og html version
+                , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] -- external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]
@@ -745,6 +721,7 @@ view model =
 
 
 
+-- Now profile is a component and no longer an application
 -- main : Program () Model Msg
 -- main =
 --     -- view initialModel
@@ -754,4 +731,3 @@ view model =
 --         , update = update
 --         , subscriptions = subscriptions
 --         }
---Now profile is a component and no longer an application

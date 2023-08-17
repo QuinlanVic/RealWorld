@@ -1,8 +1,5 @@
 module Auth exposing (Msg(..), User, baseUrl, init, initialModel, isFormValid, trimString, update, userDecoder, validateEmail, validatePassword, validateUsername, view)
 
--- import Exts.Html exposing (nbsp)
--- import Browser
-
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -15,8 +12,8 @@ import Routes
 
 
 
--- import Route exposing (Route)
 --Model--
+-- Changed the Model to User for better understanding
 -- type alias Model =
 --     { username : String
 --     , email : String
@@ -26,14 +23,17 @@ import Routes
 
 
 type alias User =
-    { email : String --all of these fields are contained in the response from the server (besides last 3)
+    -- first 5 fields are contained in the response from the server
+    { email : String
     , token : String
     , username : String
     , bio : Maybe String
     , image : Maybe String
-    , password : String --user's password
-    , signedUpOrloggedIn : Bool --bool saying if they've signed up or not (maybe used later)
-    , errmsg : String --display any API errors from authentication
+    , password : String -- user's password
+    , signedUpOrloggedIn : Bool -- bool saying if they've signed up or not
+    , errmsg : String -- display any API errors from authentication
+
+    -- input validation errors when a new user is registering themselves
     , usernameError : Maybe String
     , emailError : Maybe String
     , passwordError : Maybe String
@@ -58,7 +58,6 @@ saveUser user =
         }
 
 
-
 encodeUser : User -> Encode.Value
 encodeUser user =
     --used to encode user sent to the server via POST request body (for registering)
@@ -69,12 +68,9 @@ encodeUser user =
         ]
 
 
-
---userDecoder used for JSON decoding users returned when they register/sign-up
-
-
 userDecoder : Decoder User
 userDecoder =
+    -- userDecoder used for JSON decoding users returned when they register/sign-up
     succeed User
         |> required "email" string
         |> required "token" string
@@ -87,11 +83,6 @@ userDecoder =
         |> hardcoded (Just "")
         |> hardcoded (Just "")
         |> hardcoded (Just "")
-
-
-
--- hardcoded tells JSON decoder to use a static value as an argument in the underlying decoder function instead
---of extracting a property from the JSON object
 
 
 initialModel : User
@@ -179,7 +170,7 @@ type Msg
     | SaveEmail String
     | SavePassword String
     | Signup
-    -- | GotUser (Result Http.Error User)
+      -- | GotUser (Result Http.Error User) -- done in main now :)
     | SignedUpGoHome (Result Http.Error User)
 
 
@@ -199,7 +190,7 @@ update message user =
 
         Signup ->
             let
-                --trimString the input fields and then ensure that these fields are valid
+                -- trimString the input fields and then ensure that these fields are valid
                 trimmedUser =
                     { user | email = trimString user.email, password = trimString user.password }
 
@@ -216,8 +207,8 @@ update message user =
             -- intercepted in Main.elm now
             ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
 
-        SignedUpGoHome (Err error) -> 
-            ( { user | errmsg = (Debug.toString error) }, Cmd.none )
+        SignedUpGoHome (Err error) ->
+            ( { user | errmsg = Debug.toString error }, Cmd.none )
 
 
 isFormValid : User -> Bool
@@ -226,22 +217,11 @@ isFormValid user =
 
 
 
+-- no longer needed as Auth is a component now
 -- subscriptions : User -> Sub Msg
 -- subscriptions user =
 --     Sub.none
 --View--
--- getType : String -> String -> Msg
--- getType messageType = --get the type of message that should be sent to update from the placeholder (name/email/pswd)
---     case messageType of
---         "Your Name" -> SaveName
---         "Email" -> SaveEmail
---         "Password" -> SavePassword
---         _ -> Error
--- viewForm : String -> String -> Html Msg
--- viewForm textType textHolder =
---     fieldset [class "form-group"]
---         [input [class "form-control form-control-lg", type_ textType, placeholder textHolder, onInput (getType textType)] []
---         ]
 
 
 view : User -> Html Msg
@@ -249,6 +229,7 @@ view user =
     let
         mainStuff =
             let
+                -- was all used for testing
                 loggedIn : Bool
                 loggedIn =
                     if String.length user.token > 0 then
@@ -269,6 +250,7 @@ view user =
                     ]
 
             else
+                -- below is all that should be shown, above was only for testing
                 div [ class "auth-page" ]
                     [ div [ class "container page" ]
                         [ div [ class "row" ]
@@ -279,10 +261,6 @@ view user =
                                     [ div [ class "alert alert-danger" ] [ text user.errmsg ]
                                     ]
                                 , form []
-                                    -- [ viewForm "text" "Your Name"
-                                    -- , viewForm "text" "Email"
-                                    -- , viewForm "password" "Password"
-                                    -- another function for this
                                     [ div [ style "color" "red" ] [ text (Maybe.withDefault "" user.usernameError) ]
                                     , fieldset [ class "form-group" ] [ input [ class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName, value user.username ] [] ]
                                     , div [ style "color" "red" ] [ text (Maybe.withDefault "" user.emailError) ]
@@ -298,33 +276,13 @@ view user =
     in
     div []
         [ mainStuff --testing
-
-        -- div[class "auth-page"]
-        --     [ div[class "container page"]
-        --         [div [class "row"]
-        --             [div[class "col-md-6 col-md-offset-3 col-xs-12"]
-        --                 [h1 [class "text-xs-center"] [text "Sign up"],
-        --                 p [class "text-xs-center"] [a [href "loginelm.html"] [text "Have an account?"]]
-        --                 , form []
-        --                 -- [ viewForm "text" "Your Name"
-        --                 -- , viewForm "text" "Email"
-        --                 -- , viewForm "password" "Password"
-        --                 [ fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "text", placeholder "Your Name", onInput SaveName] []] --another function for this
-        --                 , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "email", placeholder "Email", onInput SaveEmail] []]
-        --                 , fieldset [class "form-group"] [input [class "form-control form-control-lg", type_ "password", placeholder "Password", onInput SavePassword] []]
-        --                 , button [class "btn btn-lg btn-primary pull-xs-right", onClick Signup] [text "Sign up"]
-        --                 ]
-        --                 ]
-        --             ]
-        --         ]
-        --     ]
         , footer []
             [ div [ class "container" ]
                 [ a [ href "/", class "logo-font" ] [ text "conduit" ]
-                , text " " --helps make spacing perfect even though it's not exactly included in the og html version
+                , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
-                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] --external link Routes.href
+                    , a [ href "https://thinkster.io/" ] [ text "Thinkster" ] -- external link
                     , text ". Code & design licensed under MIT."
                     ]
                 ]
@@ -333,6 +291,7 @@ view user =
 
 
 
+-- Now Auth is a component and no longer an application
 -- main : Program () User Msg
 -- main =
 --     Browser.element
@@ -341,6 +300,3 @@ view user =
 --         , update = update
 --         , subscriptions = subscriptions
 --         }
---Now Auth is a component and no longer an application
--- elm-live src/Auth.elm --open --start-page=authelm.html -- --output=auth.js
--- elm make src/Auth.elm --output auth.js
