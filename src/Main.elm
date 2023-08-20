@@ -103,7 +103,7 @@ defaultProfile =
 
 defaultArticle : Editor.Article
 defaultArticle =
-    { slug = "default"
+    { slug = ""
     , title = ""
     , description = ""
     , body = ""
@@ -488,15 +488,13 @@ setNewPage maybeRoute model =
                     Auth.init
             in
             ( { model | page = Auth authUser, currentPage = "Auth" }, Cmd.map AuthMessage authCmd )
-
-        -- tricky
-        Just (Routes.Editor slug) ->
+        
+        Just Routes.NewEditor ->
             let
                 ( editorModel, editorCmd ) =
                     Editor.init
             in
-            if slug == "default" then
-                ( { model
+            ( { model
                     | page =
                         Editor
                             { user = model.user
@@ -512,7 +510,12 @@ setNewPage maybeRoute model =
                 , Cmd.map EditorMessage editorCmd
                 )
 
-            else
+        -- tricky
+        Just (Routes.Editor slug) ->
+            let
+                ( editorModel, editorCmd ) =
+                    Editor.init
+            in
                 ( { model
                     | page =
                         Editor
@@ -1068,7 +1071,7 @@ viewHeader model =
             [ a [ class "navbar-brand", Routes.href (Routes.Index Routes.Global) ] [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
                 [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href (Routes.Index Routes.Global) ] [ text "Home :)" ] ]
-                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href (Routes.Editor "default") ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ]
+                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href (Routes.NewEditor) ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ]
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ]
                 , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username Routes.WholeProfile) ] [ img [ style "width" "32px", style "height" "32px", style "border-radius" "30px", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
                 ]
