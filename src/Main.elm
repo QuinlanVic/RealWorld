@@ -449,38 +449,49 @@ setNewPage : Maybe Routes.Route -> Model -> ( Model, Cmd Msg )
 setNewPage maybeRoute model =
     --update model's page based on the new route
     case maybeRoute of
-        Just (Routes.Index dest) ->
-            case dest of
-                Routes.Global ->
-                    -- fetch the global feed
-                    let
-                        ( publicFeedModel, publicFeedCmd ) =
-                            PublicFeed.init
-                    in
-                    ( { model | page = PublicFeed { publicFeedModel | user = model.user }, currentPage = "Home" }
-                      -- Cmd.map PublicFeedMessage publicFeedCmd
-                    , Task.attempt GotGFAndTags fetchGlobalFeedAndTags
-                    )
+        -- Just (Routes.Index dest) ->
+        --     case dest of
+        --         Routes.Global ->
+        --             -- fetch the global feed
+        --             let
+        --                 ( publicFeedModel, publicFeedCmd ) =
+        --                     PublicFeed.init
+        --             in
+        --             ( { model | page = PublicFeed { publicFeedModel | user = model.user }, currentPage = "Home" }
+        --               -- Cmd.map PublicFeedMessage publicFeedCmd
+        --             , Task.attempt GotGFAndTags fetchGlobalFeedAndTags
+        --             )
 
-                Routes.Yours ->
-                    -- fetch your feed
-                    let
-                        ( publicFeedModel, publicFeedCmd ) =
-                            PublicFeed.init
-                    in
-                    ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = False }, currentPage = "Home" }
-                    , Task.attempt GotYFAndTags (fetchYourFeedAndTags model)
-                    )
+        --         Routes.Yours ->
+        --             -- fetch your feed
+        --             let
+        --                 ( publicFeedModel, publicFeedCmd ) =
+        --                     PublicFeed.init
+        --             in
+        --             ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = False }, currentPage = "Home" }
+        --             , Task.attempt GotYFAndTags (fetchYourFeedAndTags model)
+        --             )
 
-                Routes.Tag tag ->
-                    -- fetch the feed of articles that has that tag
-                    let
-                        ( publicFeedModel, publicFeedCmd ) =
-                            PublicFeed.init
-                    in
-                    ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = True, tag = tag }, currentPage = "Home", tag = tag }
-                    , Task.attempt GotTFAndTags (fetchTagFeedAndTags tag)
-                    )
+        --         Routes.Tag tag ->
+        --             -- fetch the feed of articles that has that tag
+        --             let
+        --                 ( publicFeedModel, publicFeedCmd ) =
+        --                     PublicFeed.init
+        --             in
+        --             ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = True, tag = tag }, currentPage = "Home", tag = tag }
+        --             , Task.attempt GotTFAndTags (fetchTagFeedAndTags tag)
+        --             )
+
+        Just Routes.Home ->
+            -- fetch the global feed
+            let
+                ( publicFeedModel, publicFeedCmd ) =
+                    PublicFeed.init
+            in
+            ( { model | page = PublicFeed { publicFeedModel | user = model.user }, currentPage = "Home" }
+                -- Cmd.map PublicFeedMessage publicFeedCmd
+            , Task.attempt GotGFAndTags fetchGlobalFeedAndTags
+            )
 
         Just Routes.Auth ->
             let 
@@ -1045,9 +1056,9 @@ viewHeaderLO model =
     in
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
-            [ a [ class "navbar-brand", Routes.href (Routes.Index Routes.Global) ] [ text "conduit" ]
+            [ a [ class "navbar-brand", Routes.href Routes.Home {- (Routes.Index Routes.Global) -} ] [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
-                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href (Routes.Index Routes.Global) ] [ text "Home :)" ] ]
+                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Home {- (Routes.Index Routes.Global) -} ] [ text "Home :)" ] ]
                 , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
                 , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
                 ]
@@ -1068,9 +1079,9 @@ viewHeader model =
     in
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
-            [ a [ class "navbar-brand", Routes.href (Routes.Index Routes.Global) ] [ text "conduit" ]
+            [ a [ class "navbar-brand", Routes.href Routes.Home {- (Routes.Index Routes.Global) -} ] [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
-                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href (Routes.Index Routes.Global) ] [ text "Home :)" ] ]
+                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Home {- (Routes.Index Routes.Global) -} ] [ text "Home :)" ] ]
                 , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href (Routes.NewEditor) ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ]
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ]
                 , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username Routes.WholeProfile) ] [ img [ style "width" "32px", style "height" "32px", style "border-radius" "30px", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]

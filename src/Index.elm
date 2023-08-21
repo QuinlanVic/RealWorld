@@ -11,7 +11,7 @@ import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Routes
-
+import Task exposing (Task)
 
 
 --Model--
@@ -90,7 +90,6 @@ encodeArticle article =
         [ ( "slug", Encode.string article.slug ) ]
 
 
-
 -- SERVER CALLS --
 
 
@@ -123,6 +122,15 @@ fetchYourArticles model =
         }
 
 
+fetchTagArticles : String -> Cmd Msg 
+fetchTagArticles tag =
+    -- convert to task
+    Http.get
+        { expect = Http.expectJson GotTagFeed (field "articles" (list Article.articleDecoder))
+        , url = baseUrl ++ "api/articles?tag=" ++ tag
+        }
+
+
 fetchTags : Cmd Msg
 fetchTags =
     Http.get
@@ -130,6 +138,110 @@ fetchTags =
         , expect = Http.expectJson GotTags tagDecoder
         }
 
+
+-- TAKEN FROM MAIN --
+
+-- handleJsonResponse : Decoder a -> Http.Response String -> Result Http.Error a
+-- handleJsonResponse decoder response =
+--     case response of
+--         Http.BadUrl_ url ->
+--             Err (Http.BadUrl url)
+
+--         Http.Timeout_ ->
+--             Err Http.Timeout
+
+--         Http.BadStatus_ { statusCode } _ ->
+--             Err (Http.BadStatus statusCode)
+
+--         Http.NetworkError_ ->
+--             Err Http.NetworkError
+
+--         Http.GoodStatus_ _ body ->
+--             case Json.Decode.decodeString decoder body of
+--                 Err _ ->
+--                     Err (Http.BadBody body)
+
+--                 Ok result ->
+--                     Ok result
+
+
+-- fetchYourFeed : Model -> Task Http.Error Feed
+-- fetchYourFeed model =
+--     -- need some kind of authentication to know which articles to fetch depended on the user
+--     let
+--         headers =
+--             [ Http.header "Authorization" ("Token " ++ model.user.token) ]
+--     in
+--     -- convert to task
+--     Http.task
+--         { method = "GET"
+--         , headers = headers
+--         , body = Http.emptyBody
+--         , resolver = Http.stringResolver <| handleJsonResponse <| field "articles" (list Article.articleDecoder)
+--         , url = baseUrl ++ "api/articles/feed"
+--         , timeout = Nothing
+--         }
+
+
+-- fetchTags2 : Task Http.Error Tags
+-- fetchTags2 =
+--     -- convert to task
+--     Http.task
+--         { url = baseUrl ++ "api/tags"
+--         , resolver = Http.stringResolver <| handleJsonResponse <| tagDecoder
+--         , method = "GET"
+--         , headers = []
+--         , body = Http.emptyBody
+--         , timeout = Nothing
+--         }
+
+
+-- fetchGlobalFeed : Task Http.Error Feed
+-- fetchGlobalFeed =
+--     -- convert to task
+--     Http.task
+--         { method = "GET"
+--         , headers = []
+--         , body = Http.emptyBody
+--         , resolver = Http.stringResolver <| handleJsonResponse <| field "articles" (list Article.articleDecoder)
+--         , url = baseUrl ++ "api/articles"
+--         , timeout = Nothing
+--         }
+
+
+-- fetchYourFeedAndTags : Model -> Task Http.Error ( Feed, Tags )
+-- fetchYourFeedAndTags model =
+--     -- Function to fetch your feed and tags sequentially
+--     fetchYourFeed model
+--         |> Task.andThen
+--             (\articles ->
+--                 fetchTags2
+--                     |> Task.map (\tags -> ( articles, tags ))
+--             )
+
+
+-- fetchGlobalFeedAndTags : Task Http.Error ( Feed, Tags )
+-- fetchGlobalFeedAndTags =
+--     -- Function to fetch both global feed and tags sequentially
+--     fetchGlobalFeed
+--         |> Task.andThen
+--             (\articles ->
+--                 fetchTags2
+--                     |> Task.map (\tags -> ( articles, tags ))
+--             )
+
+
+-- fetchTagFeedAndTags : String -> Task Http.Error ( Feed, Tags )
+-- fetchTagFeedAndTags tag =
+--     -- Function to fetch both tag feed and tags sequentially
+--     fetchTagFeed tag
+--         |> Task.andThen
+--             (\articles ->
+--                 fetchTags2
+--                     |> Task.map (\tags -> ( articles, tags ))
+--             )
+
+-- TAKEN FROM MAIN --
 
 favoriteArticle : Model -> Article -> Cmd Msg
 favoriteArticle model article =
@@ -310,12 +422,17 @@ type Msg
     | GotGlobalFeed (Result Http.Error Feed)
     | GotTags (Result Http.Error Tags)
     | GotYourFeed (Result Http.Error Feed)
+    | GotTagFeed (Result Http.Error Feed)
     | LoadGF
     | LoadYF
+    | LoadTF String 
     | FetchArticleIndex String
     | FetchProfileIndex String
     | GotArticleLoadGF (Result Http.Error Article)
     | GotArticleLoadYF (Result Http.Error Article)
+    -- | GotYFAndTags (Result Http.Error ( Feed, Tags ))
+    -- | GotGFAndTags (Result Http.Error ( Feed, Tags )) 
+    -- | GotTFAndTags (Result Http.Error ( Feed, Tags ))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -357,12 +474,21 @@ update msg model =
 
         GotYourFeed (Err _) ->
             ( model, Cmd.none )
+        
+        GotTagFeed (Ok tagfeed) ->
+            ( { model | tagfeed = Just tagfeed, showGF = False, showTag = True, tag = model.tag }, Cmd.none ) 
+
+        GotTagFeed (Err _) ->
+            ( { model| tagfeed = Nothing, showGF = False, showTag = True, tag = "" }, Cmd.none )
 
         LoadGF ->
             ( model, fetchGlobalArticles )
 
         LoadYF ->
             ( model, fetchYourArticles model )
+        
+        LoadTF tag ->
+            ( model, fetchTagArticles tag ) 
 
         FetchArticleIndex slug ->
             -- intercepted in Main.elm now
@@ -382,6 +508,54 @@ update msg model =
 
         GotArticleLoadYF (Err _) ->
             ( model, Cmd.none )
+        
+        -- GotYFAndTags result ->
+        --     case result of
+        --         Ok ( yourfeed, tags ) ->
+        --             ( { model
+        --                 | globalfeed = Nothing, yourfeed = Just yourfeed, tags = Just tags, user = model.user, showGF = False, showTag = False, tagfeed = Nothing, tag = ""
+        --               }
+        --             , Cmd.none
+        --             )
+
+        --         Err error ->
+        --             ( { model
+        --                 | globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = False, tagfeed = Nothing, tag = ""
+        --               }
+        --             , Cmd.none
+        --             )
+
+        -- GotGFAndTags result ->
+        --     case result of
+        --         Ok ( globalfeed, tags ) ->
+        --             ( { model
+        --                 | globalfeed = Just globalfeed, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = True, showTag = False, tagfeed = Nothing, tag = ""
+        --               }
+        --             , Cmd.none
+        --             )
+
+        --         Err _ ->
+        --             ( { model
+        --                 | globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = True, showTag = False, tagfeed = Nothing, tag = ""
+        --               }
+        --             , Cmd.none
+        --             )
+
+        -- GotTFAndTags result ->
+        --     case result of
+        --         Ok ( tagfeed, tags ) ->
+        --             ( { model
+        --                 | globalfeed = Nothing, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = False, showTag = True, tagfeed = Just tagfeed, tag = model.tag
+        --               }
+        --             , Cmd.none
+        --             )
+
+        --         Err _ ->
+        --             ( { model
+        --                 | globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = True, tagfeed = Nothing, tag = ""
+        --               }
+        --             , Cmd.none
+        --             )
 
 
 
@@ -408,9 +582,9 @@ viewLoveButton articlePreview =
         ]
 
 
-viewTag : String -> Html msg
+viewTag : String -> Html Msg
 viewTag tag =
-    a [ Routes.href (Routes.Index (Routes.Tag tag)), class "label label-pill label-default" ]
+    a [ {- Routes.href (Routes.Index (Routes.Tag tag)) -} onClick (LoadTF tag), class "label label-pill label-default" ]
         [ text tag ]
 
 
@@ -527,27 +701,27 @@ viewThreeFeeds model =
                 [ li [ class "nav-item" ]
                     [ a
                         [ class "nav-link"
-                        , Routes.href (Routes.Index Routes.Yours)
+                        -- , Routes.href (Routes.Index Routes.Yours)
 
-                        -- , onClick LoadYF
+                        , onClick LoadYF
                         ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
                     [ a
                         [ class "nav-link"
-                        , Routes.href (Routes.Index Routes.Global)
+                        -- , Routes.href (Routes.Index Routes.Global)
 
-                        -- , onClick LoadGF
+                        , onClick LoadGF
                         ]
                         [ text "Global Feed" ]
                     ]
                 , li [ class "nav-item" ]
                     [ a
                         [ class "nav-link active"
-                        , Routes.href (Routes.Index (Routes.Tag model.tag))
+                        -- , Routes.href (Routes.Index (Routes.Tag model.tag))
 
-                        -- , onClick LoadGF
+                        , onClick (LoadTF model.tag)
                         ]
                         [ i [ class "ion-pound" ] []
                         , text (" " ++ model.tag ++ " ")
@@ -560,18 +734,18 @@ viewThreeFeeds model =
                 [ li [ class "nav-item" ]
                     [ a
                         [ class "nav-link"
-                        , Routes.href (Routes.Index Routes.Yours)
+                        -- , Routes.href (Routes.Index Routes.Yours)
 
-                        -- , onClick LoadYF
+                        , onClick LoadYF
                         ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
                     [ a
                         [ class "nav-link active"
-                        , Routes.href (Routes.Index Routes.Global)
+                        -- , Routes.href (Routes.Index Routes.Global)
 
-                        -- , onClick LoadGF
+                        , onClick LoadGF
                         ]
                         [ text "Global Feed" ]
                     ]
@@ -582,18 +756,18 @@ viewThreeFeeds model =
                 [ li [ class "nav-item" ]
                     [ a
                         [ class "nav-link active"
-                        , Routes.href (Routes.Index Routes.Yours)
+                        -- , Routes.href (Routes.Index Routes.Yours)
 
-                        -- , onClick LoadYF
+                        , onClick LoadYF
                         ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
                     [ a
                         [ class "nav-link"
-                        , Routes.href (Routes.Index Routes.Global)
+                        -- , Routes.href (Routes.Index Routes.Global)
 
-                        -- , onClick LoadGF
+                        , onClick LoadGF
                         ]
                         [ text "Global Feed" ]
                     ]
@@ -606,18 +780,18 @@ viewThreeFeeds model =
             [ li [ class "nav-item" ]
                 [ a
                     [ class "nav-link"
-                    , Routes.href (Routes.Index Routes.Global)
+                    -- , Routes.href (Routes.Index Routes.Global)
 
-                    -- , onClick LoadGF
+                    , onClick LoadGF
                     ]
                     [ text "Global Feed" ]
                 ]
             , li [ class "nav-item" ]
                 [ a
                     [ class "nav-link active"
-                    , Routes.href (Routes.Index (Routes.Tag model.tag))
+                    -- , Routes.href (Routes.Index (Routes.Tag model.tag))
 
-                    -- , onClick LoadGF
+                    , onClick (LoadTF model.tag)
                     ]
                     [ i [ class "ion-pound" ] []
                     , text (" " ++ model.tag ++ " ")
@@ -631,9 +805,9 @@ viewThreeFeeds model =
             [ li [ class "nav-item" ]
                 [ a
                     [ class "nav-link active"
-                    , Routes.href (Routes.Index Routes.Global)
+                    -- , Routes.href (Routes.Index Routes.Global)
 
-                    -- , onClick LoadGF
+                    , onClick LoadGF
                     ]
                     [ text "Global Feed" ]
                 ]
@@ -747,7 +921,7 @@ view model =
             ]
         , footer []
             [ div [ class "container" ]
-                [ a [ Routes.href (Routes.Index Routes.Global), class "logo-font" ] [ text "conduit" ]
+                [ a [ Routes.href Routes.Home {- (Routes.Index Routes.Global) -}, class "logo-font" ] [ text "conduit" ]
                 , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
