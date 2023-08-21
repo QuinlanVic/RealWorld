@@ -21,7 +21,7 @@ type Home =
 
 
 type Route
-    = Home
+    = Home String 
     | Auth
     | NewEditor 
     | Editor String
@@ -38,7 +38,7 @@ routes =
     -- parse path segments
     Parser.oneOf
         -- return thing on the left if the path to the right is a match
-        [ Parser.map Home Parser.top
+        [ Parser.map (\dest -> Home dest)  Parser.top
         -- Parser.map (Index Global) (Parser.top)--#/ ?
         -- , Parser.map (Index Yours) (Parser.s "Y") --hmm how do I fix
         -- , Parser.map (\s -> Index (Tag s)) (Parser.s "T" </> Parser.string)
@@ -57,7 +57,7 @@ routeToUrl : Route -> String
 routeToUrl route =
     --accept route and convert it to a string path via pattern matching
     case route of
-        Home ->
+        Home dest ->
             "#/"
 
         -- Index Global ->

@@ -483,7 +483,7 @@ setNewPage maybeRoute model =
                     )
 
         Just Routes.Auth ->
-            let
+            let 
                 ( authUser, authCmd ) =
                     Auth.init
             in
