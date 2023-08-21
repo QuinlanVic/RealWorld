@@ -827,7 +827,7 @@ update msg model =
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
             )
-
+    
         -- Auth
         -- intercept this message :)
         ( AuthMessage (Auth.SignedUpGoHome (Ok gotUser)), _ ) ->
