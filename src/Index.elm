@@ -421,7 +421,8 @@ initialModel =
 init : ( Model, Cmd Msg )
 init =
     -- probably only place where these calls are done and needed
-    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags2 ] )
+    -- Cmd.batch [ fetchGlobalArticles, fetchTags2 ]
+    ( initialModel, Cmd.none )
 
 
 
