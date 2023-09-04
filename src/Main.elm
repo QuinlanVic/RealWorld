@@ -546,7 +546,7 @@ setNewPage maybeRoute model =
         Just Routes.Login ->
             let
                 ( loginUser, loginCmd ) =
-                    Login.init
+                    Login.init 
             in
             ( { model | page = Login loginUser, currentPage = "Login" }, Cmd.map LoginMessage loginCmd )
 
@@ -616,7 +616,7 @@ setNewPage maybeRoute model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case ( msg, model.page ) of
+    case ( Debug.log "RECEIVED MSG" msg, model.page ) of
         -- Debug.log "RECEIVED MESSAGE" msg
         ( NewRoute maybeRoute, _ ) ->
             setNewPage maybeRoute model

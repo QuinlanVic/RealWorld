@@ -422,7 +422,7 @@ init : ( Model, Cmd Msg )
 init =
     -- probably only place where these calls are done and needed
     -- Cmd.batch [ fetchGlobalArticles, fetchTags2 ]
-    ( initialModel, Cmd.none )
+    ( initialModel, Cmd.batch [ fetchGlobalArticles, fetchTags2 ] )
 
 
 
@@ -473,7 +473,7 @@ update msg model =
                 )
 
         GotGlobalFeed (Ok globalfeed) ->
-            ( { model | globalfeed = Just globalfeed, showGF = True }, Cmd.none )
+            ( { model | globalfeed = Just globalfeed, showGF = True, showTag = False }, Cmd.none )
 
         GotGlobalFeed (Err _) ->
             ( model, Cmd.none )
@@ -485,7 +485,7 @@ update msg model =
             ( model, Cmd.none )
 
         GotYourFeed (Ok yourfeed) ->
-            ( { model | yourfeed = Just yourfeed, showGF = False }, Cmd.none )
+            ( { model | yourfeed = Just yourfeed, showGF = False, showTag = False }, Cmd.none )
 
         GotYourFeed (Err _) ->
             ( model, Cmd.none )
@@ -503,7 +503,7 @@ update msg model =
             ( model, fetchYourArticles model )
 
         LoadTF tag ->
-            ( model, fetchTagArticles tag )
+            ( { model | tag = tag }, fetchTagArticles tag )
 
         FetchArticleIndex slug ->
             -- intercepted in Main.elm now
@@ -551,11 +551,10 @@ viewLoveButton articlePreview =
 
 viewTag : String -> Html Msg
 viewTag tag =
-    a
-        [ href ""
-
-        {- , Routes.href (Routes.Index (Routes.Tag tag)) -}
-        , onClick (LoadTF tag)
+    button
+        [ -- href ""
+          {- , Routes.href (Routes.Index (Routes.Tag tag)) -}
+          onClick (LoadTF tag)
         , class "label label-pill label-default"
         ]
         [ text tag ]
@@ -672,31 +671,34 @@ viewThreeFeeds model =
             -- if we have to show the Tag Feed
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a
+                    [ button
                         [ class "nav-link"
 
                         -- , Routes.href (Routes.Index Routes.Yours)
-                        , href ""
+                        -- , href ""
+                        , style "cursor" "pointer"
                         , onClick LoadYF
                         ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a
+                    [ button
                         [ class "nav-link"
 
                         -- , Routes.href (Routes.Index Routes.Global)
-                        , href ""
+                        -- , href ""
+                        , style "cursor" "pointer"
                         , onClick LoadGF
                         ]
                         [ text "Global Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a
+                    [ button
                         [ class "nav-link active"
 
                         -- , Routes.href (Routes.Index (Routes.Tag model.tag))
-                        , href ""
+                        -- , href ""
+                        , style "cursor" "pointer"
                         , onClick (LoadTF model.tag)
                         ]
                         [ i [ class "ion-pound" ] []
@@ -708,21 +710,23 @@ viewThreeFeeds model =
         else if model.showGF then
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a
+                    [ button
                         [ class "nav-link"
 
                         -- , Routes.href (Routes.Index Routes.Yours)
-                        , href ""
+                        -- , href ""
+                        , style "cursor" "pointer"
                         , onClick LoadYF
                         ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a
+                    [ button
                         [ class "nav-link active"
 
                         -- , Routes.href (Routes.Index Routes.Global)
-                        , href ""
+                        -- , href ""
+                        , style "cursor" "pointer"
                         , onClick LoadGF
                         ]
                         [ text "Global Feed" ]
@@ -732,21 +736,23 @@ viewThreeFeeds model =
         else
             ul [ class "nav nav-pills outline-active" ]
                 [ li [ class "nav-item" ]
-                    [ a
+                    [ button
                         [ class "nav-link active"
 
                         -- , Routes.href (Routes.Index Routes.Yours)
-                        , href ""
+                        -- , href ""
+                        , style "cursor" "pointer"
                         , onClick LoadYF
                         ]
                         [ text "Your Feed" ]
                     ]
                 , li [ class "nav-item" ]
-                    [ a
+                    [ button
                         [ class "nav-link"
 
                         -- , Routes.href (Routes.Index Routes.Global)
-                        , href ""
+                        -- , href ""
+                        , style "cursor" "pointer"
                         , onClick LoadGF
                         ]
                         [ text "Global Feed" ]
@@ -758,21 +764,23 @@ viewThreeFeeds model =
         -- if we are supposed to show the Tag Feed
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a
+                [ button
                     [ class "nav-link"
 
                     -- , Routes.href (Routes.Index Routes.Global)
-                    , href ""
+                    -- , href ""
+                    , style "cursor" "pointer"
                     , onClick LoadGF
                     ]
                     [ text "Global Feed" ]
                 ]
             , li [ class "nav-item" ]
-                [ a
+                [ button
                     [ class "nav-link active"
 
                     -- , Routes.href (Routes.Index (Routes.Tag model.tag))
-                    , href ""
+                    -- , href ""
+                    , style "cursor" "pointer"
                     , onClick (LoadTF model.tag)
                     ]
                     [ i [ class "ion-pound" ] []
@@ -785,11 +793,12 @@ viewThreeFeeds model =
         -- if we are not supposed to show the Tag Feed
         ul [ class "nav nav-pills outline-active" ]
             [ li [ class "nav-item" ]
-                [ a
+                [ button
                     [ class "nav-link active"
 
                     -- , Routes.href (Routes.Index Routes.Global)
-                    , href ""
+                    -- , href ""
+                    , style "cursor" "pointer"
                     , onClick LoadGF
                     ]
                     [ text "Global Feed" ]
