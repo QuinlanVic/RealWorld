@@ -5,7 +5,7 @@ import Auth exposing (baseUrl)
 import Editor exposing (authorDecoder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
-import Html.Events exposing (onClick, preventDefaultOn)
+import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (required)
