@@ -555,7 +555,9 @@ viewTag tag =
         [ -- href ""
           {- , Routes.href (Routes.Index (Routes.Tag tag)) -}
           onClick (LoadTF tag)
-        , class "label label-pill label-default"
+        , class "tag-pill tag-default"
+        , style "border" "none"
+        -- , class "link-style"
         ]
         [ text tag ]
 
