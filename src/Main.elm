@@ -461,7 +461,6 @@ setNewPage maybeRoute model =
         --               -- Cmd.map PublicFeedMessage publicFeedCmd
         --             , Task.attempt GotGFAndTags fetchGlobalFeedAndTags
         --             )
-
         --         Routes.Yours ->
         --             -- fetch your feed
         --             let
@@ -471,7 +470,6 @@ setNewPage maybeRoute model =
         --             ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = False }, currentPage = "Home" }
         --             , Task.attempt GotYFAndTags (fetchYourFeedAndTags model)
         --             )
-
         --         Routes.Tag tag ->
         --             -- fetch the feed of articles that has that tag
         --             let
@@ -481,7 +479,6 @@ setNewPage maybeRoute model =
         --             ( { model | page = PublicFeed { publicFeedModel | user = model.user, showGF = False, showTag = True, tag = tag }, currentPage = "Home", tag = tag }
         --             , Task.attempt GotTFAndTags (fetchTagFeedAndTags tag)
         --             )
-
         Just Routes.Home ->
             -- fetch the global feed
             let
@@ -489,37 +486,37 @@ setNewPage maybeRoute model =
                     PublicFeed.init
             in
             ( { model | page = PublicFeed { publicFeedModel | user = model.user }, currentPage = "Home" }
-                -- Cmd.map PublicFeedMessage publicFeedCmd
+              -- Cmd.map PublicFeedMessage publicFeedCmd
             , Task.attempt GotGFAndTags fetchGlobalFeedAndTags
             )
 
         Just Routes.Auth ->
-            let 
+            let
                 ( authUser, authCmd ) =
                     Auth.init
             in
             ( { model | page = Auth authUser, currentPage = "Auth" }, Cmd.map AuthMessage authCmd )
-        
+
         Just Routes.NewEditor ->
             let
                 ( editorModel, editorCmd ) =
                     Editor.init
             in
             ( { model
-                    | page =
-                        Editor
-                            { user = model.user
-                            , article = defaultArticle
-                            , created = False
-                            , titleError = Just ""
-                            , bodyError = Just ""
-                            , descError = Just ""
-                            , tagInput = ""
-                            }
-                    , currentPage = "Editor"
-                  }
-                , Cmd.map EditorMessage editorCmd
-                )
+                | page =
+                    Editor
+                        { user = model.user
+                        , article = defaultArticle
+                        , created = False
+                        , titleError = Just ""
+                        , bodyError = Just ""
+                        , descError = Just ""
+                        , tagInput = ""
+                        }
+                , currentPage = "Editor"
+              }
+            , Cmd.map EditorMessage editorCmd
+            )
 
         -- tricky
         Just (Routes.Editor slug) ->
@@ -527,26 +524,26 @@ setNewPage maybeRoute model =
                 ( editorModel, editorCmd ) =
                     Editor.init
             in
-                ( { model
-                    | page =
-                        Editor
-                            { user = model.user
-                            , article = defaultArticle
-                            , created = False
-                            , titleError = Just ""
-                            , bodyError = Just ""
-                            , descError = Just ""
-                            , tagInput = ""
-                            }
-                    , currentPage = "Editor"
-                  }
-                , fetchArticleEditor slug
-                )
+            ( { model
+                | page =
+                    Editor
+                        { user = model.user
+                        , article = defaultArticle
+                        , created = False
+                        , titleError = Just ""
+                        , bodyError = Just ""
+                        , descError = Just ""
+                        , tagInput = ""
+                        }
+                , currentPage = "Editor"
+              }
+            , fetchArticleEditor slug
+            )
 
         Just Routes.Login ->
             let
                 ( loginUser, loginCmd ) =
-                    Login.init 
+                    Login.init
             in
             ( { model | page = Login loginUser, currentPage = "Login" }, Cmd.map LoginMessage loginCmd )
 
@@ -827,7 +824,7 @@ update msg model =
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
             )
-    
+
         -- Auth
         -- intercept this message :)
         ( AuthMessage (Auth.SignedUpGoHome (Ok gotUser)), _ ) ->
@@ -1017,7 +1014,7 @@ viewContent model =
             )
 
         Profile profileModel ->
-            ( profileModel.profile.username ++ " - Conduit" 
+            ( profileModel.profile.username ++ " - Conduit"
             , Profile.view profileModel |> Html.map ProfileMessage
             )
 
@@ -1056,9 +1053,23 @@ viewHeaderLO model =
     in
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
-            [ a [ class "navbar-brand", Routes.href Routes.Home {- (Routes.Index Routes.Global) -} ] [ text "conduit" ]
+            [ a
+                [ class "navbar-brand"
+                , Routes.href Routes.Home
+
+                {- (Routes.Index Routes.Global) -}
+                ]
+                [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
-                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Home {- (Routes.Index Routes.Global) -} ] [ text "Home :)" ] ]
+                [ li [ class (isActivePage "Home") ]
+                    [ a
+                        [ class "nav-link"
+                        , Routes.href Routes.Home
+
+                        {- (Routes.Index Routes.Global) -}
+                        ]
+                        [ text "Home :)" ]
+                    ]
                 , li [ class (isActivePage "Login") ] [ a [ class "nav-link", Routes.href Routes.Login ] [ text "Log in" ] ]
                 , li [ class (isActivePage "Auth") ] [ a [ class "nav-link", Routes.href Routes.Auth ] [ text "Sign up" ] ]
                 ]
@@ -1079,10 +1090,24 @@ viewHeader model =
     in
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
-            [ a [ class "navbar-brand", Routes.href Routes.Home {- (Routes.Index Routes.Global) -} ] [ text "conduit" ]
+            [ a
+                [ class "navbar-brand"
+                , Routes.href Routes.Home
+
+                {- (Routes.Index Routes.Global) -}
+                ]
+                [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ]
-                [ li [ class (isActivePage "Home") ] [ a [ class "nav-link", Routes.href Routes.Home {- (Routes.Index Routes.Global) -} ] [ text "Home :)" ] ]
-                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href (Routes.NewEditor) ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ]
+                [ li [ class (isActivePage "Home") ]
+                    [ a
+                        [ class "nav-link"
+                        , Routes.href Routes.Home
+
+                        {- (Routes.Index Routes.Global) -}
+                        ]
+                        [ text "Home :)" ]
+                    ]
+                , li [ class (isActivePage "Editor") ] [ a [ class "nav-link", Routes.href Routes.NewEditor ] [ i [ class "ion-compose" ] [], text (" " ++ "New Article") ] ]
                 , li [ class (isActivePage "Settings") ] [ a [ class "nav-link", Routes.href Routes.Settings ] [ i [ class "ion-gear-a" ] [], text " Settings" ] ]
                 , li [ class (isActivePage "Profile") ] [ a [ class "nav-link", Routes.href (Routes.Profile model.user.username Routes.WholeProfile) ] [ img [ style "width" "32px", style "height" "32px", style "border-radius" "30px", src (maybeImageBio model.user.image) ] [], text (" " ++ model.user.username) ] ]
                 ]
@@ -1129,3 +1154,4 @@ main =
 
 
 -- serve using: npx serve -c serve.json
+-- test server = http://localhost:8000
