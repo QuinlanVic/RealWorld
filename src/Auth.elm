@@ -42,7 +42,7 @@ type alias User =
 
 baseUrl : String
 baseUrl =
-    "http://localhost:8000/"
+    "https://api.realworld.io/"
 
 
 saveUser : User -> Cmd Msg

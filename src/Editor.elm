@@ -61,7 +61,7 @@ type alias Model =
 
 baseUrl : String
 baseUrl =
-    "http://localhost:8000/"
+    "https://api.realworld.io/"
 
 
 saveArticle : Model -> Cmd Msg
@@ -344,7 +344,7 @@ view model =
                                 [ class "btn btn-lg btn-primary pull-xs-right"
                                 , type_ "button"
                                 , onClick
-                                    (if model.article.slug == "default" then
+                                    (if model.article.slug == "" then
                                         CreateArticle
 
                                      else
@@ -359,7 +359,13 @@ view model =
             ]
         , footer []
             [ div [ class "container" ]
-                [ a [ Routes.href Routes.Home {- (Routes.Index Routes.Global) -}, class "logo-font" ] [ text "conduit" ]
+                [ a
+                    [ Routes.href Routes.Home
+
+                    {- (Routes.Index Routes.Global) -}
+                    , class "logo-font"
+                    ]
+                    [ text "conduit" ]
                 , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "

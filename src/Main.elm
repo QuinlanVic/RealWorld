@@ -151,7 +151,7 @@ init () url navigationKey =
 
 baseUrl : String
 baseUrl =
-    "http://localhost:8000/"
+    "https://api.realworld.io/"
 
 
 handleJsonResponse : Decoder a -> Http.Response String -> Result Http.Error a
@@ -1154,4 +1154,5 @@ main =
 
 
 -- serve using: npx serve -c serve.json
--- test server = httpsHAHA://real-world-server.vercel.app
+-- test server 1 = httpsHAHA://real-world-server.vercel.app
+-- test server 2 = https://api.realworld.io/api

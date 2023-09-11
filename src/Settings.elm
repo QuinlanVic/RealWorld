@@ -60,7 +60,7 @@ initialModel =
 
 baseUrl : String
 baseUrl =
-    "http://localhost:8000/"
+    "https://api.realworld.io/"
 
 
 updateUser : Model -> Cmd Msg
@@ -290,7 +290,13 @@ view model =
             ]
         , footer []
             [ div [ class "container" ]
-                [ a [ Routes.href Routes.Home {- (Routes.Index Routes.Global) -}, class "logo-font" ] [ text "conduit" ]
+                [ a
+                    [ Routes.href Routes.Home
+
+                    {- (Routes.Index Routes.Global) -}
+                    , class "logo-font"
+                    ]
+                    [ text "conduit" ]
                 , text " " -- helps make spacing perfect even though it's not exactly included in the og html version
                 , span [ class "attribution" ]
                     [ text "An interactive learning project from "
