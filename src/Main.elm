@@ -836,7 +836,7 @@ update msg model =
             ( { model
                 | user = convertUser gotUser -- convert to normal user type
                 , isLoggedIn = True
-                , page = PublicFeed { publicFeedModel | user = model.user }
+                , page = PublicFeed { publicFeedModel | user = convertUser gotUser }
                 , currentPage = "Home"
               }
             , Cmd.map PublicFeedMessage publicFeedCmd
