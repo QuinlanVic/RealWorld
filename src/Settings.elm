@@ -28,7 +28,7 @@ type alias User =
 type alias Model =
     { user : User
     , password : String
-    , signedUpOrloggedIn : Bool
+    , updated : Bool
     , errmsg : String
     , usernameError : Maybe String
     , emailError : Maybe String
@@ -50,7 +50,7 @@ initialModel : Model
 initialModel =
     { user = defaultUser
     , password = ""
-    , signedUpOrloggedIn = False
+    , updated = False
     , errmsg = ""
     , usernameError = Just ""
     , emailError = Just ""
@@ -226,7 +226,7 @@ update message model =
 
         -- get intercepted in main to update the user and change the page to their profile page :)
         GotUser (Ok gotUser) ->
-            ( { model | user = gotUser, signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
+            ( { model | user = gotUser, updated = True, password = "", errmsg = "" }, Cmd.none )
 
         GotUser (Err _) ->
             ( model, Cmd.none )
