@@ -693,7 +693,7 @@ update msg model =
                     Settings
                         { user = user
                         , password = ""
-                        , signedUpOrloggedIn = False
+                        , updated = False
                         , errmsg = ""
                         , usernameError = Just ""
                         , emailError = Just ""
