@@ -1,4 +1,4 @@
-module Profile exposing (Feed, Model, Msg(..), ProfileType, articleDecoder, fetchFavoritedArticles, fetchProfileArticles, init, profileDecoder, update, view)
+module Profile exposing (Feed, Model, Msg(..), ProfileType, articleDecoder, fetchFavoritedArticles, fetchProfileArticles, formatDate, init, monthName, profileDecoder, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src, style, type_)
@@ -493,6 +493,7 @@ viewLoveButton articlePreview =
 
 formatDate : String -> String
 formatDate dateStr =
+    -- eg) '2022-12-09T13:46:24.263Z' -> 'December 09, 2022'
     case splitDate dateStr of
         Just ( year, month, day ) ->
             monthName month ++ " " ++ day ++ ", " ++ year
@@ -505,12 +506,15 @@ splitDate : String -> Maybe ( String, String, String )
 splitDate dateStr =
     let
         parts =
+            -- split the string by "-" into parts (list of string parts)
             String.split "-" dateStr
     in
     case parts of
+        -- extract the parts
         [ year, month, dayWithTime ] ->
             let
                 day =
+                    -- only take first 2 chars of string in part 3 aka dayWithTime to get the day
                     String.left 2 dayWithTime
             in
             Just ( year, month, day )
@@ -521,6 +525,7 @@ splitDate dateStr =
 
 monthName : String -> String
 monthName month =
+    -- convert the month number to its name
     case month of
         "01" ->
             "January"

@@ -20,12 +20,16 @@
         "indirect": {
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
-            "elm/parser": "1.1.0",
             "elm/virtual-dom": "1.0.3"
         }
     },
     "test-dependencies": {
-        "direct": {},
-        "indirect": {}
+        "direct": {
+            "elm-explorations/test": "2.1.1",
+            "elm/random": "1.0.0"
+        },
+        "indirect": {
+            "elm/parser": "1.1.0"
+        }
     }
 }
