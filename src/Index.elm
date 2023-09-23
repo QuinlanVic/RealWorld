@@ -1,10 +1,10 @@
-module Index exposing (Article, Feed, Model, Msg(..), Tags, init, tagDecoder, update, view)
+module Index exposing (Article, Feed, Model, Msg(..), Tags, init, initialModel, tagDecoder, update, view, viewTags, viewThreeFeeds)
 
 import Article exposing (Msg(..))
 import Auth exposing (baseUrl)
 import Editor exposing (authorDecoder)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, src, style, type_)
+import Html.Attributes exposing (class, href, id, src, style, type_)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, bool, field, int, list, string, succeed)
@@ -558,6 +558,7 @@ viewTag tag =
         , class "tag-pill tag-default"
         , style "border" "none"
         -- , class "link-style"
+        , if tag == "welcome" then (id "welcome") else id "nothing"
         ]
         [ text tag ]
 
@@ -694,7 +695,7 @@ viewThreeFeeds model =
                         ]
                         [ text "Global Feed" ]
                     ]
-                , li [ class "nav-item" ]
+                , li [ class "nav-item", id "tag" ]
                     [ button
                         [ class "nav-link active"
 
@@ -776,7 +777,7 @@ viewThreeFeeds model =
                     ]
                     [ text "Global Feed" ]
                 ]
-            , li [ class "nav-item" ]
+            , li [ class "nav-item", id "tag" ]
                 [ button
                     [ class "nav-link active"
 

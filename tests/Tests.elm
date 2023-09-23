@@ -2,10 +2,15 @@ module Tests exposing (..)
 
 import Expect
 import Fuzz exposing (Fuzzer)
+import Html.Attributes exposing (type_, value)
+import Index exposing (Msg(..), initialModel)
 import Profile exposing (formatDate, monthName)
 import Random
 import Settings exposing (Model, Msg(..), update)
 import Test exposing (..)
+import Test.Html.Event as Event
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (attribute, class, id, tag, text)
 
 
 exampleDate : String
@@ -211,27 +216,59 @@ suite2 =
         ]
 
 
+
+-- initialModel : Index.Model
+-- initialModel =
+--     { globalfeed = Just [ articlePreview1, articlePreview2 ]
+--     , yourfeed = Just []
+--     , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
+--     , user = defaultUser
+--     , showGF = True
+--     , showTag = False
+--     , tagfeed = Just []
+--     , tag = ""
+--     }
+
+
 suite3 : Test
 suite3 =
     -- describe function to add a description string to the list of tests
     describe "view"
         -- test function with a description of the test to write unit test
-        [ test "change the x of the view"
+        [ test "displays the selected tag"
             (\_ ->
-                -- give the "update" function a message and model and pass its output through the Tuple.first function
-                Settings.update (SavePassword "Quinlan") testModel
-                    -- extract only the model (first element in the tuple)
-                    |> Tuple.first
-                    -- Expect.equal function checks if the new model is as expected
-                    |> Expect.equal { testModel | password = "Quinlan" }
+                let
+                    initialModel2 =
+                        { initialModel | showGF = False, showTag = True, tag = "welcome" }
+                in
+                -- pass initialModel with some updated characters into viewThreeFeeds
+                Index.viewThreeFeeds initialModel2
+                    -- query Elm's virtual DOM with this next function
+                    |> Query.fromHtml
+                    -- find the element you are searching for (id with string called "tag")
+                    |> Query.find [ id "tag" ]
+                    -- Query.has function checks if the element is as expected
+                    |> Query.has [ text " welcome " ]
             )
-        , test "Change the username of the user"
+        ]
+
+
+suite4 : Test
+suite4 =
+    -- describe function to add a description string to the list of tests
+    describe "events"
+        -- test function with a description of the test to write unit test
+        [ test "receives selected tag to change to tagfeed"
             (\_ ->
-                -- give the "update" function a message and model and pass its output through the Tuple.first function
-                Settings.update (SaveName "Quinlan") testModel
-                    -- extract only the model (first element in the tuple)
-                    |> Tuple.first
-                    -- Expect.equal function checks if the new model is as expected
-                    |> Expect.equal { testModel | user = Settings.updateUsername testModel.user "Quinlan" }
+                -- pass list of tags into viewTags
+                Index.viewTags ( Just [ "welcome", "implementations", "introduction", "codebaseShow", "ipsum", "qui", "cupiditate", "et", "quia", "deserunt" ] )
+                    -- query Elm's virtual DOM with this next function
+                    |> Query.fromHtml
+                    -- find the element you are searching for (tag is button with id with string called "welcome")
+                    |> Query.find [ tag "button", id "welcome" ]
+                    -- Event.simulate function mimics an event on an element (onClick)
+                    |> Event.simulate (Event.click)
+                    -- Query.has function checks if the message from the event is as expected
+                    |> Event.expect (Index.LoadTF "welcome")
             )
         ]
