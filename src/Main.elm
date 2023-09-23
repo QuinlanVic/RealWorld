@@ -430,13 +430,17 @@ type Msg
     | GotArticleAndComments (Result Http.Error ( Article.Article, Article.Comments ))
     | GotProfileAndArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
     | GotProfileAndFavArticles (Result Http.Error ( Profile.ProfileType, Profile.Feed ))
-    | GotYFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
+      -- | GotYFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
     | GotGFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
-    | GotTFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
+
+
+
+-- | GotTFAndTags (Result Http.Error ( PublicFeed.Feed, PublicFeed.Tags ))
 
 
 convertUser : RegUser -> User
 convertUser regUser =
+    -- convert from one page's User type to that of Main.elm
     { email = regUser.email
     , token = regUser.token
     , username = regUser.username
@@ -763,22 +767,20 @@ update msg model =
                     , Cmd.none
                     )
 
-        ( GotYFAndTags result, _ ) ->
-            case result of
-                Ok ( yourfeed, tags ) ->
-                    ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Just yourfeed, tags = Just tags, user = model.user, showGF = False, showTag = False, tagfeed = Nothing, tag = "" }
-                      }
-                    , Cmd.none
-                    )
-
-                Err error ->
-                    ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = False, tagfeed = Nothing, tag = "" }
-                      }
-                    , Cmd.none
-                    )
-
+        -- ( GotYFAndTags result, _ ) ->
+        --     case result of
+        --         Ok ( yourfeed, tags ) ->
+        --             ( { model
+        --                 | page = PublicFeed { globalfeed = Nothing, yourfeed = Just yourfeed, tags = Just tags, user = model.user, showGF = False, showTag = False, tagfeed = Nothing, tag = "" }
+        --               }
+        --             , Cmd.none
+        --             )
+        --         Err error ->
+        --             ( { model
+        --                 | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = False, tagfeed = Nothing, tag = "" }
+        --               }
+        --             , Cmd.none
+        --             )
         ( GotGFAndTags result, _ ) ->
             case result of
                 Ok ( globalfeed, tags ) ->
@@ -795,23 +797,21 @@ update msg model =
                     , Cmd.none
                     )
 
-        ( GotTFAndTags result, _ ) ->
-            case result of
-                Ok ( tagfeed, tags ) ->
-                    ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = False, showTag = True, tagfeed = Just tagfeed, tag = model.tag }
-                      }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( { model
-                        | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = True, tagfeed = Nothing, tag = "" }
-                        , tag = ""
-                      }
-                    , Cmd.none
-                    )
-
+        -- ( GotTFAndTags result, _ ) ->
+        --     case result of
+        --         Ok ( tagfeed, tags ) ->
+        --             ( { model
+        --                 | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Just tags, user = model.user, showGF = False, showTag = True, tagfeed = Just tagfeed, tag = model.tag }
+        --               }
+        --             , Cmd.none
+        --             )
+        --         Err _ ->
+        --             ( { model
+        --                 | page = PublicFeed { globalfeed = Nothing, yourfeed = Nothing, tags = Nothing, user = model.user, showGF = False, showTag = True, tagfeed = Nothing, tag = "" }
+        --                 , tag = ""
+        --               }
+        --             , Cmd.none
+        --             )
         -- Index
         ( PublicFeedMessage publicFeedMsg, PublicFeed publicFeedModel ) ->
             let

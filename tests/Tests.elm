@@ -1,9 +1,10 @@
 module Tests exposing (..)
 
 import Expect
-import Fuzz exposing (Fuzzer, int, list, string)
+import Fuzz exposing (Fuzzer)
 import Profile exposing (formatDate, monthName)
 import Random
+import Settings exposing (Model, Msg(..), update)
 import Test exposing (..)
 
 
@@ -17,14 +18,15 @@ exampleDate2 =
     "2019-01-29T13:46:24.263Z"
 
 
-isLeapYear : Int -> Int 
+isLeapYear : Int -> Int
 isLeapYear year_ =
     let
         isDivisibleBy n =
             remainderBy n year_ == 0
     in
-    if (isDivisibleBy 4 && not (isDivisibleBy 100) || isDivisibleBy 400) then 
+    if isDivisibleBy 4 && not (isDivisibleBy 100) || isDivisibleBy 400 then
         1
+
     else
         0
 
@@ -35,16 +37,22 @@ daysInMonth year_ month_ =
         2 ->
             if isLeapYear year_ == 1 then
                 29
+
             else
                 28
+
         4 ->
             30
+
         6 ->
             30
+
         9 ->
             30
+
         11 ->
             30
+
         _ ->
             31
 
@@ -89,7 +97,18 @@ formatDigString day =
 create : Int -> Int -> Int -> String
 create year_ month_ day_ =
     --create Date
-    String.fromInt (if year_ < 0 then year_ * -1 else year_) ++ "-" ++ formatDigString month_ ++ "-" ++ formatDigString day_ ++ "T13:46:24.263Z"
+    String.fromInt
+        (if year_ < 0 then
+            year_ * -1
+
+         else
+            year_
+        )
+        ++ "-"
+        ++ formatDigString month_
+        ++ "-"
+        ++ formatDigString day_
+        ++ "T13:46:24.263Z"
 
 
 testMultipleDates : Test
@@ -105,15 +124,21 @@ testMultipleDates =
                             ++ " "
                             ++ formatDigString day
                             ++ ", "
-                            ++ String.fromInt (if year < 0 then year * -1 else year)
+                            ++ String.fromInt
+                                (if year < 0 then
+                                    year * -1
+
+                                 else
+                                    year
+                                )
                         )
         ]
 
 
-suite2 : Test
-suite2 =
+suite : Test
+suite =
     -- eg) '2022-12-09T13:46:24.263Z' -> 'December 09, 2022'
-    -- describe function to add a description string to list of tests
+    -- describe function to add a description string to the list of tests
     describe "formatDate"
         -- test function with a description of the test to write unit test
         [ test "formats the date from 'year-month-dayThour:min:sec.msZ' to 'month-name day-num, year-num'"
@@ -131,4 +156,82 @@ suite2 =
                     |> Expect.equal "January 29, 2019"
             )
         , testMultipleDates
+        ]
+
+
+defaultUser : Settings.User
+defaultUser =
+    { email = ""
+    , token = ""
+    , username = ""
+    , bio = Just ""
+    , image = Just ""
+    }
+
+
+testModel : Settings.Model
+testModel =
+    { user = defaultUser
+    , password = ""
+    , updated = False
+    , errmsg = ""
+    , usernameError = Just ""
+    , emailError = Just ""
+    , passwordError = Just ""
+    }
+
+
+
+-- application testing?
+
+
+suite2 : Test
+suite2 =
+    -- describe function to add a description string to the list of tests
+    describe "update"
+        -- test function with a description of the test to write unit test
+        [ test "updates the password field of the model"
+            (\_ ->
+                -- give the "update" function a message and model and pass its output through the Tuple.first function
+                Settings.update (SavePassword "Quinlan") testModel
+                    -- extract only the model (first element in the tuple)
+                    |> Tuple.first
+                    -- Expect.equal function checks if the new model is as expected
+                    |> Expect.equal { testModel | password = "Quinlan" }
+            )
+        , test "Change the username of the user"
+            (\_ ->
+                -- give the "update" function a message and model and pass its output through the Tuple.first function
+                Settings.update (SaveName "Quinlan") testModel
+                    -- extract only the model (first element in the tuple)
+                    |> Tuple.first
+                    -- Expect.equal function checks if the new model is as expected
+                    |> Expect.equal { testModel | user = Settings.updateUsername testModel.user "Quinlan" }
+            )
+        ]
+
+
+suite3 : Test
+suite3 =
+    -- describe function to add a description string to the list of tests
+    describe "view"
+        -- test function with a description of the test to write unit test
+        [ test "change the x of the view"
+            (\_ ->
+                -- give the "update" function a message and model and pass its output through the Tuple.first function
+                Settings.update (SavePassword "Quinlan") testModel
+                    -- extract only the model (first element in the tuple)
+                    |> Tuple.first
+                    -- Expect.equal function checks if the new model is as expected
+                    |> Expect.equal { testModel | password = "Quinlan" }
+            )
+        , test "Change the username of the user"
+            (\_ ->
+                -- give the "update" function a message and model and pass its output through the Tuple.first function
+                Settings.update (SaveName "Quinlan") testModel
+                    -- extract only the model (first element in the tuple)
+                    |> Tuple.first
+                    -- Expect.equal function checks if the new model is as expected
+                    |> Expect.equal { testModel | user = Settings.updateUsername testModel.user "Quinlan" }
+            )
         ]

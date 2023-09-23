@@ -1,4 +1,4 @@
-module Settings exposing (Model, Msg(..), init, update, view)
+module Settings exposing (Model, Msg(..), User, init, update, updateUsername, view)
 
 import Auth exposing (initialModel, trimString, validateEmail, validatePassword, validateUsername)
 import Html exposing (..)
