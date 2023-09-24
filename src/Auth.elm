@@ -207,8 +207,8 @@ update message user =
             -- intercepted in Main.elm now
             ( { gotUser | signedUpOrloggedIn = True, password = "", errmsg = "" }, Cmd.none )
 
-        SignedUpGoHome (Err error) ->
-            ( { user | errmsg = Debug.toString error }, Cmd.none )
+        SignedUpGoHome _ ->
+            ( user, Cmd.none ) -- { user | errmsg = Debug.toString error }
 
 
 isFormValid : User -> Bool

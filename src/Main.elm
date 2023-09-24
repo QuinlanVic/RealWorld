@@ -617,7 +617,7 @@ setNewPage maybeRoute model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case ( Debug.log "RECEIVED MSG" msg, model.page ) of
+    case ( msg, model.page ) of
         -- Debug.log "RECEIVED MESSAGE" msg
         ( NewRoute maybeRoute, _ ) ->
             setNewPage maybeRoute model
