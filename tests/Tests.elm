@@ -2,15 +2,14 @@ module Tests exposing (..)
 
 import Expect
 import Fuzz exposing (Fuzzer)
-import Html.Attributes exposing (type_, value)
 import Index exposing (Msg(..), initialModel)
 import Profile exposing (formatDate, monthName)
 import Random
-import Settings exposing (Model, Msg(..), update)
+import Settings exposing (Msg(..))
 import Test exposing (..)
 import Test.Html.Event as Event
 import Test.Html.Query as Query
-import Test.Html.Selector exposing (attribute, class, id, tag, text)
+import Test.Html.Selector exposing (id, tag, text)
 
 
 exampleDate : String
@@ -187,7 +186,7 @@ testModel =
 
 
 
--- application testing?
+-- application testing
 
 
 suite2 : Test
@@ -214,20 +213,6 @@ suite2 =
                     |> Expect.equal { testModel | user = Settings.updateUsername testModel.user "Quinlan" }
             )
         ]
-
-
-
--- initialModel : Index.Model
--- initialModel =
---     { globalfeed = Just [ articlePreview1, articlePreview2 ]
---     , yourfeed = Just []
---     , tags = Just [ " programming", " javascript", " angularjs", " react", " mean", " node", " rails" ]
---     , user = defaultUser
---     , showGF = True
---     , showTag = False
---     , tagfeed = Just []
---     , tag = ""
---     }
 
 
 suite3 : Test
