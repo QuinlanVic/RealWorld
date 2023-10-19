@@ -139,8 +139,8 @@ testMultipleDates =
         ]
 
 
-suite : Test
-suite =
+formatDateTest : Test
+formatDateTest =
     -- eg) '2022-12-09T13:46:24.263Z' -> 'December 09, 2022'
     -- describe function to add a description string to the list of tests
     describe "formatDate"
@@ -189,8 +189,8 @@ testModel =
 -- application testing
 
 
-suite2 : Test
-suite2 =
+settingsUpdateTest : Test
+settingsUpdateTest =
     -- describe function to add a description string to the list of tests
     describe "update"
         -- test function with a description of the test to write unit test
@@ -215,8 +215,8 @@ suite2 =
         ]
 
 
-suite3 : Test
-suite3 =
+indexViewTest : Test
+indexViewTest =
     -- describe function to add a description string to the list of tests
     describe "view"
         -- test function with a description of the test to write unit test
@@ -238,21 +238,21 @@ suite3 =
         ]
 
 
-suite4 : Test
-suite4 =
+indexTagEventTest : Test
+indexTagEventTest =
     -- describe function to add a description string to the list of tests
     describe "events"
         -- test function with a description of the test to write unit test
         [ test "receives selected tag to change to tagfeed"
             (\_ ->
                 -- pass list of tags into viewTags
-                Index.viewTags ( Just [ "welcome", "implementations", "introduction", "codebaseShow", "ipsum", "qui", "cupiditate", "et", "quia", "deserunt" ] )
+                Index.viewTags (Just [ "welcome", "implementations", "introduction", "codebaseShow", "ipsum", "qui", "cupiditate", "et", "quia", "deserunt" ])
                     -- query Elm's virtual DOM with this next function
                     |> Query.fromHtml
                     -- find the element you are searching for (tag is button with id with string called "welcome")
                     |> Query.find [ tag "button", id "welcome" ]
                     -- Event.simulate function mimics an event on an element (onClick)
-                    |> Event.simulate (Event.click)
+                    |> Event.simulate Event.click
                     -- Query.has function checks if the message from the event is as expected
                     |> Event.expect (Index.LoadTF "welcome")
             )
