@@ -1,9 +1,18 @@
 {
   "dependencies": {
-    "elm-live": "^4.0.2"
+    "elm-live": "^4.0.2",
+    "speed-measure-webpack-plugin": "^1.5.0",
+    "webpack-bundle-analyzer": "^4.9.1"
   },
   "devDependencies": {
     "elm-watch": "^1.1.2",
-    "serve": "^14.2.0"
+    "elm-webpack-loader": "^8.0.0",
+    "serve": "^14.2.0",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "elm-watch src/Main.elm --output=build/main.js --debug"
   }
 }
